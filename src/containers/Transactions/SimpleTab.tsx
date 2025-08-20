@@ -79,7 +79,7 @@ export const SimpleTab: FC<{ data: any; width: number }> = ({
   )
 
   const { processed } = data
-  const numberOptions = { ...CURRENCY_OPTIONS, currency: 'XRP' }
+  const numberOptions = { ...CURRENCY_OPTIONS, currency: 'PFT' }
   const time = localizeDate(new Date(processed.date), language, DATE_OPTIONS)
   const ledgerIndex = processed.ledger_index
   const fee = processed.tx.Fee

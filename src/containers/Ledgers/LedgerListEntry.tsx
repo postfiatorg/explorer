@@ -59,7 +59,7 @@ export const LedgerListEntryInner = ({
           <div className="fees">
             {SIGMA} {t('fees')}:
             <b>
-              <Amount value={{ currency: 'XRP', amount: ledger.total_fees }} />
+              <Amount value={{ currency: 'PFT', amount: ledger.total_fees }} />
             </b>
           </div>
         )}

@@ -127,7 +127,7 @@ export const Ledger = () => {
                 <div className="value">
                   {formatPrice(data.total_fees, {
                     lang: language,
-                    currency: 'XRP',
+                    currency: 'PFT',
                   })}
                 </div>
               </div>

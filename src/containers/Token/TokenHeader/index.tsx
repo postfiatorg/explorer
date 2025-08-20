@@ -13,7 +13,7 @@ import { XRP_BASE } from '../../shared/transactionUtils'
 
 const CURRENCY_OPTIONS = {
   style: 'currency',
-  currency: 'XRP',
+  currency: 'PFT',
   minimumFractionDigits: 2,
   maximumFractionDigits: 6,
 }

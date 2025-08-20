@@ -61,7 +61,7 @@ export function findAssetAmount(
   asset: { currency: string; issuer?: string },
   tx: BaseTransaction,
 ): ExplorerAmount | undefined {
-  if (asset.currency === 'XRP') return findXRPAmount(meta, tx)
+  if (asset.currency === 'PFT') return findXRPAmount(meta, tx)
 
   const assetNode = findNodeWithAsset(
     meta,
@@ -107,7 +107,7 @@ function findXRPAmount(
 
   return balance && balance !== 0
     ? {
-        currency: 'XRP',
+        currency: 'PFT',
         amount: balance / XRP_BASE,
       }
     : undefined

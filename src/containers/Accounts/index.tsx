@@ -19,7 +19,7 @@ export const Accounts = () => {
   const { trackScreenLoaded, trackException } = useAnalytics()
   const { id: accountId = '', tab = 'transactions' } =
     useRouteParams(ACCOUNT_ROUTE)
-  const [currencySelected, setCurrencySelected] = useState('XRP')
+  const [currencySelected, setCurrencySelected] = useState('PFT')
   const mainPath = buildPath(ACCOUNT_ROUTE, { id: accountId })
   const rippledSocket = useContext(SocketContext)
 

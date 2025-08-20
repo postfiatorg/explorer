@@ -13,7 +13,7 @@ export const formatAmount = (d: Amount | number): ExplorerAmount => {
 
   if (typeof d === 'string' || typeof d === 'number')
     return {
-      currency: 'XRP',
+      currency: 'PFT',
       amount: Number(d) / XRP_BASE,
     }
 

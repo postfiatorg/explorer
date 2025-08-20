@@ -3,7 +3,7 @@ import { TOKEN_ROUTE, MPT_ROUTE } from '../../App/routes'
 
 // https://xrpl.org/currency-formats.html#nonstandard-currency-codes
 const NON_STANDARD_CODE_LENGTH = 40
-const XRP = 'XRP'
+const XRP = 'PFT'
 const LP_TOKEN_IDENTIFIER = '03'
 
 export interface Props {

@@ -137,7 +137,7 @@ export const CURRENCY_ORDER = [
   'BTC',
   'XAG',
   'XAU',
-  'XRP',
+  'PFT',
 ]
 
 export { CURRENCY_OPTIONS }
@@ -258,7 +258,7 @@ export function normalizeAmount(
   amount: IssuedCurrencyAmount | number | string,
   language = 'en-US',
 ): string | null {
-  const currency = typeof amount === 'object' ? amount.currency : 'XRP'
+  const currency = typeof amount === 'object' ? amount.currency : 'PFT'
   const value =
     typeof amount === 'object' ? amount.value : Number(amount) / XRP_BASE
   const numberOption = { ...CURRENCY_OPTIONS, currency }

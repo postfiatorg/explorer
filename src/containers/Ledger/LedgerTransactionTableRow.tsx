@@ -44,7 +44,7 @@ export const LedgerTransactionTableRow = ({ tx }: Props) => {
         <div className="col col-fee">
           {formatPrice(tx.fee, {
             lang: language,
-            currency: 'XRP',
+            currency: 'PFT',
             padding: TXN_COST_PADDING,
           })}
         </div>

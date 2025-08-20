@@ -79,9 +79,9 @@ const Footer = () => {
             rel="noopener noreferrer"
             href="https://xrpl.org"
           >
-            XRP Ledger Project
+            PFT Ledger Project
           </a>
-          <span>&nbsp;2012-{new Date().getFullYear()}</span>
+          <span>&nbsp;2025-{new Date().getFullYear()}</span>
         </div>
       </div>
     </div>

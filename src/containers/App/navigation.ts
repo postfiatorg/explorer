@@ -45,11 +45,11 @@ export const navigationConfig: NavigationMenuAnyRoute[] = [
     ],
   },
   {
-    link: 'https://xrpl.org',
+    link: 'https://postfiat.org',
     title: 'xrpl_org',
   },
   {
-    link: 'https://github.com/ripple/explorer',
+    link: 'https://github.com/postfiatorg/explorer',
     title: 'github',
   },
 ]

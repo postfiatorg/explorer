@@ -384,7 +384,7 @@ export const computeMPTIssuanceBalanceChange = (node) => {
 }
 
 export const renderXRP = (d, language) => {
-  const options = { ...CURRENCY_OPTIONS, currency: 'XRP' }
+  const options = { ...CURRENCY_OPTIONS, currency: 'PFT' }
   return localizeNumber(d, language, options)
 }
 

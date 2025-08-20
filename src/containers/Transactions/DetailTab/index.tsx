@@ -71,7 +71,7 @@ export const DetailTab: FC<{ data: any }> = ({ data }) => {
   }
 
   const renderFee = () => {
-    const numberOptions = { ...CURRENCY_OPTIONS, currency: 'XRP' }
+    const numberOptions = { ...CURRENCY_OPTIONS, currency: 'PFT' }
     const totalCost = data.tx.Fee
       ? localizeNumber(
           Number.parseFloat(data.tx.Fee) / XRP_BASE,
@@ -87,7 +87,7 @@ export const DetailTab: FC<{ data: any }> = ({ data }) => {
             {t('transaction_consumed_fee')}
             <b>
               <span> {totalCost}</span>
-              <small>XRP</small>
+              <small>PFT</small>
             </b>
           </div>
         </div>

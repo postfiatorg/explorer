@@ -11,7 +11,7 @@ import { AccountState } from '../../../rippled/accountState'
 
 const CURRENCY_OPTIONS = {
   style: 'currency',
-  currency: 'XRP',
+  currency: 'PFT',
   minimumFractionDigits: 2,
   maximumFractionDigits: 6,
 }
@@ -34,11 +34,17 @@ export const AccountHeader = ({
 
   function renderBalancesSelector(data: AccountState) {
     const { balances = {} } = data
+    // Transform balances to replace XRP with PFT for display
+    const displayBalances = { ...balances }
+    if ('XRP' in displayBalances) {
+      displayBalances.PFT = displayBalances.XRP
+      delete displayBalances.XRP
+    }
     return (
-      Object.keys(balances).length > 1 && (
+      Object.keys(displayBalances).length > 1 && (
         <div className="balance-selector-container">
           <BalanceSelector
-            balances={balances}
+            balances={displayBalances}
             onSetCurrencySelected={onSetCurrencySelected}
             currencySelected={currencySelected}
           />
@@ -245,8 +251,10 @@ export const AccountHeader = ({
 
   function renderHeaderContent(data: AccountState) {
     const { balances = {}, deleted } = data
+    // Map PFT to XRP for balance lookup since backend still uses XRP
+    const balanceKey = currencySelected === 'PFT' ? 'XRP' : currencySelected
     const balance = localizeNumber(
-      balances[currencySelected] || 0.0,
+      balances[balanceKey] || 0.0,
       language,
       {
         style: 'currency',

@@ -26,7 +26,7 @@ export const Amount = ({
   const rippledSocket = useContext(SocketContext)
   const { trackException } = useAnalytics()
   const issuer = typeof value === 'string' ? undefined : value.issuer
-  const currency = typeof value === 'string' ? 'XRP' : value.currency
+  const currency = typeof value === 'string' ? 'PFT' : value.currency
   const amount =
     typeof value === 'string' ? parseInt(value, 10) / XRP_BASE : value.amount
   const isMPT = typeof value === 'string' ? false : (value.isMPT ?? false)
