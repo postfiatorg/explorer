@@ -28,17 +28,17 @@ const render = (t, language, action, node, index) => {
               Balance increased by
               <b>
                 {localizeNumber(change, language, numberOption)}
-                <small>XRP</small>
+                <small>PFT</small>
               </b>
               from
               <b>
                 {prevBalance}
-                <small>XRP</small>
+                <small>PFT</small>
               </b>
               to
               <b>
                 {finalBalance}
-                <small>XRP</small>
+                <small>PFT</small>
               </b>
             </Trans>
           </li>
@@ -53,17 +53,17 @@ const render = (t, language, action, node, index) => {
               Balance decreased by
               <b>
                 {localizeNumber(change, language, numberOption)}
-                <small>XRP</small>
+                <small>PFT</small>
               </b>
               from
               <b>
                 {prevBalance}
-                <small>XRP</small>
+                <small>PFT</small>
               </b>
               to
               <b>
                 {finalBalance}
-                <small>XRP</small>
+                <small>PFT</small>
               </b>
             </Trans>
           </li>

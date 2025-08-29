@@ -28,7 +28,10 @@ export interface Props {
 export const TransactionTableRow = ({ tx, hasTokensColumn }: Props) => {
   const language = useLanguage()
   const success = tx.result === 'tesSUCCESS'
-  const date = localizeDate(new Date(tx.date), language, DATE_OPTIONS)
+  // Handle missing or invalid date
+  const date = tx.date 
+    ? localizeDate(new Date(tx.date), language, DATE_OPTIONS)
+    : null
 
   return (
     <li
@@ -56,7 +59,7 @@ export const TransactionTableRow = ({ tx, hasTokensColumn }: Props) => {
         <div className="col col-status">
           <TxStatus status={tx.result} />
         </div>
-        <div className="col col-date">{date}</div>
+        <div className="col col-date">{date || '-'}</div>
       </div>
       {tx.details && (
         <div className="details">

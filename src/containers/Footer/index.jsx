@@ -11,52 +11,43 @@ const Footer = () => {
       <div className="footer-links">
         <div className="footer-link-section">
           <div className="footer-section-header">Learn</div>
-          <a href="https://xrpl.org/overview.html" className="footer-link">
+          <a href="https://postfiat.org/" className="footer-link">
             Overview
           </a>
-          <a href="https://xrpl.org/uses.html" className="footer-link">
+          <a href="https://postfiat.org/" className="footer-link">
             Uses
           </a>
-          <a href="https://xrpl.org/history.html" className="footer-link">
+          <a href="https://postfiat.org/" className="footer-link">
             History
           </a>
-          <a href="https://xrpl.org/impact.html" className="footer-link">
+          <a href="https://postfiat.org/" className="footer-link">
             Impact
           </a>
         </div>
 
         <div className="footer-link-section">
           <div className="footer-section-header">Build</div>
-          <a href="https://xrpl.org/get-started.html" className="footer-link">
+          <a href="https://postfiat.org/" className="footer-link">
             Get Started
           </a>
-          <a href="https://xrpl.org/docs.html" className="footer-link">
+          <a href="https://postfiat.org/" className="footer-link">
             Docs
           </a>
-          <a href="https://xrpl.org/dev-tools.html" className="footer-link">
+          <a href="https://postfiat.org/" className="footer-link">
             Tools
           </a>
-          <a href="https://livenet.xrpl.org/" className="footer-link">
+          <a href="https://explorer.testnet.postfiat.org/" className="footer-link">
             Ledger Explorer
-          </a>
-          <a href="https://xrpl.org/blog/" className="footer-link">
-            Dev Blog
           </a>
         </div>
 
         <div className="footer-link-section">
           <div className="footer-section-header">Contribute</div>
-          <a href="https://xrpl.org/contribute.html" className="footer-link">
+          <a href="https://postfiat.org/" className="footer-link">
             How to Contribute
           </a>
-          <a href="https://github.com/ripple/explorer" className="footer-link">
-            XRPL Explorer on GitHub
-          </a>
-          <a
-            href="https://github.com/XRPLF/xrpl-dev-portal"
-            className="footer-link"
-          >
-            XRPL.org Docs on GitHub
+          <a href="https://github.com/postfiatorg/explorer" className="footer-link">
+            PFT Explorer on GitHub
           </a>
         </div>
       </div>
@@ -77,7 +68,7 @@ const Footer = () => {
             className="link"
             target="_blank"
             rel="noopener noreferrer"
-            href="https://xrpl.org"
+            href="https://postfiat.org"
           >
             PFT Ledger Project
           </a>
