@@ -7,6 +7,7 @@ import type {
 } from 'xrpl/dist/npm/models/transactions/metadata'
 import { Transaction } from './types'
 import { localizeNumber, CURRENCY_OPTIONS } from './utils'
+import { parsePfPtrMemo, ParsedPointer } from '../../utils/protobufParser'
 
 export const SUCCESSFUL_TRANSACTION = 'tesSUCCESS'
 export const XRP_BASE = 1000000
@@ -187,6 +188,59 @@ export function decodeHex(hex: string) {
   return str
 }
 
+export interface MemoInfo {
+  type?: string
+  data?: string | ParsedPointer
+  format?: string
+  isPfPtr?: boolean
+}
+
+export async function buildMemosAsync(trans: Transaction): Promise<MemoInfo[]> {
+  const { Memos = [] } = trans.tx
+
+  // Process all memos in parallel
+  const memoPromises = Memos.map(async (memo) => {
+    const memoInfo: MemoInfo = {}
+
+    if (memo.Memo.MemoType && hexMatch.test(memo.Memo.MemoType)) {
+      const decodedType = decodeHex(memo.Memo.MemoType)
+      memoInfo.type = decodedType
+
+      // Check if this is a pf.ptr memo
+      if (
+        decodedType === 'pf.ptr' &&
+        memo.Memo.MemoData &&
+        hexMatch.test(memo.Memo.MemoData)
+      ) {
+        // Parse the protobuf data
+        const parsedData = await parsePfPtrMemo(memo.Memo.MemoData)
+        if (parsedData) {
+          memoInfo.data = parsedData
+          memoInfo.isPfPtr = true
+        } else {
+          // Fallback to hex if parsing fails
+          memoInfo.data = decodeHex(memo.Memo.MemoData)
+        }
+      } else if (memo.Memo.MemoData && hexMatch.test(memo.Memo.MemoData)) {
+        memoInfo.data = decodeHex(memo.Memo.MemoData)
+      }
+    } else if (memo.Memo.MemoData && hexMatch.test(memo.Memo.MemoData)) {
+      // If no MemoType, still process MemoData
+      memoInfo.data = decodeHex(memo.Memo.MemoData)
+    }
+
+    if (memo.Memo.MemoFormat && hexMatch.test(memo.Memo.MemoFormat)) {
+      memoInfo.format = decodeHex(memo.Memo.MemoFormat)
+    }
+
+    return Object.keys(memoInfo).length > 0 ? memoInfo : null
+  })
+
+  const results = await Promise.all(memoPromises)
+  return results.filter((memo): memo is MemoInfo => memo !== null)
+}
+
+// Keep the old synchronous version for backward compatibility
 export function buildMemos(trans: Transaction) {
   const { Memos = [] } = trans.tx
   const memoList: string[] = []

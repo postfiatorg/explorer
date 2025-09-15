@@ -253,16 +253,12 @@ export const AccountHeader = ({
     const { balances = {}, deleted } = data
     // Map PFT to XRP for balance lookup since backend still uses XRP
     const balanceKey = currencySelected === 'PFT' ? 'XRP' : currencySelected
-    const balance = localizeNumber(
-      balances[balanceKey] || 0.0,
-      language,
-      {
-        style: 'currency',
-        currency: currencySelected,
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 2,
-      },
-    )
+    const balance = localizeNumber(balances[balanceKey] || 0.0, language, {
+      style: 'currency',
+      currency: currencySelected,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    })
     return (
       <div className="section header-container">
         <div className="column first">

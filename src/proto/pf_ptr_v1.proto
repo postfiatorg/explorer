@@ -1,0 +1,62 @@
+// pf/ptr/v1 - Pointer Envelope for PFTL Memos
+syntax = "proto3";
+package pf.ptr.v1;
+
+// What the PFTL/XRPL memoData carries (after hex-encoding the bytes).
+// This is the compact pointer that goes on-chain, pointing to encrypted content in IPFS
+message Pointer {
+  // CID of the ciphertext in raw bytes (binary CIDv1, multibase stripped)
+  bytes cid = 1;
+
+  // Application-level type for fast routing (mirrors MemoType/MemoFormat family)
+  enum MsgType {
+    MSG_UNSPECIFIED = 0;
+    TASK_CREATE     = 1;
+    TASK_UPDATE     = 2;
+    REWARD_CLAIM    = 3;
+    SYS_EVENT       = 5;
+    CHAT_MESSAGE    = 6;
+    TEST_MESSAGE    = 8;
+    ARTIFACT        = 9;  // generic deliverable (e.g., decision report)
+    INITIATION      = 10; // wallet-centric identity linkage
+    ASSET_DEFINITION = 11;
+  }
+  MsgType msg_type = 2;
+
+  // Crypto parameters (keep minimal to avoid leaking structure)
+  enum Enc {
+    ENC_NONE                   = 0; // public content
+    ENC_X25519_XCHACHA20P1305  = 1; // libsodium crypto_box (recommended)
+    ENC_AES256_GCM             = 2; // for hardware acceleration support
+    ENC_SIGNAL_DOUBLE_RATCHET  = 3; // for forward secrecy (future)
+    ENC_FERNET                 = 4; // simple symmetric (for testing)
+  }
+  Enc enc = 3;
+
+  // If encrypted: recipient key identifier or group key ID (opaque)
+  bytes kid = 4;   // e.g., 16 bytes truncated hash
+
+  // If encrypted: the nonce used by the AEAD scheme (opaque)
+  bytes nonce = 5; // e.g., 24 bytes for XChaCha20
+
+  // Optional: batching
+  bytes bundle_id = 6;    // CID of a "bundle index" object if batching
+  uint32 bundle_index = 7;
+
+  // Semver-ish for pointer envelope itself (not payload schema)
+  uint32 ptr_version = 8; // e.g., 1 for v1
+
+  // Optional: compression applied before encryption
+  enum Compression {
+    COMP_NONE = 0;
+    COMP_ZSTD = 1;
+    COMP_LZ4  = 2;
+  }
+  Compression comp = 9;
+
+  // Optional: payload schema version (for the content in IPFS)
+  uint32 schema = 10;
+
+  // Optional: Task identifier for fast correlation without fetching IPFS
+  bytes task_id = 11; // e.g., UUID or sha256 digest
+}

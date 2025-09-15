@@ -1,4 +1,4 @@
-import { FC } from 'react'
+import { FC, useEffect, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { TransactionMeta } from './Meta'
 import { TransactionDescription } from './Description'
@@ -11,7 +11,10 @@ import {
   XRP_BASE,
   buildFlags,
   buildMemos,
+  buildMemosAsync,
+  MemoInfo,
 } from '../../shared/transactionUtils'
+import { ParsedPointer } from '../../../utils/protobufParser'
 import './detailTab.scss'
 import { useLanguage } from '../../shared/hooks'
 import { HookDetails } from './HookDetails'
@@ -55,19 +58,117 @@ export const DetailTab: FC<{ data: any }> = ({ data }) => {
     )
   }
 
+  const [parsedMemos, setParsedMemos] = useState<MemoInfo[] | null>(null)
+  const [isLoadingMemos, setIsLoadingMemos] = useState(false)
+
+  useEffect(() => {
+    const loadMemos = async () => {
+      setIsLoadingMemos(true)
+      try {
+        const memoInfos = await buildMemosAsync(data)
+        setParsedMemos(memoInfos)
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error('Error parsing memos:', error)
+        // Fallback to simple memos
+        const simpleMemos = buildMemos(data)
+        setParsedMemos(simpleMemos.map((m) => ({ data: m })))
+      } finally {
+        setIsLoadingMemos(false)
+      }
+    }
+
+    loadMemos()
+  }, [data])
+
+  const renderProtobufField = (label: string, value: any) => {
+    if (value === undefined || value === null || value === '') return null
+    return (
+      <div style={{ marginLeft: '20px', marginBottom: '4px' }}>
+        <strong>{label}:</strong> {value}
+      </div>
+    )
+  }
+
+  const renderParsedPointer = (pointer: ParsedPointer) => (
+    <div
+      style={{
+        marginTop: '8px',
+        borderLeft: '2px solid #e0e0e0',
+        paddingLeft: '8px',
+      }}
+    >
+      {renderProtobufField('Message Type', pointer.msg_type)}
+      {renderProtobufField('CID', pointer.cid)}
+      {renderProtobufField('Encryption', pointer.enc)}
+      {renderProtobufField('Key ID', pointer.kid)}
+      {renderProtobufField('Nonce', pointer.nonce)}
+      {renderProtobufField('Bundle ID', pointer.bundle_id)}
+      {renderProtobufField('Bundle Index', pointer.bundle_index)}
+      {renderProtobufField('Pointer Version', pointer.ptr_version)}
+      {renderProtobufField('Compression', pointer.comp)}
+      {renderProtobufField('Schema', pointer.schema)}
+      {renderProtobufField('Task ID', pointer.task_id)}
+    </div>
+  )
+
   const renderMemos = () => {
-    const memos = buildMemos(data)
-    return memos.length ? (
+    if (!parsedMemos || parsedMemos.length === 0) return null
+
+    return (
       <div className="detail-section">
         <div className="title">
           {t('memos')}
           <span>({t('decoded_hex')})</span>
         </div>
-        {memos.map((memo) => (
-          <div key={memo}>{memo}</div>
-        ))}
+        {isLoadingMemos ? (
+          <div>Loading memo data...</div>
+        ) : (
+          parsedMemos.map((memo) => (
+            <div
+              key={`${memo.type}-${memo.data}`}
+              style={{ marginBottom: '12px' }}
+            >
+              {memo.type && (
+                <div>
+                  <strong>Type:</strong> {memo.type}
+                  {memo.type === 'pf.ptr' && memo.isPfPtr && (
+                    <span
+                      style={{
+                        marginLeft: '8px',
+                        color: '#0066cc',
+                        fontWeight: 'bold',
+                      }}
+                    >
+                      (Protobuf Pointer Decoded)
+                    </span>
+                  )}
+                </div>
+              )}
+              {memo.format && (
+                <div>
+                  <strong>Format:</strong> {memo.format}
+                </div>
+              )}
+              {memo.data && (
+                <div>
+                  {memo.isPfPtr && typeof memo.data === 'object' ? (
+                    <>
+                      <strong>Data (Parsed Protobuf):</strong>
+                      {renderParsedPointer(memo.data as ParsedPointer)}
+                    </>
+                  ) : (
+                    <>
+                      <strong>Data:</strong> {memo.data}
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          ))
+        )}
       </div>
-    ) : null
+    )
   }
 
   const renderFee = () => {

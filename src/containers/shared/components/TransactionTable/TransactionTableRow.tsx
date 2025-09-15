@@ -29,7 +29,7 @@ export const TransactionTableRow = ({ tx, hasTokensColumn }: Props) => {
   const language = useLanguage()
   const success = tx.result === 'tesSUCCESS'
   // Handle missing or invalid date
-  const date = tx.date 
+  const date = tx.date
     ? localizeDate(new Date(tx.date), language, DATE_OPTIONS)
     : null
 

@@ -36,7 +36,10 @@ const Footer = () => {
           <a href="https://postfiat.org/" className="footer-link">
             Tools
           </a>
-          <a href="https://explorer.testnet.postfiat.org/" className="footer-link">
+          <a
+            href="https://explorer.testnet.postfiat.org/"
+            className="footer-link"
+          >
             Ledger Explorer
           </a>
         </div>
@@ -46,7 +49,10 @@ const Footer = () => {
           <a href="https://postfiat.org/" className="footer-link">
             How to Contribute
           </a>
-          <a href="https://github.com/postfiatorg/explorer" className="footer-link">
+          <a
+            href="https://github.com/postfiatorg/explorer"
+            className="footer-link"
+          >
             PFT Explorer on GitHub
           </a>
         </div>
