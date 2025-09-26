@@ -4,6 +4,9 @@ import { useTranslation } from 'react-i18next'
 import { useQuery } from 'react-query'
 import { useWindowSize } from 'usehooks-ts'
 import { Helmet } from 'react-helmet-async'
+import { deriveAddress } from 'xrpl'
+import { decodeNodePublic } from 'ripple-address-codec'
+import { bytesToHex } from '@xrplf/isomorphic/utils'
 import NoMatch from '../NoMatch'
 import { Loader } from '../shared/components/Loader'
 import { Tabs } from '../shared/components/Tabs'
@@ -24,9 +27,37 @@ import NetworkContext from '../shared/NetworkContext'
 import { VALIDATOR_ROUTE } from '../App/routes'
 import { buildPath, useRouteParams } from '../shared/routing'
 import { VotingTab } from './VotingTab'
+import { ExclusionsTab } from './ExclusionsTab'
 import logger from '../../rippled/lib/logger'
 
 const log = logger({ name: 'validator' })
+
+// Convert validator public key (nXXX...) to account address (rXXX...)
+function validatorPublicKeyToAddress(
+  validatorPublicKey: string,
+): string | null {
+  try {
+    if (!validatorPublicKey.startsWith('n')) {
+      // If it's already an address, return it
+      return validatorPublicKey
+    }
+
+    // Decode the validator public key to get raw bytes
+    const publicKeyBytes = decodeNodePublic(validatorPublicKey)
+
+    // Convert bytes to hex string (deriveAddress expects hex string)
+    const publicKeyHex = bytesToHex(publicKeyBytes)
+
+    // Derive the address from the public key
+    const address = deriveAddress(publicKeyHex)
+
+    // Successfully converted validator key to address
+    return address
+  } catch (error) {
+    // Error converting validator public key to address
+    return null
+  }
+}
 
 const ERROR_MESSAGES = {
   [NOT_FOUND]: {
@@ -76,6 +107,16 @@ export const Validator = () => {
     },
   )
 
+  const { data: exclusionData, isFetching: exclusionIsLoading } = useQuery<any>(
+    ['fetchExclusionData'],
+    async () => fetchExclusionData(),
+    {
+      refetchInterval: FETCH_INTERVAL_VHS_MILLIS,
+      refetchOnMount: true,
+      enabled: !!network && !!rippledSocket,
+    },
+  )
+
   useEffect(() => {
     trackScreenLoaded({ validator: identifier })
   }, [identifier, tab, trackScreenLoaded])
@@ -89,6 +130,27 @@ export const Validator = () => {
           a.date > b.date ? -1 : 1,
         )
         return sortedValidatorReports
+      })
+  }
+
+  function fetchExclusionData() {
+    // Use WebSocket connection to fetch exclusion data
+    return rippledSocket
+      .send({
+        command: 'exclusion_info',
+      })
+      .then((resp) => {
+        if (resp.error) {
+          log.error(
+            `Error fetching exclusion data: ${resp.error_message || resp.error}`,
+          )
+          return null
+        }
+        return resp
+      })
+      .catch((exclusionError) => {
+        log.error(`Error fetching exclusion data: ${exclusionError.message}`)
+        return null
       })
   }
 
@@ -168,7 +230,7 @@ export const Validator = () => {
   }
 
   function renderTabs() {
-    const tabs = ['details', 'history', 'voting']
+    const tabs = ['details', 'history', 'voting', 'exclusions']
     const mainPath = buildPath(VALIDATOR_ROUTE, { identifier })
     return <Tabs tabs={tabs} selected={tab} path={mainPath} />
   }
@@ -183,6 +245,18 @@ export const Validator = () => {
       case 'voting':
         body = data && <VotingTab validatorData={data} network={network} />
         break
+      case 'exclusions': {
+        // Convert validator public key to address for matching with exclusion data
+        const validatorAddress = validatorPublicKeyToAddress(identifier)
+        body = (
+          <ExclusionsTab
+            validatorId={validatorAddress || identifier}
+            exclusionData={exclusionData}
+            isLoading={exclusionIsLoading}
+          />
+        )
+        break
+      }
       default:
         body = data && <SimpleTab data={data} width={width} />
         break
@@ -198,7 +272,10 @@ export const Validator = () => {
     )
   }
 
-  const isLoading = dataIsLoading || reportIsLoading
+  const isLoading =
+    dataIsLoading ||
+    reportIsLoading ||
+    (tab === 'exclusions' && exclusionIsLoading)
   let body
 
   if (error) {

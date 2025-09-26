@@ -32,6 +32,7 @@
   "nodes": "ノード",
   "validator": "バリデータ",
   "validators": "バリデータ",
+  "exclusions": "Exclusions",
   "upgrade_status": "アップグレード情報",
   "version": null,
   "component_error": "不具合が発生しました！",

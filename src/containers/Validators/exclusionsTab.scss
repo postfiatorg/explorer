@@ -1,0 +1,119 @@
+@import '../shared/css/variables';
+
+.exclusions-tab {
+  padding: 40px 16px 0;
+
+  .no-data {
+    text-align: center;
+    padding: 40px;
+    font-size: 16px;
+    color: $black-40;
+  }
+
+  .exclusions-list {
+    background: transparent;
+    border-top: 1px solid $black-70;
+    padding-top: 20px;
+
+    h3 {
+      margin-top: 0;
+      margin-bottom: 20px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid $black-70;
+      font-size: 24px;
+      font-weight: 600;
+      color: $white;
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+    }
+
+    .exclusions-table {
+      width: 100%;
+      border-collapse: collapse;
+
+      thead {
+        tr {
+          border-bottom: 1px solid $black-70;
+        }
+
+        th {
+          padding: 12px;
+          text-align: left;
+          font-weight: 600;
+          color: $black-40;
+          font-size: 10px;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+      }
+
+      tbody {
+        tr {
+          border-bottom: 1px solid $black-70;
+
+          &:hover {
+            background-color: $black-90;
+          }
+
+          &:last-child {
+            border-bottom: none;
+          }
+        }
+
+        td {
+          padding: 12px;
+          font-size: 14px;
+          color: $white;
+
+          a {
+            color: $green;
+            text-decoration: none;
+            font-family: monospace;
+
+            &:hover {
+              text-decoration: underline;
+              color: $green-40;
+            }
+          }
+
+          .meets-threshold {
+            color: $green;
+            font-weight: 600;
+          }
+
+          .below-threshold {
+            color: $magenta;
+            font-weight: 600;
+          }
+        }
+      }
+    }
+
+    .no-exclusions {
+      text-align: center;
+      padding: 40px;
+      font-size: 16px;
+      color: $black-40;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .exclusions-tab {
+    padding: 10px;
+
+    .exclusions-list {
+      padding: 15px;
+
+      .exclusions-table {
+        font-size: 12px;
+
+        th, td {
+          padding: 8px;
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,233 @@
+@import '../shared/css/variables';
+
+.exclusions-page {
+  padding: 40px 16px;
+  max-width: 1400px;
+  margin: 0 auto;
+
+  .page-header {
+    margin-bottom: 30px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid $black-70;
+
+    h1 {
+      font-size: 28px;
+      font-weight: 600;
+      color: $white;
+      margin: 0;
+    }
+  }
+
+  .no-data {
+    text-align: center;
+    padding: 40px;
+    font-size: 16px;
+    color: $black-40;
+  }
+
+  .summary-section {
+    margin-bottom: 40px;
+
+    .summary-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+
+      .summary-card {
+        background: transparent;
+        border: 1px solid $black-70;
+        border-radius: $border-radius;
+        padding: 20px;
+        text-align: center;
+
+        .summary-label {
+          font-size: 10px;
+          color: $black-40;
+          margin-bottom: 10px;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+
+        .summary-value {
+          font-size: 28px;
+          font-weight: 600;
+          color: $white;
+        }
+      }
+    }
+  }
+
+  .content-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+
+    @media (max-width: 1200px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .excluded-accounts-section,
+  .validators-section {
+    background: transparent;
+    border-top: 1px solid $black-70;
+    padding-top: 20px;
+
+    h2 {
+      margin-top: 0;
+      margin-bottom: 20px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid $black-70;
+      font-size: 24px;
+      font-weight: 600;
+      color: $white;
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+    }
+
+    .exclusions-table,
+    .validators-table {
+      width: 100%;
+      border-collapse: collapse;
+
+      thead {
+        tr {
+          border-bottom: 1px solid $black-70;
+        }
+
+        th {
+          padding: 12px;
+          text-align: left;
+          font-weight: 600;
+          color: $black-40;
+          font-size: 10px;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+      }
+
+      tbody {
+        tr {
+          border-bottom: 1px solid $black-70;
+
+          &:hover {
+            background-color: $black-90;
+          }
+
+          &:last-child {
+            border-bottom: none;
+          }
+        }
+
+        td {
+          padding: 12px;
+          font-size: 14px;
+          color: $white;
+
+          a {
+            color: $green;
+            text-decoration: none;
+            font-family: monospace;
+
+            &:hover {
+              text-decoration: underline;
+              color: $green-40;
+            }
+          }
+
+          .meets-threshold {
+            color: $green;
+            font-weight: 600;
+          }
+
+          .below-threshold {
+            color: $magenta;
+            font-weight: 600;
+          }
+
+          &.no-data {
+            text-align: center;
+            color: $black-40;
+            font-style: italic;
+          }
+        }
+      }
+    }
+
+    .excluded-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+
+      a {
+        font-size: 12px;
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .exclusions-page {
+    padding: 20px 10px;
+
+    .page-header {
+      margin-bottom: 20px;
+
+      h1 {
+        font-size: 24px;
+      }
+    }
+
+    .summary-section {
+      margin-bottom: 20px;
+
+      .summary-cards {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+
+        .summary-card {
+          padding: 15px;
+
+          .summary-label {
+            font-size: 10px;
+          }
+
+          .summary-value {
+            font-size: 20px;
+          }
+        }
+      }
+    }
+
+    .excluded-accounts-section,
+    .validators-section {
+      padding-top: 15px;
+
+      h2 {
+        font-size: 18px;
+      }
+
+      .exclusions-table,
+      .validators-table {
+        font-size: 12px;
+
+        th,
+        td {
+          padding: 8px;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .exclusions-page {
+    .summary-section {
+      .summary-cards {
+        grid-template-columns: 1fr;
+      }
+    }
+  }
+}

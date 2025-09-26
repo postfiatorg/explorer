@@ -34,6 +34,7 @@
   "nodes": "Nodes",
   "validator": "အတည်ပြုသူ",
   "validators": "အတည်ပြုသူများ",
+  "exclusions": "Exclusions",
   "upgrade_status": "အဆင့်မြှင့်တင်မှု အခြေအနေ",
   "version": "ဗားရှင်း {{number}}",
   "component_error": "တစ်ခုခု မှားယွင်းနေပါသည်!",

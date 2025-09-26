@@ -32,6 +32,7 @@
   "nodes": "Nodes",
   "validator": "Validador",
   "validators": "Validadors",
+  "exclusions": "Exclusions",
   "upgrade_status": "Estat de l'actualització",
   "version": "v{{number}}",
   "component_error": "Alguna cosa no ha anat bé!",

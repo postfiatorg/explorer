@@ -32,6 +32,7 @@
   "nodes": "Noeuds",
   "validator": "Validateur",
   "validators": "Validateurs",
+  "exclusions": "Exclusions",
   "upgrade_status": "Statut des versions",
   "version": "v{{number}}",
   "component_error": "Une erreur s'est produite!",

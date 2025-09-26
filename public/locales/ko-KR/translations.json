@@ -33,6 +33,7 @@
   "nodes": "노드",
   "validator": "검증자",
   "validators": "검증자",
+  "exclusions": "Exclusions",
   "upgrade_status": "업그레이드 상태",
   "version": "v{{number}}",
   "component_error": "문제가 발생했습니다!",

@@ -32,6 +32,10 @@ export const UPGRADE_STATUS_ROUTE: RouteDefinition = {
   path: '/network/upgrade-status',
 }
 
+export const EXCLUSIONS_ROUTE: RouteDefinition = {
+  path: '/network/exclusions',
+}
+
 export const NFT_ROUTE: RouteDefinition<{
   id: string
   tab?: 'transactions' | 'buy-offers' | 'sell-offers'
@@ -54,7 +58,7 @@ export const TRANSACTION_ROUTE: RouteDefinition<{
 
 export const VALIDATOR_ROUTE: RouteDefinition<{
   identifier: string
-  tab?: 'details' | 'history' | 'voting'
+  tab?: 'details' | 'history' | 'voting' | 'exclusions'
 }> = {
   path: `/validators/:identifier/:tab?`,
 }

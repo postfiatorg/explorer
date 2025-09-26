@@ -34,6 +34,7 @@
   "nodes": "Nodes",
   "validator": "Validator",
   "validators": "Validators",
+  "exclusions": "Exclusions",
   "upgrade_status": "Upgrade Status",
   "version": "v{{number}}",
   "component_error": "Something bad happened!",
