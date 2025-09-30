@@ -19,6 +19,8 @@ interface ExclusionInfo {
       exclusion_count: number
       meets_threshold: boolean
       percentage: number
+      reason?: string
+      date_added?: string
     }
   >
   exclusion_manager_stats: {
@@ -84,6 +86,8 @@ export const ExclusionsTab: FC<ExclusionsTabProps> = ({
               <thead>
                 <tr>
                   <th>Account Address</th>
+                  <th>Reason</th>
+                  <th>Date Added</th>
                   <th>Exclusion Count</th>
                   <th>Percentage</th>
                   <th>Meets Threshold</th>
@@ -99,6 +103,12 @@ export const ExclusionsTab: FC<ExclusionsTabProps> = ({
                         <RouteLink to={ACCOUNT_ROUTE} params={{ id: address }}>
                           {address}
                         </RouteLink>
+                      </td>
+                      <td>{accountData?.reason || '-'}</td>
+                      <td>
+                        {accountData?.date_added
+                          ? new Date(accountData.date_added).toLocaleDateString()
+                          : '-'}
                       </td>
                       <td>{accountData?.exclusion_count || 0}</td>
                       <td>{accountData?.percentage || 0}%</td>

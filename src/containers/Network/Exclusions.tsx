@@ -27,6 +27,8 @@ interface ExclusionInfo {
       exclusion_count: number
       meets_threshold: boolean
       percentage: number
+      reason?: string
+      date_added?: string
     }
   >
   exclusion_manager_stats: {
@@ -194,6 +196,8 @@ export const Exclusions = () => {
               <thead>
                 <tr>
                   <th>Account Address</th>
+                  <th>Reason</th>
+                  <th>Date Added</th>
                   <th>Exclusion Count</th>
                   <th>Percentage</th>
                   <th>Meets Threshold</th>
@@ -207,6 +211,12 @@ export const Exclusions = () => {
                         <RouteLink to={ACCOUNT_ROUTE} params={{ id: address }}>
                           {address}
                         </RouteLink>
+                      </td>
+                      <td>{data.reason || '-'}</td>
+                      <td>
+                        {data.date_added
+                          ? new Date(data.date_added).toLocaleDateString()
+                          : '-'}
                       </td>
                       <td>{data.exclusion_count}</td>
                       <td>{data.percentage}%</td>
@@ -225,7 +235,7 @@ export const Exclusions = () => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={4} className="no-data">
+                    <td colSpan={6} className="no-data">
                       No excluded accounts
                     </td>
                   </tr>
