@@ -2,6 +2,9 @@
 # Stage 1: Build the application
 FROM node:22-alpine AS builder
 
+# Build argument to specify which environment config to use
+ARG ENVIRONMENT=devnet
+
 # Set working directory
 WORKDIR /explorer
 
@@ -11,8 +14,9 @@ COPY package*.json ./
 # Install dependencies
 RUN npm ci
 
-# Copy .env.example as .env for build-time environment variables
-COPY .env.example .env
+# Copy the appropriate .env file based on ENVIRONMENT argument
+# Falls back to .env.example if the specific file doesn't exist
+COPY .env.${ENVIRONMENT} .env 2>/dev/null || COPY .env.example .env
 
 # Copy source code
 COPY . .
