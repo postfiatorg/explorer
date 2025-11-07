@@ -55,8 +55,7 @@ export const ValidatorsTable = (props: ValidatorsTableProps) => {
   const { t } = useTranslation()
   const language = useLanguage()
 
-  const renderDomain = (domain, verified) =>
-    domain && <DomainLink domain={domain} verified={verified} />
+  const renderDomain = (domain) => domain && <DomainLink domain={domain} />
 
   const renderAgreement = (className, agreement) =>
     agreement ? (
@@ -97,6 +96,7 @@ export const ValidatorsTable = (props: ValidatorsTableProps) => {
     const pubkey = d.master_key || d.signing_key
     const onNegativeUnl = metrics.nUnl && metrics.nUnl.includes(pubkey)
     const nUnl = onNegativeUnl ? 'yes' : 'no'
+    const domainVerified = d.domain_verified ? 'yes' : 'no'
     const ledgerIndex = d.ledger_index ?? d.current_index
 
     return (
@@ -107,7 +107,10 @@ export const ValidatorsTable = (props: ValidatorsTableProps) => {
           </RouteLink>
         </td>
         <td className="domain text-truncate">
-          {renderDomain(d.domain, d.domain_verified)}
+          {renderDomain(d.domain)}
+        </td>
+        <td className={`verified ${domainVerified}`}>
+          {d.domain_verified && <SuccessIcon title="Domain verified" alt="Domain verified" />}
         </td>
         <td className={`unl ${trusted}`}>
           {d.unl && <SuccessIcon title={d.unl} alt={d.unl} />}
@@ -165,6 +168,7 @@ export const ValidatorsTable = (props: ValidatorsTableProps) => {
         <tr>
           <th className="pubkey">{t('pubkey')}</th>
           <th className="domain">{t('domain')}</th>
+          <th className="verified">{t('verified')}</th>
           <th className="unl">{t('unl')}</th>
           <th className="n-unl">{t('nUnlCol')}</th>
           <th className="version">{t('Version')}</th>

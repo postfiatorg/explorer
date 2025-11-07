@@ -4,6 +4,7 @@ import { ValidatorScore, ValidatorSupplemented } from '../../shared/vhsTypes'
 import { RouteLink } from '../../shared/routing'
 import { LEDGER_ROUTE } from '../../App/routes'
 import DomainLink from '../../shared/components/DomainLink'
+import SuccessIcon from '../../shared/images/success.svg'
 
 export interface SimpleProps {
   data: ValidatorSupplemented
@@ -35,10 +36,11 @@ const Simple = ({ data }: SimpleProps) => {
   return (
     <>
       <SimpleRow label={t('domain')}>
-        {data.domain ? (
-          <DomainLink domain={data.domain} verified={data.domain_verified} />
-        ) : (
-          'Unknown'
+        {data.domain ? <DomainLink domain={data.domain} /> : 'Unknown'}
+      </SimpleRow>
+      <SimpleRow label={t('domain_verified')} className="domain-verified">
+        {data.domain_verified && (
+          <SuccessIcon title="Domain verified" alt="Domain verified" />
         )}
       </SimpleRow>
       <SimpleRow label={t('rippled_version')} data-testid="version">

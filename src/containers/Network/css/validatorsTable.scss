@@ -36,19 +36,15 @@
     .domain {
       max-width: 140px;
       @include medium;
+    }
 
-      .verified-badge {
-        margin-left: 4px;
-        color: $green;
-        font-weight: bold;
-        font-size: 14px;
-      }
+    .verified {
+      max-width: 40px;
+      text-align: center;
+    }
 
-      a.verified {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-      }
+    .verified.yes {
+      color: $green;
     }
 
     .last-ledger {
@@ -104,7 +100,8 @@
     .pubkey,
     .score.h1,
     .score.d30,
-    .fee {
+    .fee,
+    .verified {
       display: none;
     }
 
@@ -115,7 +112,8 @@
     }
 
     @include for-size(tablet-landscape-up) {
-      .pubkey {
+      .pubkey,
+      .verified {
         display: table-cell;
       }
     }
@@ -132,7 +130,8 @@
     .pubkey,
     .last-ledger,
     .n-unl,
-    .version {
+    .version,
+    .verified {
       display: none;
     }
 
@@ -144,7 +143,8 @@
     }
 
     @include for-size(tablet-landscape-up) {
-      .pubkey {
+      .pubkey,
+      .verified {
         display: table-cell;
       }
     }

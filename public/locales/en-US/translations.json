@@ -349,6 +349,8 @@
   "no": "No",
   "deprecated": "deprecated",
   "domain": "domain",
+  "domain_verified": "Domain Verified",
+  "verified": "Verified",
   "unl": "unl",
   "fee": "fee",
   "ledger_interval": "avg. ledger interval",
