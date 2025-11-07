@@ -8,5 +8,18 @@
         padding-top: 2px;
       }
     }
+
+    .verified-badge {
+      margin-left: 6px;
+      color: $green;
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    a.domain.verified {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
   }
 }

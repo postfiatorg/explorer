@@ -67,6 +67,8 @@ export interface ValidatorResponse {
   master_key?: string
   revoked?: boolean
   domain: string
+  // eslint-disable-next-line camelcase -- from VHS
+  domain_verified?: boolean
   chain: string
   networks?: string
   // eslint-disable-next-line camelcase -- from VHS

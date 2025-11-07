@@ -36,6 +36,19 @@
     .domain {
       max-width: 140px;
       @include medium;
+
+      .verified-badge {
+        margin-left: 4px;
+        color: $green;
+        font-weight: bold;
+        font-size: 14px;
+      }
+
+      a.verified {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+      }
     }
 
     .last-ledger {

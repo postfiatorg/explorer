@@ -3,6 +3,7 @@ import { SimpleRow } from '../../shared/components/Transaction/SimpleRow'
 import { ValidatorScore, ValidatorSupplemented } from '../../shared/vhsTypes'
 import { RouteLink } from '../../shared/routing'
 import { LEDGER_ROUTE } from '../../App/routes'
+import DomainLink from '../../shared/components/DomainLink'
 
 export interface SimpleProps {
   data: ValidatorSupplemented
@@ -33,7 +34,13 @@ const Simple = ({ data }: SimpleProps) => {
 
   return (
     <>
-      <SimpleRow label={t('domain')}>{data.domain || 'Unknown'}</SimpleRow>
+      <SimpleRow label={t('domain')}>
+        {data.domain ? (
+          <DomainLink domain={data.domain} verified={data.domain_verified} />
+        ) : (
+          'Unknown'
+        )}
+      </SimpleRow>
       <SimpleRow label={t('rippled_version')} data-testid="version">
         {data.server_version}
       </SimpleRow>

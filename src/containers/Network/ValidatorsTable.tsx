@@ -55,7 +55,8 @@ export const ValidatorsTable = (props: ValidatorsTableProps) => {
   const { t } = useTranslation()
   const language = useLanguage()
 
-  const renderDomain = (domain) => domain && <DomainLink domain={domain} />
+  const renderDomain = (domain, verified) =>
+    domain && <DomainLink domain={domain} verified={verified} />
 
   const renderAgreement = (className, agreement) =>
     agreement ? (
@@ -105,7 +106,9 @@ export const ValidatorsTable = (props: ValidatorsTableProps) => {
             {pubkey}
           </RouteLink>
         </td>
-        <td className="domain text-truncate">{renderDomain(d.domain)}</td>
+        <td className="domain text-truncate">
+          {renderDomain(d.domain, d.domain_verified)}
+        </td>
         <td className={`unl ${trusted}`}>
           {d.unl && <SuccessIcon title={d.unl} alt={d.unl} />}
         </td>
