@@ -65,6 +65,5 @@ logs
 # Temporary files
 tmp
 temp
-vite.config.js
 public/faviconold.ico
 public/pf3.ico:Zone.Identifier
