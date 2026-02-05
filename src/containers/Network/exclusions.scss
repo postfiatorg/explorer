@@ -2,12 +2,12 @@
 
 .exclusions-page {
   max-width: 1400px;
-  margin: 0 auto;
   padding: 40px 16px;
+  margin: 0 auto;
 
   .page-header {
-    margin-bottom: 30px;
     padding-bottom: 18px;
+    margin-bottom: 30px;
     border-bottom: 1px solid $black-70;
 
     h1 {
@@ -74,9 +74,9 @@
     background: transparent;
 
     h2 {
+      padding-bottom: 18px;
       margin-top: 0;
       margin-bottom: 20px;
-      padding-bottom: 18px;
       border-bottom: 1px solid $black-70;
       color: $white;
       font-size: 24px;
