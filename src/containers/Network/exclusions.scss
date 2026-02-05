@@ -87,6 +87,17 @@
       overflow-x: auto;
     }
 
+    /* stylelint-disable-next-line no-descending-specificity */
+    .excluded-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+
+      a {
+        font-size: 12px;
+      }
+    }
+
     .exclusions-table,
     .validators-table {
       width: 100%;
@@ -153,16 +164,6 @@
             text-align: center;
           }
         }
-      }
-    }
-
-    .excluded-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-
-      a {
-        font-size: 12px;
       }
     }
   }
