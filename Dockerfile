@@ -15,8 +15,7 @@ COPY package*.json ./
 RUN npm ci
 
 # Copy the appropriate .env file based on ENVIRONMENT argument
-# Falls back to .env.example if the specific file doesn't exist
-COPY .env.${ENVIRONMENT} .env 2>/dev/null || COPY .env.example .env
+COPY .env.${ENVIRONMENT} .env
 
 # Copy source code
 COPY . .
