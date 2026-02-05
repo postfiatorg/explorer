@@ -4,25 +4,25 @@
   padding: 40px 16px 0;
 
   .no-data {
-    text-align: center;
     padding: 40px;
-    font-size: 16px;
     color: $black-40;
+    font-size: 16px;
+    text-align: center;
   }
 
   .exclusions-list {
-    background: transparent;
-    border-top: 1px solid $black-70;
     padding-top: 20px;
+    border-top: 1px solid $black-70;
+    background: transparent;
 
     h3 {
       margin-top: 0;
       margin-bottom: 20px;
       padding-bottom: 18px;
       border-bottom: 1px solid $black-70;
+      color: $white;
       font-size: 24px;
       font-weight: 600;
-      color: $white;
     }
 
     .table-wrapper {
@@ -40,12 +40,12 @@
 
         th {
           padding: 12px;
-          text-align: left;
-          font-weight: 600;
           color: $black-40;
           font-size: 10px;
-          text-transform: uppercase;
+          font-weight: 600;
           letter-spacing: 0.5px;
+          text-align: left;
+          text-transform: uppercase;
         }
       }
 
@@ -64,17 +64,17 @@
 
         td {
           padding: 12px;
-          font-size: 14px;
           color: $white;
+          font-size: 14px;
 
           a {
             color: $green;
-            text-decoration: none;
             font-family: monospace;
+            text-decoration: none;
 
             &:hover {
-              text-decoration: underline;
               color: $green-40;
+              text-decoration: underline;
             }
           }
 
@@ -92,15 +92,15 @@
     }
 
     .no-exclusions {
-      text-align: center;
       padding: 40px;
-      font-size: 16px;
       color: $black-40;
+      font-size: 16px;
+      text-align: center;
     }
   }
 }
 
-@media (max-width: 768px) {
+@media (width <= 768px) {
   .exclusions-tab {
     padding: 10px;
 
@@ -110,7 +110,8 @@
       .exclusions-table {
         font-size: 12px;
 
-        th, td {
+        th,
+        td {
           padding: 8px;
         }
       }

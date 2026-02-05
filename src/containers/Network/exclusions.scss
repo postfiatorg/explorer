@@ -1,9 +1,9 @@
 @import '../shared/css/variables';
 
 .exclusions-page {
-  padding: 40px 16px;
   max-width: 1400px;
   margin: 0 auto;
+  padding: 40px 16px;
 
   .page-header {
     margin-bottom: 30px;
@@ -11,18 +11,18 @@
     border-bottom: 1px solid $black-70;
 
     h1 {
+      margin: 0;
+      color: $white;
       font-size: 28px;
       font-weight: 600;
-      color: $white;
-      margin: 0;
     }
   }
 
   .no-data {
-    text-align: center;
     padding: 40px;
-    font-size: 16px;
     color: $black-40;
+    font-size: 16px;
+    text-align: center;
   }
 
   .summary-section {
@@ -30,28 +30,28 @@
 
     .summary-cards {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
 
       .summary-card {
-        background: transparent;
+        padding: 20px;
         border: 1px solid $black-70;
         border-radius: $border-radius;
-        padding: 20px;
+        background: transparent;
         text-align: center;
 
         .summary-label {
-          font-size: 10px;
-          color: $black-40;
           margin-bottom: 10px;
-          text-transform: uppercase;
+          color: $black-40;
+          font-size: 10px;
           letter-spacing: 0.5px;
+          text-transform: uppercase;
         }
 
         .summary-value {
+          color: $white;
           font-size: 28px;
           font-weight: 600;
-          color: $white;
         }
       }
     }
@@ -59,28 +59,28 @@
 
   .content-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
     gap: 30px;
+    grid-template-columns: 1fr 1fr;
 
-    @media (max-width: 1200px) {
+    @media (width <= 1200px) {
       grid-template-columns: 1fr;
     }
   }
 
   .excluded-accounts-section,
   .validators-section {
-    background: transparent;
-    border-top: 1px solid $black-70;
     padding-top: 20px;
+    border-top: 1px solid $black-70;
+    background: transparent;
 
     h2 {
       margin-top: 0;
       margin-bottom: 20px;
       padding-bottom: 18px;
       border-bottom: 1px solid $black-70;
+      color: $white;
       font-size: 24px;
       font-weight: 600;
-      color: $white;
     }
 
     .table-wrapper {
@@ -99,12 +99,12 @@
 
         th {
           padding: 12px;
-          text-align: left;
-          font-weight: 600;
           color: $black-40;
           font-size: 10px;
-          text-transform: uppercase;
+          font-weight: 600;
           letter-spacing: 0.5px;
+          text-align: left;
+          text-transform: uppercase;
         }
       }
 
@@ -123,17 +123,17 @@
 
         td {
           padding: 12px;
-          font-size: 14px;
           color: $white;
+          font-size: 14px;
 
           a {
             color: $green;
-            text-decoration: none;
             font-family: monospace;
+            text-decoration: none;
 
             &:hover {
-              text-decoration: underline;
               color: $green-40;
+              text-decoration: underline;
             }
           }
 
@@ -148,9 +148,9 @@
           }
 
           &.no-data {
-            text-align: center;
             color: $black-40;
             font-style: italic;
+            text-align: center;
           }
         }
       }
@@ -168,7 +168,7 @@
   }
 }
 
-@media (max-width: 768px) {
+@media (width <= 768px) {
   .exclusions-page {
     padding: 20px 10px;
 
@@ -184,8 +184,8 @@
       margin-bottom: 20px;
 
       .summary-cards {
-        grid-template-columns: 1fr 1fr;
         gap: 10px;
+        grid-template-columns: 1fr 1fr;
 
         .summary-card {
           padding: 15px;
@@ -222,7 +222,7 @@
   }
 }
 
-@media (max-width: 480px) {
+@media (width <= 480px) {
   .exclusions-page {
     .summary-section {
       .summary-cards {
