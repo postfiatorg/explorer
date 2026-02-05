@@ -1,0 +1,102 @@
+name: Deploy Devnet
+
+on:
+  push:
+    branches: [devnet]
+
+env:
+  REGISTRY: docker.io
+  IMAGE_NAME: agtipft/explorer
+  NODE_VERSION: 22.x
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Cache node modules
+        id: cache-nodemodules
+        uses: actions/cache@v4
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: node_modules
+          key: ${{ env.NODE_VERSION }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ env.NODE_VERSION }}-build-${{ env.cache-name }}-
+            ${{ env.NODE_VERSION }}-build-
+
+      - name: Install Dependencies
+        if: steps.cache-nodemodules.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - run: npm run lint:ci
+      - run: npm run test:ci
+        env:
+          VITE_VALIDATOR: vl.ripple.com
+          VITE_RIPPLED_WS_PORT: 51233
+          VITE_RIPPLED_HOST: fake.rippled.example.com
+          VITE_MAINNET_LINK: mainnet.example.com
+          VITE_TESTNET_LINK: testnet.example.com
+          VITE_CUSTOMNETWORK_LINK: custom.example.com
+
+  build-and-push:
+    runs-on: ubuntu-latest
+    needs: test
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          build-args: |
+            ENVIRONMENT=devnet
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:devnet-latest
+          platforms: linux/amd64
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Copy docker-compose to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VULTR_DEVNET_HOST }}
+          username: ${{ secrets.VULTR_SSH_USER }}
+          key: ${{ secrets.VULTR_SSH_KEY }}
+          source: scripts/docker-compose.devnet.yml
+          target: /opt/explorer/
+          strip_components: 1
+
+      - name: Deploy to server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VULTR_DEVNET_HOST }}
+          username: ${{ secrets.VULTR_SSH_USER }}
+          key: ${{ secrets.VULTR_SSH_KEY }}
+          script: |
+            cd /opt/explorer
+            docker compose -f docker-compose.devnet.yml pull
+            docker compose -f docker-compose.devnet.yml up -d
+            docker image prune -f
