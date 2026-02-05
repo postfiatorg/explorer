@@ -1,4 +1,4 @@
-import { useContext, useEffect, useMemo } from 'react'
+import { useContext, useMemo } from 'react'
 import { useQuery } from 'react-query'
 import { Helmet } from 'react-helmet-async'
 import axios from 'axios'
@@ -93,7 +93,10 @@ export const Exclusions = () => {
     if (validatorsData?.validators) {
       validatorsData.validators.forEach((validator: any) => {
         // Try to derive address from validator's public key
-        const validatorKey = validator.validation_public_key || validator.signing_key || validator.master_key
+        const validatorKey =
+          validator.validation_public_key ||
+          validator.signing_key ||
+          validator.master_key
         if (validatorKey) {
           const address = validatorPublicKeyToAddress(validatorKey)
           if (address) {
@@ -117,10 +120,7 @@ export const Exclusions = () => {
         }
         return resp
       })
-      .catch(() => {
-        // Error fetching exclusion data
-        return null
-      })
+      .catch(() => null)
   }
 
   if (isLoading) {
@@ -258,7 +258,8 @@ export const Exclusions = () => {
               </thead>
               <tbody>
                 {sortedValidators.map(([validatorAddress, data]) => {
-                  const validatorPublicKey = addressToValidatorKey[validatorAddress]
+                  const validatorPublicKey =
+                    addressToValidatorKey[validatorAddress]
                   const displayId = validatorPublicKey || validatorAddress
                   const isValidator = !!validatorPublicKey
 

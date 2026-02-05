@@ -106,11 +106,11 @@ export const ValidatorsTable = (props: ValidatorsTableProps) => {
             {pubkey}
           </RouteLink>
         </td>
-        <td className="domain text-truncate">
-          {renderDomain(d.domain)}
-        </td>
+        <td className="domain text-truncate">{renderDomain(d.domain)}</td>
         <td className={`verified ${domainVerified}`}>
-          {d.domain_verified && <SuccessIcon title="Domain verified" alt="Domain verified" />}
+          {d.domain_verified && (
+            <SuccessIcon title="Domain verified" alt="Domain verified" />
+          )}
         </td>
         <td className={`unl ${trusted}`}>
           {d.unl && <SuccessIcon title={d.unl} alt={d.unl} />}

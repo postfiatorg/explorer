@@ -107,7 +107,9 @@ export const ExclusionsTab: FC<ExclusionsTabProps> = ({
                       <td>{accountData?.reason || '-'}</td>
                       <td>
                         {accountData?.date_added
-                          ? new Date(accountData.date_added).toLocaleDateString()
+                          ? new Date(
+                              accountData.date_added,
+                            ).toLocaleDateString()
                           : '-'}
                       </td>
                       <td>{accountData?.exclusion_count || 0}</td>
