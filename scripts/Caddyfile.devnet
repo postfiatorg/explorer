@@ -1,0 +1,3 @@
+explorer.devnet.postfiat.org {
+	reverse_proxy explorer:5001
+}

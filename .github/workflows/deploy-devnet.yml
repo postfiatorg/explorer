@@ -71,13 +71,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Copy docker-compose to server
+      - name: Copy deployment files to server
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VULTR_DEVNET_HOST }}
           username: ${{ secrets.VULTR_SSH_USER }}
           key: ${{ secrets.VULTR_SSH_KEY }}
-          source: scripts/docker-compose.devnet.yml
+          source: "scripts/docker-compose.devnet.yml,scripts/Caddyfile.devnet"
           target: /opt/explorer/
           strip_components: 1
 
@@ -88,6 +88,8 @@ jobs:
           username: ${{ secrets.VULTR_SSH_USER }}
           key: ${{ secrets.VULTR_SSH_KEY }}
           script: |
+            systemctl stop nginx 2>/dev/null || true
+            systemctl disable nginx 2>/dev/null || true
             cd /opt/explorer
             docker compose -f docker-compose.devnet.yml pull
             docker compose -f docker-compose.devnet.yml up -d
