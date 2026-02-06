@@ -1,8 +1,21 @@
 name: Deploy Devnet
 
 on:
+  workflow_dispatch:
   push:
     branches: [devnet]
+    paths:
+      - 'src/**'
+      - 'server/**'
+      - 'public/**'
+      - 'Dockerfile'
+      - 'entrypoint.sh'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vite.config.*'
+      - 'tsconfig.json'
+      - '.env.devnet'
+      - 'scripts/docker-compose.devnet.yml'
 
 env:
   REGISTRY: docker.io
