@@ -2,30 +2,11 @@ services:
   explorer:
     image: agtipft/explorer:testnet-latest
     container_name: explorer
+    ports:
+      - "127.0.0.1:5001:5001"
     restart: unless-stopped
     logging:
       driver: "json-file"
       options:
         max-size: "100m"
         max-file: "10"
-
-  caddy:
-    image: caddy:2-alpine
-    container_name: caddy
-    dns:
-      - 8.8.8.8
-      - 8.8.4.4
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./Caddyfile.testnet:/etc/caddy/Caddyfile
-      - caddy_data:/data
-      - caddy_config:/config
-    depends_on:
-      - explorer
-    restart: unless-stopped
-
-volumes:
-  caddy_data:
-  caddy_config:

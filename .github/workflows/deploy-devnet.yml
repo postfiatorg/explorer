@@ -71,13 +71,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Copy deployment files to server
+      - name: Copy docker-compose to server
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VULTR_DEVNET_HOST }}
           username: ${{ secrets.VULTR_SSH_USER }}
           key: ${{ secrets.VULTR_SSH_KEY }}
-          source: "scripts/docker-compose.devnet.yml,scripts/Caddyfile.devnet"
+          source: scripts/docker-compose.devnet.yml
           target: /opt/explorer/
           strip_components: 1
 
@@ -88,8 +88,38 @@ jobs:
           username: ${{ secrets.VULTR_SSH_USER }}
           key: ${{ secrets.VULTR_SSH_KEY }}
           script: |
+            set -e
+
+            # Configure UFW firewall
+            ufw allow 80/tcp comment 'HTTP (Caddy)' 2>/dev/null || true
+            ufw allow 443/tcp comment 'HTTPS (Caddy)' 2>/dev/null || true
+
+            # Stop nginx if present to free ports 80/443
             systemctl stop nginx 2>/dev/null || true
             systemctl disable nginx 2>/dev/null || true
+
+            # Install Caddy if not present
+            if ! command -v caddy &> /dev/null; then
+              echo "Installing Caddy..."
+              apt-get update
+              apt-get install -y debian-keyring debian-archive-keyring apt-transport-https curl
+              curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+              curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | tee /etc/apt/sources.list.d/caddy-stable.list
+              apt-get update
+              apt-get install -y caddy
+            fi
+
+            # Configure Caddy
+            cat > /etc/caddy/Caddyfile << 'CADDY_EOF'
+            explorer.devnet.postfiat.org {
+                reverse_proxy localhost:5001
+            }
+            CADDY_EOF
+
+            systemctl enable caddy
+            systemctl restart caddy
+
+            # Deploy explorer
             cd /opt/explorer
             docker compose -f docker-compose.devnet.yml pull
             docker compose -f docker-compose.devnet.yml up -d

@@ -1,3 +1,0 @@
-explorer.testnet.postfiat.org {
-	reverse_proxy explorer:5001
-}
