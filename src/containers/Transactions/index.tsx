@@ -1,8 +1,8 @@
 import { useContext, useEffect } from 'react'
-import { Helmet } from 'react-helmet-async'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from 'react-query'
 import { useWindowSize } from 'usehooks-ts'
+import { SEOHelmet } from '../shared/components/SEOHelmet'
 import NoMatch from '../NoMatch'
 import { Loader } from '../shared/components/Loader'
 import { Tabs } from '../shared/components/Tabs'
@@ -167,8 +167,19 @@ export const Transaction = () => {
   }
   return (
     <div className="transaction">
-      <Helmet
+      <SEOHelmet
         title={`${t('transaction_short')} ${identifier.substring(0, 8)}...`}
+        description={t('meta.transaction.description', {
+          id: identifier.substring(0, 12),
+        })}
+        path={`/transactions/${identifier}`}
+        breadcrumbs={[
+          { name: t('ledgers'), path: '/' },
+          {
+            name: `${t('transaction_short')} ${identifier.substring(0, 8)}...`,
+            path: `/transactions/${identifier}`,
+          },
+        ]}
       />
       {isLoading && <Loader />}
       {body}

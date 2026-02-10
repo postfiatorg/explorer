@@ -1,0 +1,41 @@
+# PFT Explorer
+
+> Blockchain explorer for the Post Fiat (PFT) Ledger. Browse ledgers, transactions, accounts, validators, tokens, NFTs, and protocol amendments in real time.
+
+## About
+
+The PFT Explorer is an open-source web application for exploring the Post Fiat blockchain network. It connects to PFT Ledger nodes via WebSocket and displays live blockchain data including ledger closings, transaction details, account balances, validator activity, and network health.
+
+Post Fiat (PFT) is a blockchain network built on XRPL technology. The native currency is PFT.
+
+## Key Pages
+
+- [Home — Latest Ledgers](https://explorer.testnet.postfiat.org/): Real-time feed of closed ledgers with transaction counts, fees, and validator information
+- [Network Nodes](https://explorer.testnet.postfiat.org/network/nodes): Geographic distribution, software versions, and sync status of all network nodes
+- [Validators](https://explorer.testnet.postfiat.org/network/validators): Validator list with uptime, voting activity, and UNL (Unique Node List) status
+- [Upgrade Status](https://explorer.testnet.postfiat.org/network/upgrade-status): Protocol upgrade progress across the network
+- [Amendments](https://explorer.testnet.postfiat.org/amendments): Protocol amendment proposals with voting progress and activation status
+
+## Dynamic Pages
+
+- `/ledgers/{ledger_index}` — Individual ledger details (transactions, close time, fees)
+- `/accounts/{account_address}` — Account balances, transaction history, token holdings
+- `/transactions/{transaction_hash}` — Transaction details, status, and metadata
+- `/validators/{validator_key}` — Validator details, history, and voting record
+- `/token/{currency}.{issuer}` — Token information and issuer details
+- `/nft/{nft_id}` — NFT details, offers, and transaction history
+- `/amendment/{amendment_hash}` — Amendment details and validator voting
+
+## API
+
+The explorer exposes a server-side API at `/api/v1/`:
+
+- `GET /api/v1/healthz` — Basic health check
+- `GET /api/v1/health` — Rippled node health status
+- `GET /api/v1/metrics` — Current network metrics (latest ledger, transaction counts, fees)
+- `GET /api/v1/tokens/search/{query}` — Search for tokens by currency code
+
+## Links
+
+- [Post Fiat Website](https://postfiat.org)
+- [PFT Explorer Source Code](https://github.com/postfiatorg/explorer)

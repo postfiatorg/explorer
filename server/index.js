@@ -4,6 +4,7 @@ const path = require('path')
 const express = require('express')
 const bodyParser = require('body-parser')
 const compression = require('compression')
+const prerender = require('prerender-node')
 const routes = require('./routes/v1')
 
 const log = require('./lib/logger')({ name: 'server' })
@@ -30,8 +31,34 @@ app.use(compression())
 app.use(bodyParser.json())
 app.use(files)
 app.use('/api/v1', routes)
+app.get('/sitemap.xml', require('./routes/v1/sitemap'))
 
 if (process.env.NODE_ENV === 'production') {
+  if (process.env.PRERENDER_SERVICE_URL) {
+    prerender.set('prerenderServiceUrl', process.env.PRERENDER_SERVICE_URL)
+    prerender.set('protocol', 'https')
+    prerender.crawlerUserAgents.push(
+      'ChatGPT-User',
+      'OAI-SearchBot',
+      'PerplexityBot',
+      'ClaudeBot',
+      'Claude-Web',
+      'Applebot',
+      'anthropic-ai',
+      'GPTBot',
+      'Google-Extended',
+      'CCBot',
+      'FacebookBot',
+      'Amazonbot',
+      'YouBot',
+      'Bytespider',
+    )
+    app.use(prerender)
+    log.info(
+      `prerender middleware enabled, service: ${process.env.PRERENDER_SERVICE_URL}`,
+    )
+  }
+
   app.get('*', (_req, res) => {
     res.sendFile(path.join(__dirname, '/../build/index.html'))
   })

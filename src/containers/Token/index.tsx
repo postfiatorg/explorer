@@ -1,8 +1,8 @@
 import { FC, PropsWithChildren, useContext, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { Helmet } from 'react-helmet-async'
 import { useQuery } from 'react-query'
+import { SEOHelmet } from '../shared/components/SEOHelmet'
 import { TokenHeader } from './TokenHeader'
 import { TokenTransactionTable } from './TokenTransactionTable'
 import NoMatch from '../NoMatch'
@@ -40,7 +40,11 @@ const Page: FC<PropsWithChildren<{ accountId: string }>> = ({
   children,
 }) => (
   <div className="token-page">
-    <Helmet title={`${accountId.substring(0, 12)}...`} />
+    <SEOHelmet
+      title={`${accountId.substring(0, 12)}...`}
+      description={`View token issued by ${accountId.substring(0, 12)}... on the PFT Ledger.`}
+      path={`/token/${accountId}`}
+    />
     {children}
   </div>
 )

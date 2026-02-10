@@ -1,10 +1,10 @@
 import { useContext, useMemo } from 'react'
 import { useQuery } from 'react-query'
-import { Helmet } from 'react-helmet-async'
 import axios from 'axios'
 import { deriveAddress } from 'xrpl'
 import { decodeNodePublic } from 'ripple-address-codec'
 import { bytesToHex } from '@xrplf/isomorphic/utils'
+import { SEOHelmet } from '../shared/components/SEOHelmet'
 import { Loader } from '../shared/components/Loader'
 import { RouteLink } from '../shared/routing'
 import { ACCOUNT_ROUTE, VALIDATOR_ROUTE } from '../App/routes'
@@ -126,7 +126,11 @@ export const Exclusions = () => {
   if (isLoading) {
     return (
       <div className="exclusions-page">
-        <Helmet title="Exclusions" />
+        <SEOHelmet
+          title="Exclusions"
+          description="View network exclusions on the PFT network."
+          path="/network/exclusions"
+        />
         <Loader />
       </div>
     )
@@ -135,7 +139,11 @@ export const Exclusions = () => {
   if (!exclusionData) {
     return (
       <div className="exclusions-page">
-        <Helmet title="Exclusions" />
+        <SEOHelmet
+          title="Exclusions"
+          description="View network exclusions on the PFT network."
+          path="/network/exclusions"
+        />
         <div className="no-data">No exclusion data available</div>
       </div>
     )
@@ -153,7 +161,11 @@ export const Exclusions = () => {
 
   return (
     <div className="exclusions-page">
-      <Helmet title="Network Exclusions" />
+      <SEOHelmet
+        title="Network Exclusions"
+        description="View network exclusions on the PFT network."
+        path="/network/exclusions"
+      />
 
       <div className="page-header">
         <h1>Network Exclusions</h1>

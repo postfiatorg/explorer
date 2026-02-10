@@ -51,7 +51,7 @@ export const AppWrapper = () => {
 
   const { setGlobals } = useAnalytics()
   const [customNetworks = [], setCustomNetworks] = useCustomNetworks()
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const location = useLocation()
 
   setGlobals({
@@ -94,9 +94,37 @@ export const AppWrapper = () => {
             <Helmet
               defaultTitle={t('xrpl_explorer')}
               titleTemplate={`${t('xrpl_explorer')} | %s`}
+              htmlAttributes={{ lang: i18n.language }}
             >
               <meta name="description" content={t('app.meta.description')} />
               <meta name="author" content={t('app.meta.author')} />
+              <meta property="og:site_name" content={t('xrpl_explorer')} />
+              <meta property="og:type" content="website" />
+              <meta property="og:title" content={t('xrpl_explorer')} />
+              <meta
+                property="og:description"
+                content={t('app.meta.description')}
+              />
+              <meta name="twitter:card" content="summary" />
+              <meta name="twitter:title" content={t('xrpl_explorer')} />
+              <meta
+                name="twitter:description"
+                content={t('app.meta.description')}
+              />
+              <script type="application/ld+json">
+                {JSON.stringify({
+                  '@context': 'https://schema.org',
+                  '@type': 'WebSite',
+                  name: 'PFT Explorer',
+                  description:
+                    'Blockchain explorer for the Post Fiat (PFT) Ledger',
+                  publisher: {
+                    '@type': 'Organization',
+                    name: 'PFT Ledger Project',
+                    url: 'https://postfiat.org',
+                  },
+                })}
+              </script>
             </Helmet>
             <div className="app">
               <Routes>
