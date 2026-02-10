@@ -6,6 +6,7 @@ const LOCALHOST_URLS = ['localhost', '127.0.0.1', '0.0.0.0']
 
 export interface ExplorerXrplClient extends XrplClient {
   p2pSocket: XrplClient
+  archiveSocket: XrplClient
   rippledUrl: string | undefined
 }
 
@@ -54,6 +55,18 @@ function getSocket(rippledUrl?: string): ExplorerXrplClient {
       ])
     : undefined
 
+  const hasArchiveSocket =
+    process.env.VITE_ARCHIVE_RIPPLED_HOST != null &&
+    process.env.VITE_ARCHIVE_RIPPLED_HOST !== ''
+  // @ts-ignore - will be removed eventually
+  socket.archiveSocket = hasArchiveSocket
+    ? new XrplClient([
+        `${isInsecureWs(process.env.VITE_ARCHIVE_RIPPLED_HOST) ? 'ws' : 'wss'}://${
+          process.env.VITE_ARCHIVE_RIPPLED_HOST
+        }`,
+      ])
+    : undefined
+
   socket.rippledUrl = rippledUrl
   return socket
 }
@@ -82,6 +95,9 @@ export const SocketProvider = ({
     socket.close()
     if (socket.p2pSocket !== undefined) {
       socket.p2pSocket.close()
+    }
+    if (socket.archiveSocket !== undefined) {
+      socket.archiveSocket.close()
     }
   })
   return (

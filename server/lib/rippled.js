@@ -25,6 +25,13 @@ const P2P_RIPPLED_CLIENT = HAS_P2P_SOCKET
     ])
   : undefined
 
+const HAS_ARCHIVE_SOCKET =
+  process.env.VITE_ARCHIVE_RIPPLED_HOST != null &&
+  process.env.VITE_ARCHIVE_RIPPLED_HOST !== ''
+const ARCHIVE_RIPPLED_CLIENT = HAS_ARCHIVE_SOCKET
+  ? new XrplClient([`wss://${process.env.VITE_ARCHIVE_RIPPLED_HOST}`])
+  : undefined
+
 const P2P_URL_BASE = process.env.VITE_P2P_RIPPLED_HOST
   ? process.env.VITE_P2P_RIPPLED_HOST
   : process.env.VITE_RIPPLED_HOST
@@ -54,6 +61,10 @@ function query(...options) {
 
 function queryP2P(...options) {
   return executeQuery(P2P_RIPPLED_CLIENT ?? RIPPLED_CLIENT, ...options)
+}
+
+function queryArchive(...options) {
+  return executeQuery(ARCHIVE_RIPPLED_CLIENT, ...options)
 }
 
 // get account info
@@ -134,6 +145,25 @@ module.exports.getHealth = async () =>
     }
   })
 
+function handleLedgerResponse(resp) {
+  if (resp.error_message === 'ledgerIndexMalformed') {
+    throw new utils.Error('invalid ledger index/hash', 400)
+  }
+
+  if (resp.error_message === 'ledgerNotFound') {
+    return null
+  }
+
+  if (resp.error_message) {
+    throw new utils.Error(resp.error_message, 500)
+  }
+
+  if (!resp.validated) {
+    throw new utils.Error('ledger not validated', 404)
+  }
+  return resp.ledger
+}
+
 module.exports.getLedger = (parameters) => {
   const request = {
     command: 'ledger',
@@ -143,21 +173,17 @@ module.exports.getLedger = (parameters) => {
   }
 
   return query(request).then((resp) => {
-    if (resp.error_message === 'ledgerNotFound') {
-      throw new utils.Error('ledger not found', 404)
+    const result = handleLedgerResponse(resp)
+    if (result !== null) return result
+
+    if (ARCHIVE_RIPPLED_CLIENT) {
+      return queryArchive(request).then((archiveResp) => {
+        const archiveResult = handleLedgerResponse(archiveResp)
+        if (archiveResult !== null) return archiveResult
+        throw new utils.Error('ledger not found', 404)
+      })
     }
 
-    if (resp.error_message === 'ledgerIndexMalformed') {
-      throw new utils.Error('invalid ledger index/hash', 400)
-    }
-
-    if (resp.error_message) {
-      throw new utils.Error(resp.error_message, 500)
-    }
-
-    if (!resp.validated) {
-      throw new utils.Error('ledger not validated', 404)
-    }
-    return resp.ledger
+    throw new utils.Error('ledger not found', 404)
   })
 }

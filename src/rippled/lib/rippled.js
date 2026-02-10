@@ -46,6 +46,30 @@ function queryP2P(rippledSocket, options) {
   return executeQuery(rippledSocket.p2pSocket ?? rippledSocket, options)
 }
 
+// Query the archive node (full history) as a fallback for missing ledger data.
+function queryArchive(rippledSocket, options) {
+  return executeQuery(rippledSocket.archiveSocket, options)
+}
+
+function handleLedgerResponse(resp) {
+  if (resp.error_message === 'ledgerIndexMalformed') {
+    throw new Error('invalid ledger index/hash', 400)
+  }
+
+  if (resp.error_message === 'ledgerNotFound') {
+    return null
+  }
+
+  if (resp.error_message) {
+    throw new Error(resp.error_message, 500)
+  }
+
+  if (!resp.validated) {
+    throw new Error('ledger not validated', 404)
+  }
+  return resp.ledger
+}
+
 // get ledger
 const getLedger = (rippledSocket, parameters) => {
   const request = {
@@ -56,22 +80,18 @@ const getLedger = (rippledSocket, parameters) => {
   }
 
   return query(rippledSocket, request).then((resp) => {
-    if (resp.error_message === 'ledgerNotFound') {
-      throw new Error('ledger not found', 404)
+    const result = handleLedgerResponse(resp)
+    if (result !== null) return result
+
+    if (rippledSocket.archiveSocket) {
+      return queryArchive(rippledSocket, request).then((archiveResp) => {
+        const archiveResult = handleLedgerResponse(archiveResp)
+        if (archiveResult !== null) return archiveResult
+        throw new Error('ledger not found', 404)
+      })
     }
 
-    if (resp.error_message === 'ledgerIndexMalformed') {
-      throw new Error('invalid ledger index/hash', 400)
-    }
-
-    if (resp.error_message) {
-      throw new Error(resp.error_message, 500)
-    }
-
-    if (!resp.validated) {
-      throw new Error('ledger not validated', 404)
-    }
-    return resp.ledger
+    throw new Error('ledger not found', 404)
   })
 }
 
@@ -139,6 +159,31 @@ const getLedgerEntry = (rippledSocket, { index }) => {
   })
 }
 
+function handleTransactionResponse(resp) {
+  if (resp.error === 'notImpl') {
+    throw new Error('invalid transaction hash', 400)
+  }
+
+  // TODO: remove the `unknown` option when
+  // https://github.com/XRPLF/rippled/pull/4738 is in a release
+  if (resp.error === 'wrongNetwork' || resp.error === 'unknown') {
+    throw new Error('wrong network for CTID', 406)
+  }
+
+  if (resp.error === 'txnNotFound') {
+    return null
+  }
+
+  if (resp.error_message) {
+    throw new Error(resp.error_message, 500)
+  }
+
+  if (!resp.validated) {
+    throw new Error('transaction not validated', 500)
+  }
+  return resp
+}
+
 // get transaction
 const getTransaction = (rippledSocket, txId) => {
   const params = {
@@ -153,28 +198,18 @@ const getTransaction = (rippledSocket, txId) => {
   }
 
   return query(rippledSocket, params).then((resp) => {
-    if (resp.error === 'txnNotFound') {
-      throw new Error('transaction not found', 404)
+    const result = handleTransactionResponse(resp)
+    if (result !== null) return result
+
+    if (rippledSocket.archiveSocket) {
+      return queryArchive(rippledSocket, params).then((archiveResp) => {
+        const archiveResult = handleTransactionResponse(archiveResp)
+        if (archiveResult !== null) return archiveResult
+        throw new Error('transaction not found', 404)
+      })
     }
 
-    if (resp.error === 'notImpl') {
-      throw new Error('invalid transaction hash', 400)
-    }
-
-    // TODO: remove the `unknown` option when
-    // https://github.com/XRPLF/rippled/pull/4738 is in a release
-    if (resp.error === 'wrongNetwork' || resp.error === 'unknown') {
-      throw new Error('wrong network for CTID', 406)
-    }
-
-    if (resp.error_message) {
-      throw new Error(resp.error_message, 500)
-    }
-
-    if (!resp.validated) {
-      throw new Error('transaction not validated', 500)
-    }
-    return resp
+    throw new Error('transaction not found', 404)
   })
 }
 
@@ -351,6 +386,15 @@ const getBalances = (rippledSocket, account, ledgerIndex = 'validated') =>
     return resp
   })
 
+function formatAccountTxResponse(resp) {
+  return {
+    transactions: resp.transactions,
+    marker: resp.marker
+      ? `${resp.marker.ledger}.${resp.marker.seq}`
+      : undefined,
+  }
+}
+
 // get account transactions
 const getAccountTransactions = (
   rippledSocket,
@@ -361,7 +405,7 @@ const getAccountTransactions = (
   const markerComponents = marker.split('.')
   const ledger = parseInt(markerComponents[0], 10)
   const seq = parseInt(markerComponents[1], 10)
-  return query(rippledSocket, {
+  const request = {
     command: 'account_tx',
     account,
     limit,
@@ -373,20 +417,29 @@ const getAccountTransactions = (
           seq,
         }
       : undefined,
-  }).then((resp) => {
+  }
+
+  return query(rippledSocket, request).then((resp) => {
     if (resp.error === 'actNotFound') {
       throw new Error('account not found', 404)
     }
 
     if (resp.error_message) {
+      if (rippledSocket.archiveSocket) {
+        return queryArchive(rippledSocket, request).then((archiveResp) => {
+          if (archiveResp.error === 'actNotFound') {
+            throw new Error('account not found', 404)
+          }
+          if (archiveResp.error_message) {
+            throw new Error(archiveResp.error_message, 500)
+          }
+          return formatAccountTxResponse(archiveResp)
+        })
+      }
       throw new Error(resp.error_message, 500)
     }
-    return {
-      transactions: resp.transactions,
-      marker: resp.marker
-        ? `${resp.marker.ledger}.${resp.marker.seq}`
-        : undefined,
-    }
+
+    return formatAccountTxResponse(resp)
   })
 }
 
@@ -441,6 +494,15 @@ const getBuyNFToffers = (rippledSocket, tokenId, limit = 50, marker = '') =>
 const getSellNFToffers = (rippledSocket, tokenId, limit = 50, marker = '') =>
   getNFToffers('nft_sell_offers', rippledSocket, tokenId, limit, marker)
 
+function formatNFTTxResponse(resp) {
+  return {
+    transactions: resp.transactions,
+    marker: resp.marker
+      ? `${resp.marker.ledger}.${resp.marker.seq}`
+      : undefined,
+  }
+}
+
 const getNFTTransactions = (
   rippledSocket,
   tokenId,
@@ -451,7 +513,7 @@ const getNFTTransactions = (
   const markerComponents = marker.split('.')
   const ledger = parseInt(markerComponents[0], 10)
   const seq = parseInt(markerComponents[1], 10)
-  return queryP2P(rippledSocket, {
+  const request = {
     command: 'nft_history',
     api_version: 2,
     nft_id: tokenId,
@@ -465,16 +527,21 @@ const getNFTTransactions = (
         }
       : undefined,
     forward,
-  }).then((resp) => {
+  }
+
+  return queryP2P(rippledSocket, request).then((resp) => {
     if (resp.error_message) {
+      if (rippledSocket.archiveSocket) {
+        return queryArchive(rippledSocket, request).then((archiveResp) => {
+          if (archiveResp.error_message) {
+            throw new Error(archiveResp.error_message, 500)
+          }
+          return formatNFTTxResponse(archiveResp)
+        })
+      }
       throw new Error(resp.error_message, 500)
     }
-    return {
-      transactions: resp.transactions,
-      marker: resp.marker
-        ? `${resp.marker.ledger}.${resp.marker.seq}`
-        : undefined,
-    }
+    return formatNFTTxResponse(resp)
   })
 }
 
