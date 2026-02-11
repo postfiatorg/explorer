@@ -88,7 +88,11 @@ export const Token = () => {
   }
 
   if (tokenDataError) {
-    return <Page token={token} issuer={accountId}>{renderError()}</Page>
+    return (
+      <Page token={token} issuer={accountId}>
+        {renderError()}
+      </Page>
+    )
   }
 
   return (
