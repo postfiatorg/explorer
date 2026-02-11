@@ -22,6 +22,13 @@
 
 html {
   height: 100%;
+  scrollbar-color: $black-60 $black-90;
+  scrollbar-width: thin;
+}
+
+::selection {
+  background: rgba($green-70, 0.6);
+  color: $white;
 }
 
 body {

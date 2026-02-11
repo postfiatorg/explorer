@@ -105,14 +105,24 @@
         margin-top: 24px;
 
         .vals {
-          background: $black-80;
+          border-radius: $border-radius;
+          background: linear-gradient(180deg, $black-80, $black-90);
 
           .row {
             display: flex;
             overflow: hidden;
             padding: 16px;
             border-bottom: 1px solid $black-70;
+            transition: background-color $transition-fast;
             white-space: nowrap;
+
+            &:hover {
+              background-color: rgba($black-70, 0.5);
+            }
+
+            &:last-child {
+              border-bottom: none;
+            }
 
             .val {
               overflow: hidden;

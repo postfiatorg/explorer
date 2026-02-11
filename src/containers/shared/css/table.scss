@@ -37,6 +37,8 @@ table.basic {
 
   th {
     padding: 22px 5px;
+    border-bottom: 1px solid;
+    border-image: linear-gradient(90deg, $green-70, transparent) 1;
     color: $black-40;
     text-align: left;
     text-transform: uppercase;
