@@ -6,6 +6,7 @@ import { useWindowSize } from 'usehooks-ts'
 import { useRouteParams } from '../shared/routing'
 import { AMENDMENT_ROUTE } from '../App/routes'
 import NetworkContext from '../shared/NetworkContext'
+import { SEOHelmet } from '../shared/components/SEOHelmet'
 import {
   FETCH_INTERVAL_ERROR_MILLIS,
   FETCH_INTERVAL_VHS_MILLIS,
@@ -103,6 +104,7 @@ export const Amendment = () => {
   }
 
   let body
+  const shortId = identifier.substring(0, 12)
 
   if (error) {
     const message = getErrorMessage(error)
@@ -125,6 +127,15 @@ export const Amendment = () => {
 
   return (
     <div className="amendment-summary">
+      <SEOHelmet
+        title={`${t('amendments')} ${shortId}...`}
+        description={t('meta.amendment.description', { id: shortId })}
+        path={`/amendment/${identifier}`}
+        breadcrumbs={[
+          { name: t('amendments'), path: '/amendments' },
+          { name: `${shortId}...`, path: `/amendment/${identifier}` },
+        ]}
+      />
       {(isValidatorsLoading || isAmendmentLoading) && <Loader />}
       {body}
     </div>

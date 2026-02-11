@@ -1,7 +1,7 @@
 import { FC, PropsWithChildren, useEffect, useState } from 'react'
 import { useParams } from 'react-router'
-import { Helmet } from 'react-helmet-async'
 import NoMatch from '../NoMatch'
+import { SEOHelmet } from '../shared/components/SEOHelmet'
 import { NFTHeader } from './NFTHeader/NFTHeader'
 import { NFTTabs } from './NFTTabs/NFTTabs'
 import { useAnalytics } from '../shared/analytics'
@@ -33,7 +33,11 @@ const Page: FC<PropsWithChildren<{ tokenId: string }>> = ({
   children,
 }) => (
   <div className="nft-page">
-    <Helmet title={`NFT ${tokenId.substring(0, 12)}...`} />
+    <SEOHelmet
+      title={`NFT ${tokenId.substring(0, 12)}...`}
+      description={`View NFT ${tokenId.substring(0, 12)}... on the PFT Ledger. See offers, transactions, and metadata.`}
+      path={`/nft/${tokenId}`}
+    />
     {children}
   </div>
 )

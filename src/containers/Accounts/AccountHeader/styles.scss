@@ -109,6 +109,57 @@
     padding-bottom: 20px;
   }
 
+  .balance-cards {
+    display: flex;
+    margin-bottom: 24px;
+    gap: 16px;
+
+    @media (width <= 600px) {
+      flex-direction: column;
+    }
+  }
+
+  .balance-card {
+    flex: 1;
+    padding: 20px 24px;
+    border: $border-subtle;
+    border-radius: $border-radius;
+    border-left: 3px solid;
+    background: linear-gradient(180deg, $black-80, $black-90);
+
+    .balance-card-label {
+      padding-bottom: 8px;
+      color: $black-40;
+      font-size: 12px;
+      text-transform: uppercase;
+      @include semibold;
+    }
+
+    .balance-card-value {
+      color: $white;
+      font-size: 24px;
+      line-height: 1.2;
+      @include bold;
+
+      @include for-size(desktop-up) {
+        font-size: 28px;
+      }
+    }
+
+    &.balance-card-primary {
+      border-left-color: $green;
+    }
+
+    &.balance-card-reserve {
+      border-left-color: $blue-purple;
+    }
+  }
+
+  .balance-selector-container {
+    position: relative;
+    margin-bottom: 20px;
+  }
+
   .info-container {
     display: flex;
     flex-direction: column;

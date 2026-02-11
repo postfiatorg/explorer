@@ -8,8 +8,10 @@
 ) {
   .dropdown-toggle {
     border-color: $border;
+    border-radius: $border-radius;
     background: $background;
     color: $color;
+    transition: background-color $transition-fast, box-shadow $transition-fast;
 
     &:hover {
       background: $background-hover;

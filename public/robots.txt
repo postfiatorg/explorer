@@ -1,5 +1,4 @@
 User-agent: *
-Allow: /$
-Allow: /network
-Allow: /validators
-Disallow: /*
+Allow: /
+
+Sitemap: /sitemap.xml

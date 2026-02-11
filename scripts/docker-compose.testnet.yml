@@ -5,8 +5,34 @@ services:
     ports:
       - "127.0.0.1:5001:5001"
     restart: unless-stopped
+    depends_on:
+      - prerender
+    environment:
+      - PRERENDER_SERVICE_URL=http://prerender:3000/
+      - VITE_ENVIRONMENT=testnet
     logging:
       driver: "json-file"
       options:
         max-size: "100m"
         max-file: "10"
+  prerender:
+    image: cereal/prerender
+    container_name: prerender
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      - CACHE_MAXSIZE=1000
+      - CACHE_TTL=86400
+      - PAGE_DONE_CHECK_INTERVAL=500
+      - PAGE_LOAD_TIMEOUT=20000
+      - WAIT_AFTER_LAST_REQUEST=500
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"

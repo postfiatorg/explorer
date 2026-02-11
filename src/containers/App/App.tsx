@@ -12,9 +12,9 @@ export const App: FC<{ rippledUrl: string }> = memo(
     <SocketProvider rippledUrl={rippledUrl}>
       <NetworkProvider rippledUrl={rippledUrl}>
         <Header inNetwork />
-        <div className="content">
+        <main className="content">
           <Outlet />
-        </div>
+        </main>
       </NetworkProvider>
     </SocketProvider>
   ),

@@ -1,7 +1,7 @@
 import { FC, PropsWithChildren, useContext, useEffect } from 'react'
 import { useQuery } from 'react-query'
-import { Helmet } from 'react-helmet-async'
 import { useLanguage } from '../../../shared/hooks'
+import { SEOHelmet } from '../../../shared/components/SEOHelmet'
 import '../../styles.scss'
 import { formatAmount } from '../../../../rippled/lib/txSummary/formatAmount'
 import {
@@ -41,7 +41,11 @@ const Page: FC<PropsWithChildren<{ accountId: string }>> = ({
   children,
 }) => (
   <div className="accounts-page">
-    <Helmet title={`AMM ${accountId.substring(0, 12)}...`} />
+    <SEOHelmet
+      title={`AMM ${accountId.substring(0, 12)}...`}
+      description={`View AMM account ${accountId.substring(0, 12)}... on the PFT Ledger.`}
+      path={`/accounts/${accountId}`}
+    />
     {children}
   </div>
 )
@@ -132,9 +136,11 @@ export const AMMAccounts = () => {
 
   return (
     <div className="accounts-page section">
-      <Helmet>
-        <title>AMM {accountId.substring(0, 12)}...</title>
-      </Helmet>
+      <SEOHelmet
+        title={`AMM ${accountId.substring(0, 12)}...`}
+        description={`View AMM account ${accountId.substring(0, 12)}... on the PFT Ledger.`}
+        path={`/accounts/${accountId}`}
+      />
       {data && (
         <>
           <AMMAccountHeader data={data} />
