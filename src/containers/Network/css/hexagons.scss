@@ -3,7 +3,10 @@
 .validators-container {
   .validators {
     position: relative;
-    background: $black-80;
+    border: $border-subtle;
+    border-radius: $border-radius;
+    background: linear-gradient(180deg, $black-80, $black-90);
+    box-shadow: inset 0 0 40px rgb(6 6 14 / 30%);
 
     svg {
       display: block;

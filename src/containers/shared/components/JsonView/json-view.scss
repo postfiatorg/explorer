@@ -3,7 +3,11 @@
 
 .json-view {
   overflow: hidden;
+  padding: 16px;
+  border: $border-subtle;
+  border-radius: $border-radius;
   margin-bottom: 40px;
+  background: linear-gradient(180deg, $black-80, $black-90);
   color: $black-10 !important;
   font-size: 12px;
   letter-spacing: 0;
@@ -20,7 +24,7 @@
 }
 
 .jv-indent {
-  border-left: 1px solid $black-60;
+  border-left: 1px solid $green-90;
   margin: 4px;
 }
 

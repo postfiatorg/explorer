@@ -25,7 +25,18 @@
 
     &:focus {
       border-color: $green-50;
-      box-shadow: $glow-green;
+      animation: search-glow 2s ease-in-out infinite;
+    }
+
+    @keyframes search-glow {
+      0%,
+      100% {
+        box-shadow: $glow-green;
+      }
+
+      50% {
+        box-shadow: $glow-green-strong;
+      }
     }
 
     &::placeholder {

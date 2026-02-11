@@ -203,6 +203,15 @@ $XRP_OTHERS: #f52a79;
   }
 }
 
+// Gradient page title
+@mixin gradient-title {
+  background: linear-gradient(135deg, $white 30%, $green-30);
+  /* stylelint-disable-next-line property-no-vendor-prefix -- needed for Safari */
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
 // Glow effects
 $glow-green: 0 0 8px rgb(50 230 133 / 30%);
 $glow-green-strong: 0 0 12px rgb(50 230 133 / 45%);

@@ -14,7 +14,6 @@
     display: inline-block;
     margin-top: 80px;
     margin-bottom: 32px;
-    color: $white;
     font-size: 32px;
 
     @include for-size(tablet-portrait-up) {
@@ -24,6 +23,7 @@
     }
 
     @include bold;
+    @include gradient-title;
   }
 
   .rows {

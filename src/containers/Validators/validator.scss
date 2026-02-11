@@ -31,9 +31,9 @@
     .type {
       display: inline-block;
       margin-bottom: 24px;
-      color: $white;
       font-size: 32px;
       @include bold;
+      @include gradient-title;
     }
 
     .label {

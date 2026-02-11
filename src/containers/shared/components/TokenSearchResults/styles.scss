@@ -23,7 +23,7 @@
 
 .search-results-header {
   padding: 0.5rem 0rem 0.5rem 1rem;
-  background-color: $black-80;
+  background: linear-gradient(180deg, $black-80, $black-90);
   font-size: 14px;
   font-weight: 500;
 }
@@ -108,9 +108,12 @@
   background-color: $black-100;
   font-size: 12px;
   font-weight: 600;
+  transition: border-color $transition-fast, box-shadow $transition-fast;
 
   &:hover {
+    border-color: $green-70;
     background-color: $black-100;
+    box-shadow: $glow-green-subtle;
     cursor: pointer;
   }
 }
