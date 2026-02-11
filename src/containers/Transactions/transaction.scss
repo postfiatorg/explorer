@@ -25,14 +25,17 @@
   }
 
   .summary {
-    padding: 0 16px 87px 0;
+    padding: 16px 16px 87px;
+    border: $border-subtle;
+    border-radius: $border-radius;
+    background: linear-gradient(180deg, $black-80, $black-90);
 
     .type {
       display: inline-block;
       margin-bottom: 24px;
-      color: $white;
       font-size: 42px;
       @include bold;
+      @include gradient-title;
     }
 
     .txid {

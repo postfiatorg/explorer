@@ -48,6 +48,11 @@ $menu-toggle-line-length: $menu-toggle-size - $menu-toggle-line-spacing;
 .nav-link {
   color: $white;
   font-size: 14px;
+  transition: color $transition-fast;
+
+  &:hover {
+    color: $green-30;
+  }
 }
 
 /* Nav menu */
@@ -152,6 +157,7 @@ $menu-toggle-line-length: $menu-toggle-size - $menu-toggle-line-spacing;
 
     .selected .nav-link {
       border-left-color: #32e685;
+      box-shadow: inset 3px 0 8px rgb(50 230 133 / 20%);
     }
 
     .dropdown {
@@ -209,12 +215,13 @@ $menu-toggle-line-length: $menu-toggle-size - $menu-toggle-line-spacing;
 .selected {
   .dot {
     position: absolute;
-    top: calc(100% + 6px);
-    width: 6px;
-    height: 6px;
-    border-radius: 100%;
-    margin-left: 50%;
-    background-color: $green;
+    top: calc(100% + 4px);
+    left: 0;
+    width: 100%;
+    height: 3px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, transparent, $green 30%, $green 70%, transparent);
+    box-shadow: $glow-green;
   }
 
   :hover {

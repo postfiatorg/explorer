@@ -70,9 +70,10 @@
 
   .legend-stable {
     padding: 16px;
+    border: $border-subtle;
     border-radius: $border-radius;
     margin-left: auto;
-    background-color: $black-70;
+    background: linear-gradient(180deg, $black-70, $black-80);
 
     .stable {
       color: $black-0;

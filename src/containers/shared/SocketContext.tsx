@@ -1,4 +1,10 @@
-import React, { useContext, createContext, useEffect, useState } from 'react'
+import React, {
+  useContext,
+  createContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
 import { XrplClient } from 'xrpl-client'
 import { useAnalytics } from './analytics'
 
@@ -82,24 +88,27 @@ export const SocketProvider = ({
   children,
   rippledUrl,
 }: SocketProviderProps) => {
-  const socket = getSocket(rippledUrl)
+  const socket = useMemo(() => getSocket(rippledUrl), [rippledUrl])
   const { setGlobals } = useAnalytics()
 
-  socket.once('online', () => {
-    setGlobals({
-      entrypoint: socket.getState().server.uri,
+  useEffect(() => {
+    socket.once('online', () => {
+      setGlobals({
+        entrypoint: socket.getState().server.uri,
+      })
     })
-  })
 
-  useEffect(() => () => {
-    socket.close()
-    if (socket.p2pSocket !== undefined) {
-      socket.p2pSocket.close()
+    return () => {
+      socket.close()
+      if (socket.p2pSocket !== undefined) {
+        socket.p2pSocket.close()
+      }
+      if (socket.archiveSocket !== undefined) {
+        socket.archiveSocket.close()
+      }
     }
-    if (socket.archiveSocket !== undefined) {
-      socket.archiveSocket.close()
-    }
-  })
+  }, [socket, setGlobals])
+
   return (
     <SocketContext.Provider value={socket}>{children}</SocketContext.Provider>
   )

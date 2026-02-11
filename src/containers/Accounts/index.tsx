@@ -1,7 +1,8 @@
 import { useContext, useEffect, useState } from 'react'
-import { Helmet } from 'react-helmet-async'
 import { useQuery } from 'react-query'
+import { useTranslation } from 'react-i18next'
 import { isValidClassicAddress, isValidXAddress } from 'ripple-address-codec'
+import { SEOHelmet } from '../shared/components/SEOHelmet'
 import { AccountHeader } from './AccountHeader'
 import { AccountTransactionTable } from './AccountTransactionTable'
 import './styles.scss'
@@ -22,6 +23,7 @@ export const Accounts = () => {
   const [currencySelected, setCurrencySelected] = useState('PFT')
   const mainPath = buildPath(ACCOUNT_ROUTE, { id: accountId })
   const rippledSocket = useContext(SocketContext)
+  const { t } = useTranslation()
 
   const { data: account, isLoading } = useQuery(
     ['accountState', accountId],
@@ -56,7 +58,20 @@ export const Accounts = () => {
 
   return (
     <div className="accounts-page section">
-      <Helmet title={`${accountId.substring(0, 12)}...`} />
+      <SEOHelmet
+        title={`${accountId.substring(0, 12)}...`}
+        description={t('meta.account.description', {
+          id: accountId.substring(0, 12),
+        })}
+        path={`/accounts/${accountId}`}
+        breadcrumbs={[
+          { name: t('ledgers'), path: '/' },
+          {
+            name: `${accountId.substring(0, 12)}...`,
+            path: `/accounts/${accountId}`,
+          },
+        ]}
+      />
       {accountId && (
         <>
           <AccountHeader

@@ -25,7 +25,9 @@ input {
     }
 
     &:focus {
-      outline: solid 1px $blue-purple-40 !important;
+      border-color: $green-50;
+      box-shadow: $glow-green;
+      outline: none !important;
     }
   }
 

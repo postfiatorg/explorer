@@ -3,10 +3,10 @@ import axios from 'axios'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from 'react-query'
 import { useWindowSize } from 'usehooks-ts'
-import { Helmet } from 'react-helmet-async'
 import { deriveAddress } from 'xrpl'
 import { decodeNodePublic } from 'ripple-address-codec'
 import { bytesToHex } from '@xrplf/isomorphic/utils'
+import { SEOHelmet } from '../shared/components/SEOHelmet'
 import NoMatch from '../NoMatch'
 import { Loader } from '../shared/components/Loader'
 import { Tabs } from '../shared/components/Tabs'
@@ -199,7 +199,20 @@ export const Validator = () => {
       short = `${data.signing_key.substring(0, 8)}...`
     }
 
-    return <Helmet title={`${t('validator')} ${short}`} />
+    return (
+      <SEOHelmet
+        title={`${t('validator')} ${short}`}
+        description={t('meta.validator.description', { id: short })}
+        path={`/validators/${identifier}`}
+        breadcrumbs={[
+          { name: t('validators'), path: '/network/validators' },
+          {
+            name: `${t('validator')} ${short}`,
+            path: `/validators/${identifier}`,
+          },
+        ]}
+      />
+    )
   }
 
   function renderSummary() {

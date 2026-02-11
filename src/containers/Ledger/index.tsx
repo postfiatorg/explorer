@@ -1,7 +1,7 @@
 import { useContext, useEffect } from 'react'
-import { Helmet } from 'react-helmet-async'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from 'react-query'
+import { SEOHelmet } from '../shared/components/SEOHelmet'
 import NoMatch from '../NoMatch'
 import { Loader } from '../shared/components/Loader'
 import SocketContext from '../shared/SocketContext'
@@ -164,7 +164,18 @@ export const Ledger = () => {
 
   return (
     <div className="ledger-page">
-      <Helmet title={`${t('ledger')} ${identifier}`} />
+      <SEOHelmet
+        title={`${t('ledger')} ${identifier}`}
+        description={t('meta.ledger.description', { identifier })}
+        path={`/ledgers/${identifier}`}
+        breadcrumbs={[
+          { name: t('ledgers'), path: '/' },
+          {
+            name: `${t('ledger')} ${identifier}`,
+            path: `/ledgers/${identifier}`,
+          },
+        ]}
+      />
       {isLoading && <Loader />}
       {renderLedger()}
       {renderError()}

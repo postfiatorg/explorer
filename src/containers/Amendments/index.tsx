@@ -3,6 +3,7 @@ import { useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from 'react-query'
 import Log from '../shared/log'
+import { SEOHelmet } from '../shared/components/SEOHelmet'
 import NetworkContext from '../shared/NetworkContext'
 import {
   FETCH_INTERVAL_ERROR_MILLIS,
@@ -45,6 +46,11 @@ export const Amendments = () => {
 
   return (
     <div className="amendments-page">
+      <SEOHelmet
+        title={t('amendments')}
+        description={t('meta.amendments.description')}
+        path="/amendments"
+      />
       <div className="wrap">
         <div className="summary">
           <div className="type">{t('amendments')}</div>

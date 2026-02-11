@@ -3,6 +3,7 @@ import axios from 'axios'
 import { useQuery } from 'react-query'
 import { useTranslation } from 'react-i18next'
 import BarChartVersion from './BarChartVersion'
+import { SEOHelmet } from '../shared/components/SEOHelmet'
 import {
   FETCH_INTERVAL_MILLIS,
   FETCH_INTERVAL_ERROR_MILLIS,
@@ -239,6 +240,11 @@ export const UpgradeStatus = () => {
 
   return (
     <div className="network-page">
+      <SEOHelmet
+        title={t('upgrade_status')}
+        description={t('meta.upgrade_status.description')}
+        path="/network/upgrade-status"
+      />
       <div className="type">{t('upgrade_status')}</div>
       <div className="wrap">
         {Object.keys(validatorAggregation).length > 0 ||

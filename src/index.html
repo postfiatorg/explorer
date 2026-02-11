@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
   <meta charset="utf-8">
@@ -8,7 +8,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="google-site-verification" content="k8jb6KQfitguHqeR97svoRnnsgzvs3a0FliHbESVDk4" />
-  <meta name="description" content="Discover the PFT Ledger with this open source explorer. Check account balances, transactions, validators, nodes and analyze blockchain activity.">
+  <meta name="description" content="Explore the PFT Ledger in real time. View ledgers, transactions, accounts, validators, tokens, NFTs, and protocol amendments on the Post Fiat blockchain.">
   <!--
       manifest.json provides metadata used when your web app is added to the
       homescreen on Android. See https://developers.google.com/web/fundamentals/engage-and-retain/web-app-manifest/
@@ -44,7 +44,29 @@
 
 <body>
   <noscript>
-    You need to enable JavaScript to run this app.
+    <div>
+      <h1>PFT Explorer — Post Fiat Blockchain Explorer</h1>
+      <p>Browse the Post Fiat (PFT) Ledger blockchain in real time. Explore ledgers, transactions, accounts, validators, tokens, NFTs, and protocol amendments.</p>
+      <h2>Key Features</h2>
+      <ul>
+        <li>View live ledger data and transaction history</li>
+        <li>Look up account balances and token holdings</li>
+        <li>Monitor network validators and node health</li>
+        <li>Track protocol amendment voting progress</li>
+        <li>Explore NFTs and multi-purpose tokens</li>
+      </ul>
+      <h2>Navigation</h2>
+      <nav>
+        <ul>
+          <li><a href="/">Home — Latest Ledgers</a></li>
+          <li><a href="/network/nodes">Network Nodes</a></li>
+          <li><a href="/network/validators">Validators</a></li>
+          <li><a href="/network/upgrade-status">Upgrade Status</a></li>
+          <li><a href="/amendments">Amendments</a></li>
+        </ul>
+      </nav>
+      <p>Enable JavaScript for full functionality.</p>
+    </div>
   </noscript>
   <div class="xrpl-explorer" id="xrpl-explorer"></div>
   <script type="module" src="./index.tsx"></script>

@@ -2,8 +2,8 @@ import { useContext, useState } from 'react'
 import axios from 'axios'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from 'react-query'
-import { Helmet } from 'react-helmet-async'
 import Streams from '../shared/components/Streams'
+import { SEOHelmet } from '../shared/components/SEOHelmet'
 import { ValidatorsTable } from './ValidatorsTable'
 import Log from '../shared/log'
 import {
@@ -177,7 +177,11 @@ export const Validators = () => {
       </div>
       <div className="wrap">
         <ValidatorsTabs selected={tab} />
-        <Helmet title={t('validators')} />
+        <SEOHelmet
+          title={t('validators')}
+          description={t('meta.validators.description')}
+          path="/network/validators"
+        />
         {Body}
       </div>
     </div>

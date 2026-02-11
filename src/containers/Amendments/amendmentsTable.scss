@@ -13,7 +13,6 @@
     .type {
       display: inline-block;
       padding-bottom: 24px;
-      color: $white;
       font-size: 32px;
 
       @include for-size(tablet-portrait-up) {
@@ -21,6 +20,7 @@
       }
 
       @include bold;
+      @include gradient-title;
     }
   }
 
@@ -38,6 +38,7 @@
 
   table {
     .incoming {
+      border-left: 3px solid $green-70;
       background: rgba($green-90, 0.7);
     }
 
@@ -118,6 +119,7 @@
 
     &.yes {
       background-color: $green-60;
+      box-shadow: $glow-green-subtle;
     }
 
     &.no {

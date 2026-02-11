@@ -7,7 +7,7 @@ const Footer = () => {
   const { t } = useTranslation()
 
   return (
-    <div className="footer">
+    <footer className="footer">
       <div className="footer-links">
         <div className="footer-link-section">
           <div className="footer-section-header">Learn</div>
@@ -81,7 +81,7 @@ const Footer = () => {
           <span>&nbsp;2025-{new Date().getFullYear()}</span>
         </div>
       </div>
-    </div>
+    </footer>
   )
 }
 

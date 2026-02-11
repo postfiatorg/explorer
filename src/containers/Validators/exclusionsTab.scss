@@ -17,9 +17,10 @@
 
     h3 {
       padding-bottom: 18px;
-      border-bottom: 1px solid $black-70;
+      border-bottom: 1px solid;
       margin-top: 0;
       margin-bottom: 20px;
+      border-image: linear-gradient(90deg, $green-70, transparent) 1;
       color: $white;
       font-size: 24px;
       font-weight: 600;
@@ -31,6 +32,7 @@
 
     .exclusions-table {
       width: 100%;
+      border-radius: $border-radius;
       border-collapse: collapse;
 
       thead {

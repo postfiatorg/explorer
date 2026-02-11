@@ -12,7 +12,12 @@ table.basic {
   text-align: left;
 
   tr {
-    border-bottom: 1px solid $black-70;
+    border-bottom: $border-subtle;
+    transition: background-color $transition-fast;
+
+    &:hover {
+      background-color: rgba($black-80, 0.5);
+    }
   }
 
   td,
@@ -32,6 +37,8 @@ table.basic {
 
   th {
     padding: 22px 5px;
+    border-bottom: 1px solid;
+    border-image: linear-gradient(90deg, $green-70, transparent) 1;
     color: $black-40;
     text-align: left;
     text-transform: uppercase;

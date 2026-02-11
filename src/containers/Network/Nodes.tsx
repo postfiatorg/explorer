@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useQuery } from 'react-query'
 import { Map } from './Map'
 import { NodesTable } from './NodesTable'
+import { SEOHelmet } from '../shared/components/SEOHelmet'
 import Log from '../shared/log'
 import {
   FETCH_INTERVAL_ERROR_MILLIS,
@@ -78,6 +79,11 @@ export const Nodes = () => {
 
   return (
     <div className="network-page">
+      <SEOHelmet
+        title={t('nodes')}
+        description={t('meta.nodes.description')}
+        path="/network/nodes"
+      />
       <div className="type">{t('nodes')}</div>
       {
         // @ts-ignore - Work around for complex type assignment issues

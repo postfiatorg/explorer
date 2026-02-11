@@ -41,16 +41,19 @@
 
     .state .full {
       background-color: $green;
+      box-shadow: 0 0 6px $green;
       color: black;
     }
 
     .state .proposing {
       background-color: $orange;
+      box-shadow: 0 0 6px $orange;
       color: white;
     }
 
     .state .connected {
       background-color: $yellow;
+      box-shadow: 0 0 6px $yellow;
       color: $black-60;
     }
 

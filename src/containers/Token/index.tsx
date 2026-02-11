@@ -1,8 +1,8 @@
 import { FC, PropsWithChildren, useContext, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { Helmet } from 'react-helmet-async'
 import { useQuery } from 'react-query'
+import { SEOHelmet } from '../shared/components/SEOHelmet'
 import { TokenHeader } from './TokenHeader'
 import { TokenTransactionTable } from './TokenTransactionTable'
 import NoMatch from '../NoMatch'
@@ -35,21 +35,32 @@ const ERROR_MESSAGES: ErrorMessages = {
 const getErrorMessage = (error) =>
   ERROR_MESSAGES[error] || ERROR_MESSAGES.default
 
-const Page: FC<PropsWithChildren<{ accountId: string }>> = ({
-  accountId,
+const Page: FC<PropsWithChildren<{ token: string; issuer: string }>> = ({
+  token,
+  issuer,
   children,
-}) => (
-  <div className="token-page">
-    <Helmet title={`${accountId.substring(0, 12)}...`} />
-    {children}
-  </div>
-)
+}) => {
+  const shortIssuer = issuer.substring(0, 12)
+  const shortToken = token.substring(0, 12)
+  const title = `${(issuer ? shortIssuer : shortToken) || 'Token'}...`
+  const description = token
+    ? `View token ${token} on the PFT Ledger.`
+    : `View token issued by ${shortIssuer}... on the PFT Ledger.`
+  const path = token ? `/token/${token}` : undefined
+
+  return (
+    <div className="token-page">
+      <SEOHelmet title={title} description={description} path={path} />
+      {children}
+    </div>
+  )
+}
 
 export const Token = () => {
   const rippledSocket = useContext(SocketContext)
   const { trackScreenLoaded } = useAnalytics()
   const { token = '' } = useRouteParams(TOKEN_ROUTE)
-  const [currency, accountId] = token.split('.')
+  const [currency = '', accountId = ''] = token.split('.')
   const { t } = useTranslation()
   const {
     data: tokenData,
@@ -77,11 +88,15 @@ export const Token = () => {
   }
 
   if (tokenDataError) {
-    return <Page accountId={accountId}>{renderError()}</Page>
+    return (
+      <Page token={token} issuer={accountId}>
+        {renderError()}
+      </Page>
+    )
   }
 
   return (
-    <Page accountId={accountId}>
+    <Page token={token} issuer={accountId}>
       {isTokenDataLoading ? (
         <Loader />
       ) : (

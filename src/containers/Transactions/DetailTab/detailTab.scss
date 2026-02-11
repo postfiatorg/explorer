@@ -8,11 +8,13 @@
 
   .detail-section {
     padding: 5px 15px;
-    border-bottom: 1px solid $black-70;
+    border-bottom: 1px solid;
     margin: 0px 0px 30px;
+    border-image: linear-gradient(90deg, $green-70, transparent) 1;
 
     &:last-child {
       border: none;
+      border-image: none;
     }
 
     li {

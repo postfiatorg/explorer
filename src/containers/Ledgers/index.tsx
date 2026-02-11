@@ -1,8 +1,8 @@
 import { useContext, useEffect, useState } from 'react'
-import { Helmet } from 'react-helmet-async'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from 'react-query'
 import axios from 'axios'
+import { SEOHelmet } from '../shared/components/SEOHelmet'
 import Log from '../shared/log'
 import { FETCH_INTERVAL_ERROR_MILLIS } from '../shared/utils'
 import Streams from '../shared/components/Streams'
@@ -74,7 +74,11 @@ export const LedgersPage = () => {
 
   return (
     <div className="ledgers-page">
-      <Helmet title={t('ledgers')} />
+      <SEOHelmet
+        title={t('ledgers')}
+        description={t('meta.home.description')}
+        path="/"
+      />
       {isOnline && (
         <Streams
           validators={validators}

@@ -22,6 +22,13 @@
 
 html {
   height: 100%;
+  scrollbar-color: $black-60 $black-90;
+  scrollbar-width: thin;
+}
+
+::selection {
+  background: rgba($green-70, 0.6);
+  color: $white;
 }
 
 body {
@@ -44,6 +51,7 @@ input {
   padding: 0px;
   margin: 0px;
   background-color: $black-100;
+  background-image: radial-gradient(ellipse at 50% 0%, #14151f 0%, $black-100 70%);
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   font-style: normal;
@@ -57,6 +65,12 @@ button {
     Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
 }
 
+a, button, input, .btn {
+  transition: color $transition-fast, background-color $transition-fast,
+    border-color $transition-fast, box-shadow $transition-fast,
+    opacity $transition-fast;
+}
+
 .clear {
   clear: both;
 }
@@ -68,8 +82,9 @@ button {
 
 h2 {
   padding-bottom: 18px;
-  border-bottom: 1px $black-70 solid;
+  border-bottom: 1px solid;
   margin-top: 0;
+  border-image: linear-gradient(90deg, $green-70, transparent) 1;
   color: $white;
   font-size: 24px;
 
@@ -172,6 +187,7 @@ div.react-stockchart div {
 
   &:hover {
     background: $black-80;
+    box-shadow: $glow-white-subtle;
   }
 }
 
@@ -185,6 +201,7 @@ a,
   &:hover {
     background: transparent;
     color: $green-50;
+    text-shadow: $glow-green-subtle;
   }
 
   &.external, // Force the external icon. Useful for when the protocol is unknown like with NFTs.

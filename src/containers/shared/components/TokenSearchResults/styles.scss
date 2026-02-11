@@ -10,7 +10,7 @@
   border-top: 0px;
   margin-top: 6px;
   background-color: $black-100;
-  box-shadow: 2px 2px 15px 0px rgb(131 131 134 / 30%);
+  box-shadow: 0 4px 20px rgb(0 0 0 / 50%), $glow-green-subtle;
   overflow-wrap: anywhere;
   overflow-y: scroll;
   scrollbar-color: $black-50 transparent;
@@ -23,7 +23,7 @@
 
 .search-results-header {
   padding: 0.5rem 0rem 0.5rem 1rem;
-  background-color: $black-80;
+  background: linear-gradient(180deg, $black-80, $black-90);
   font-size: 14px;
   font-weight: 500;
 }
@@ -108,9 +108,12 @@
   background-color: $black-100;
   font-size: 12px;
   font-weight: 600;
+  transition: border-color $transition-fast, box-shadow $transition-fast;
 
   &:hover {
+    border-color: $green-70;
     background-color: $black-100;
+    box-shadow: $glow-green-subtle;
     cursor: pointer;
   }
 }

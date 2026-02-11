@@ -26,16 +26,19 @@
   overflow: hidden;
   min-width: max(100%, 160px);
   padding: 8px;
-  border: 1px solid $black-80;
+  border: 1px solid $black-70;
   border-radius: $border-radius;
   margin-top: 5px;
+  backdrop-filter: blur(8px);
   background: rgba($black, 0.96);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 60%);
 }
 
 .dropdown-item {
   padding: 12px 8px;
   border-radius: calc($border-radius / 2);
   font-weight: normal;
+  transition: background-color $transition-fast;
 
   @at-root {
     a#{&} {

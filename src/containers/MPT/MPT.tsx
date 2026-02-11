@@ -1,7 +1,7 @@
 import { FC, PropsWithChildren, useEffect, useState } from 'react'
 import { useParams } from 'react-router'
-import { Helmet } from 'react-helmet-async'
 import NoMatch from '../NoMatch'
+import { SEOHelmet } from '../shared/components/SEOHelmet'
 import { MPTHeader } from './MPTHeader/MPTHeader'
 import { useAnalytics } from '../shared/analytics'
 import { NOT_FOUND, BAD_REQUEST } from '../shared/utils'
@@ -31,7 +31,11 @@ const Page: FC<PropsWithChildren<{ tokenId: string }>> = ({
   children,
 }) => (
   <div className="mpt-page">
-    <Helmet title={`MPT ${tokenId.substr(0, 12)}...`} />
+    <SEOHelmet
+      title={`MPT ${tokenId.substring(0, 12)}...`}
+      description={`View MPT ${tokenId.substring(0, 12)}... on the PFT Ledger. See issuer details, holders, and metadata.`}
+      path={`/mpt/${tokenId}`}
+    />
     {children}
   </div>
 )
