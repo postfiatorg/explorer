@@ -179,7 +179,19 @@
     position: relative;
     display: block;
     border-bottom: $border-subtle;
+    border-left: 3px solid transparent;
     line-height: 20px;
+
+    /* stylelint-disable selector-class-pattern -- Category names come from server */
+    &:has(.tx-category-PAYMENT) { border-left-color: $green; }
+    &:has(.tx-category-DEX) { border-left-color: $blue; }
+    &:has(.tx-category-ACCOUNT) { border-left-color: $magenta; }
+    &:has(.tx-category-NFT) { border-left-color: $blue-purple; }
+    &:has(.tx-category-XCHAIN) { border-left-color: $yellow; }
+    &:has(.tx-category-MPT) { border-left-color: $blue; }
+    &:has(.tx-category-OTHER) { border-left-color: $black-50; }
+    &:has(.tx-category-PSEUDO) { border-left-color: $black-80; }
+    /* stylelint-enable selector-class-pattern */
 
     .transaction-address {
       overflow: hidden;
@@ -235,7 +247,14 @@
 
 .load-more-btn {
   display: block;
+  border-color: $green-70;
   margin: 10px auto;
+  color: $green;
   outline: inherit;
   @include bold;
+
+  &:hover {
+    border-color: $green;
+    box-shadow: $glow-green;
+  }
 }

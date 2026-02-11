@@ -24,6 +24,9 @@
   .summary {
     width: calc(100% - 32px);
     padding: 30px 16px 20px;
+    border: $border-subtle;
+    border-radius: $border-radius;
+    background: linear-gradient(180deg, $black-80, $black-90);
 
     .type {
       display: inline-block;

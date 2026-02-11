@@ -44,8 +44,10 @@
 
       &:focus,
       &:hover {
+        border-color: $green-70;
         background-color: $black-70;
-        box-shadow: $glow-white-subtle;
+        box-shadow: $glow-green-subtle;
+        color: $green;
       }
     }
 
@@ -61,8 +63,10 @@
 
       &:focus,
       &:hover {
+        border-color: $green-70;
         background-color: $black-70;
-        box-shadow: $glow-white-subtle;
+        box-shadow: $glow-green-subtle;
+        color: $green;
       }
     }
   }
@@ -73,9 +77,12 @@
     .ledger-info {
       overflow: hidden;
       padding: 10px 8px;
+      border: $border-subtle;
+      border-radius: $border-radius;
+      background: linear-gradient(180deg, $black-80, $black-90);
 
       @include for-size(desktop-up) {
-        padding: 10px 0px;
+        padding: 10px 16px;
       }
 
       .closed-date,

@@ -44,6 +44,7 @@ input {
   padding: 0px;
   margin: 0px;
   background-color: $black-100;
+  background-image: radial-gradient(ellipse at 50% 0%, #0a0a0f 0%, $black-100 60%);
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   font-style: normal;
@@ -74,8 +75,9 @@ a, button, input, .btn {
 
 h2 {
   padding-bottom: 18px;
-  border-bottom: $border-subtle;
+  border-bottom: 1px solid;
   margin-top: 0;
+  border-image: linear-gradient(90deg, $green-70, transparent) 1;
   color: $white;
   font-size: 24px;
 

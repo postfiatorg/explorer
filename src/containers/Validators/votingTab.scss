@@ -32,8 +32,9 @@
     font-size: 14px;
 
     .rows {
+      border-radius: $border-radius;
       margin-top: 32px;
-      background-color: $black-80;
+      background: linear-gradient(180deg, $black-80, $black-90);
     }
 
     .row {
@@ -42,6 +43,15 @@
       justify-content: space-between;
       padding: 16px;
       border-bottom: 1px solid $black-70;
+      transition: background-color $transition-fast;
+
+      &:hover {
+        background-color: rgba($black-70, 0.5);
+      }
+
+      &:last-child {
+        border-bottom: none;
+      }
     }
 
     .label {
