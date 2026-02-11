@@ -52,6 +52,7 @@ app.use(compression())
 app.use(bodyParser.json())
 app.use('/api/v1', routes)
 app.get('/sitemap.xml', require('./routes/v1/sitemap'))
+app.get('/robots.txt', require('./routes/v1/robots'))
 
 if (process.env.NODE_ENV === 'production') {
   if (process.env.PRERENDER_SERVICE_URL) {
