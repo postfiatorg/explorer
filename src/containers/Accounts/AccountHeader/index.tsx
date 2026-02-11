@@ -250,7 +250,7 @@ export const AccountHeader = ({
   }
 
   function renderHeaderContent(data: AccountState) {
-    const { balances = {}, deleted } = data
+    const { balances = {}, deleted, info } = data
     // Map PFT to XRP for balance lookup since backend still uses XRP
     const balanceKey = currencySelected === 'PFT' ? 'XRP' : currencySelected
     const balance = localizeNumber(balances[balanceKey] || 0.0, language, {
@@ -259,32 +259,37 @@ export const AccountHeader = ({
       minimumFractionDigits: 0,
       maximumFractionDigits: 2,
     })
+    const reserve = info
+      ? localizeNumber(info.reserve || 0.0, language, CURRENCY_OPTIONS)
+      : null
+
     return (
       <div className="section header-container">
-        <div className="column first">
-          {renderExtendedAddress(data)}
-          <div className="secondary balance">
-            {deleted ? (
-              <div className="warning">
-                <InfoIcon alt="Account Deleted" />{' '}
-                <span className="account-deleted-text">Account Deleted</span>
-              </div>
-            ) : (
-              <>
-                <div className="title">
-                  <Trans i18nKey="currency_balance">
-                    <Currency
-                      currency={currencySelected}
-                      displaySymbol={false}
-                    />
-                  </Trans>
-                </div>
-                <div className="value">{balance}</div>
-              </>
-            )}
-            {renderBalancesSelector(data)}
+        {deleted ? (
+          <div className="warning">
+            <InfoIcon alt="Account Deleted" />{' '}
+            <span className="account-deleted-text">Account Deleted</span>
           </div>
-        </div>
+        ) : (
+          <div className="balance-cards">
+            <div className="balance-card balance-card-primary">
+              <div className="balance-card-label">
+                <Trans i18nKey="currency_balance">
+                  <Currency currency={currencySelected} displaySymbol={false} />
+                </Trans>
+              </div>
+              <div className="balance-card-value">{balance}</div>
+            </div>
+            {reserve && (
+              <div className="balance-card balance-card-reserve">
+                <div className="balance-card-label">{t('reserve')}</div>
+                <div className="balance-card-value">{reserve}</div>
+              </div>
+            )}
+          </div>
+        )}
+        {!deleted && renderBalancesSelector(data)}
+        <div className="column first">{renderExtendedAddress(data)}</div>
         <div className="column second">
           {renderInfo(data)}
           {renderEscrows(data)}
