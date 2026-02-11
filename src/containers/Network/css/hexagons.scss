@@ -1,6 +1,8 @@
 @use '../../shared/css/variables' as *;
 
 .validators-container {
+  display: none;
+
   .validators {
     position: relative;
     border: $border-subtle;
