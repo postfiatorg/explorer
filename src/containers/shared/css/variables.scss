@@ -202,3 +202,19 @@ $XRP_OTHERS: #f52a79;
     }
   }
 }
+
+// Glow effects
+$glow-green: 0 0 8px rgb(50 230 133 / 30%);
+$glow-green-strong: 0 0 12px rgb(50 230 133 / 45%);
+$glow-green-subtle: 0 0 6px rgb(50 230 133 / 15%);
+$glow-white-subtle: 0 0 4px rgb(255 255 255 / 8%);
+
+// Borders
+$border-subtle: 1px solid $black-80;
+
+// Transitions
+$transition-fast: 150ms ease;
+$transition-default: 200ms ease;
+
+// Search radius
+$border-radius-search: 20px;

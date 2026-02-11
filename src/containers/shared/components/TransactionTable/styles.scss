@@ -178,7 +178,7 @@
   .transaction-li {
     position: relative;
     display: block;
-    border-bottom: solid 1px $black-70;
+    border-bottom: $border-subtle;
     line-height: 20px;
 
     .transaction-address {
@@ -199,6 +199,7 @@
     &:hover {
       .upper {
         background-color: rgba($black-70, 0.7);
+        transition: background-color $transition-fast;
       }
     }
   }

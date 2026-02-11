@@ -1,7 +1,7 @@
 @use '../../shared/css/variables' as *;
 
 $ledgers-margin-large: 32px;
-$ledgers-border: 1px solid $black-70;
+$ledgers-border: 1px solid $black-80;
 $ledger-width: 196px;
 
 .ledgers-page {
@@ -226,7 +226,7 @@ $ledger-width: 196px;
   .hash {
     overflow: hidden;
     padding: 0 32px 32px;
-    border: 1px solid $black-60;
+    border: $border-subtle;
     border-top: 0;
     background: rgba($black-80, 0.7);
     color: $white;

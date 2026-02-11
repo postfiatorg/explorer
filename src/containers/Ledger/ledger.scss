@@ -45,6 +45,7 @@
       &:focus,
       &:hover {
         background-color: $black-70;
+        box-shadow: $glow-white-subtle;
       }
     }
 
@@ -61,6 +62,7 @@
       &:focus,
       &:hover {
         background-color: $black-70;
+        box-shadow: $glow-white-subtle;
       }
     }
   }

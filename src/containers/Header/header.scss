@@ -9,7 +9,9 @@
   width: 100%;
   flex-direction: column;
   padding: 16px;
+  border-bottom: 1px solid $black-80;
   background: $black;
+  box-shadow: 0 1px 8px rgb(0 0 0 / 50%);
   gap: 8px;
 
   .topbar {

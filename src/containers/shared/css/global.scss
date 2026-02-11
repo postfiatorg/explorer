@@ -57,6 +57,12 @@ button {
     Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
 }
 
+a, button, input, .btn {
+  transition: color $transition-fast, background-color $transition-fast,
+    border-color $transition-fast, box-shadow $transition-fast,
+    opacity $transition-fast;
+}
+
 .clear {
   clear: both;
 }
@@ -68,7 +74,7 @@ button {
 
 h2 {
   padding-bottom: 18px;
-  border-bottom: 1px $black-70 solid;
+  border-bottom: $border-subtle;
   margin-top: 0;
   color: $white;
   font-size: 24px;
@@ -172,6 +178,7 @@ div.react-stockchart div {
 
   &:hover {
     background: $black-80;
+    box-shadow: $glow-white-subtle;
   }
 }
 
@@ -185,6 +192,7 @@ a,
   &:hover {
     background: transparent;
     color: $green-50;
+    text-shadow: $glow-green-subtle;
   }
 
   &.external, // Force the external icon. Useful for when the protocol is unknown like with NFTs.

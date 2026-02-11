@@ -17,6 +17,7 @@
     cursor: pointer;
     text-align: center;
     text-transform: capitalize;
+    transition: color $transition-fast, border-color $transition-fast, box-shadow $transition-fast;
 
     &:hover,
     &:focus {
@@ -25,7 +26,8 @@
     }
 
     &.selected {
-      border-top: 2px solid $white;
+      border-top: 2px solid $green;
+      box-shadow: 0 -2px 6px rgb(50 230 133 / 25%);
       color: $white;
       @include bold;
     }
