@@ -439,7 +439,25 @@ const getAccountTransactions = (
       throw new Error(resp.error_message, 500)
     }
 
-    return formatAccountTxResponse(resp)
+    const result = formatAccountTxResponse(resp)
+
+    if (
+      result.transactions.length === 0 &&
+      !result.marker &&
+      rippledSocket.archiveSocket
+    ) {
+      return queryArchive(rippledSocket, request).then((archiveResp) => {
+        if (archiveResp.error === 'actNotFound') {
+          throw new Error('account not found', 404)
+        }
+        if (archiveResp.error_message) {
+          throw new Error(archiveResp.error_message, 500)
+        }
+        return formatAccountTxResponse(archiveResp)
+      })
+    }
+
+    return result
   })
 }
 
