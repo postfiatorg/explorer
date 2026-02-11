@@ -12,10 +12,21 @@ const BASE_URL_BY_ENV = {
   testnet: 'https://explorer.testnet.postfiat.org',
   devnet: 'https://explorer.devnet.postfiat.org',
 }
+const ENV_BASE_URL_BY_ENV = {
+  mainnet: process.env.VITE_MAINNET_LINK,
+  testnet: process.env.VITE_TESTNET_LINK,
+  devnet: process.env.VITE_DEVNET_LINK,
+  xahau_mainnet: process.env.VITE_XAHAU_MAINNET_LINK,
+  xahau_testnet: process.env.VITE_XAHAU_TESTNET_LINK,
+  custom: process.env.VITE_CUSTOMNETWORK_LINK,
+}
+const normalizeBaseUrl = (url) => (url ? url.replace(/\/$/, '') : url)
 
 module.exports = (_req, res) => {
   const env = process.env.VITE_ENVIRONMENT || 'mainnet'
-  const baseUrl = BASE_URL_BY_ENV[env] || BASE_URL_BY_ENV.mainnet
+  const baseUrl = normalizeBaseUrl(
+    ENV_BASE_URL_BY_ENV[env] || BASE_URL_BY_ENV[env] || BASE_URL_BY_ENV.mainnet,
+  )
   const now = new Date().toISOString().split('T')[0]
 
   const urls = STATIC_ROUTES.map(

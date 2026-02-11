@@ -19,10 +19,21 @@ const BASE_URL_BY_ENV: Record<string, string> = {
   testnet: 'https://explorer.testnet.postfiat.org',
   devnet: 'https://explorer.devnet.postfiat.org',
 }
-
-const baseUrl =
-  BASE_URL_BY_ENV[process.env.VITE_ENVIRONMENT || 'mainnet'] ||
-  BASE_URL_BY_ENV.mainnet
+const ENV_BASE_URL_BY_ENV: Record<string, string | undefined> = {
+  mainnet: process.env.VITE_MAINNET_LINK,
+  testnet: process.env.VITE_TESTNET_LINK,
+  devnet: process.env.VITE_DEVNET_LINK,
+  xahau_mainnet: process.env.VITE_XAHAU_MAINNET_LINK,
+  xahau_testnet: process.env.VITE_XAHAU_TESTNET_LINK,
+  custom: process.env.VITE_CUSTOMNETWORK_LINK,
+}
+const normalizeBaseUrl = (url?: string) => (url ? url.replace(/\/$/, '') : url)
+const currentEnv = process.env.VITE_ENVIRONMENT || 'mainnet'
+const baseUrl = normalizeBaseUrl(
+  ENV_BASE_URL_BY_ENV[currentEnv] ||
+    BASE_URL_BY_ENV[currentEnv] ||
+    BASE_URL_BY_ENV.mainnet,
+)
 
 export const SEOHelmet: FC<SEOHelmetProps> = ({
   title,

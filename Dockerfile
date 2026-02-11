@@ -36,6 +36,9 @@ RUN npm ci --only=production
 # Copy built assets from builder stage
 COPY --from=builder /explorer/build ./build
 
+# Copy runtime env so server can read PRERENDER_SERVICE_URL/VITE_ENVIRONMENT
+COPY --from=builder /explorer/.env ./.env
+
 # Copy server code
 COPY server ./server
 

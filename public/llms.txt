@@ -10,11 +10,12 @@ Post Fiat (PFT) is a blockchain network built on XRPL technology. The native cur
 
 ## Key Pages
 
-- [Home — Latest Ledgers](https://explorer.testnet.postfiat.org/): Real-time feed of closed ledgers with transaction counts, fees, and validator information
-- [Network Nodes](https://explorer.testnet.postfiat.org/network/nodes): Geographic distribution, software versions, and sync status of all network nodes
-- [Validators](https://explorer.testnet.postfiat.org/network/validators): Validator list with uptime, voting activity, and UNL (Unique Node List) status
-- [Upgrade Status](https://explorer.testnet.postfiat.org/network/upgrade-status): Protocol upgrade progress across the network
-- [Amendments](https://explorer.testnet.postfiat.org/amendments): Protocol amendment proposals with voting progress and activation status
+- [Home — Latest Ledgers](/): Real-time feed of closed ledgers with transaction counts, fees, and validator information
+- [Network Nodes](/network/nodes): Geographic distribution, software versions, and sync status of all network nodes
+- [Validators](/network/validators): Validator list with uptime, voting activity, and UNL (Unique Node List) status
+- [Upgrade Status](/network/upgrade-status): Protocol upgrade progress across the network
+- [Network Exclusions](/network/exclusions): Excluded validators and network policy exclusions
+- [Amendments](/amendments): Protocol amendment proposals with voting progress and activation status
 
 ## Dynamic Pages
 
@@ -24,6 +25,7 @@ Post Fiat (PFT) is a blockchain network built on XRPL technology. The native cur
 - `/validators/{validator_key}` — Validator details, history, and voting record
 - `/token/{currency}.{issuer}` — Token information and issuer details
 - `/nft/{nft_id}` — NFT details, offers, and transaction history
+- `/mpt/{mpt_id}` — Multi-purpose token details, holders, and metadata
 - `/amendment/{amendment_hash}` — Amendment details and validator voting
 
 ## API

@@ -7,6 +7,9 @@ services:
     restart: unless-stopped
     depends_on:
       - prerender
+    environment:
+      - PRERENDER_SERVICE_URL=http://prerender:3000/
+      - VITE_ENVIRONMENT=testnet
     logging:
       driver: "json-file"
       options:

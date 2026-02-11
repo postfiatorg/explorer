@@ -26,10 +26,30 @@ const files = express.static(path.join(__dirname, '/../build'), {
     }
   },
 })
+const STATIC_FILE_EXTENSIONS = new Set([
+  '.js',
+  '.css',
+  '.map',
+  '.json',
+  '.png',
+  '.jpg',
+  '.jpeg',
+  '.gif',
+  '.svg',
+  '.ico',
+  '.webp',
+  '.woff',
+  '.woff2',
+  '.ttf',
+  '.eot',
+  '.otf',
+  '.txt',
+  '.xml',
+  '.webmanifest',
+])
 
 app.use(compression())
 app.use(bodyParser.json())
-app.use(files)
 app.use('/api/v1', routes)
 app.get('/sitemap.xml', require('./routes/v1/sitemap'))
 
@@ -53,12 +73,24 @@ if (process.env.NODE_ENV === 'production') {
       'YouBot',
       'Bytespider',
     )
-    app.use(prerender)
+    app.use((req, res, next) => {
+      if (req.method !== 'GET') return next()
+      if (req.path.startsWith('/api/')) return next()
+
+      const ext = path.extname(req.path).toLowerCase()
+      if (ext && STATIC_FILE_EXTENSIONS.has(ext)) return next()
+
+      return prerender(req, res, next)
+    })
     log.info(
       `prerender middleware enabled, service: ${process.env.PRERENDER_SERVICE_URL}`,
     )
   }
+}
 
+app.use(files)
+
+if (process.env.NODE_ENV === 'production') {
   app.get('*', (_req, res) => {
     res.sendFile(path.join(__dirname, '/../build/index.html'))
   })
