@@ -2,21 +2,9 @@
 
 .transaction {
   position: relative;
-  max-width: 912px;
-  min-height: 600px;
-
-  @include for-size(tablet-landscape-up) {
-    width: 584px;
-    margin: 0 auto;
-  }
-
-  @include for-size(desktop-up) {
-    width: 820px;
-  }
-
-  @include for-size(big-desktop-up) {
-    width: 912px;
-  }
+  max-width: 960px;
+  min-height: 400px;
+  margin: 0 auto;
 
   .loader {
     position: absolute;
@@ -25,39 +13,62 @@
   }
 
   .summary {
-    padding: 16px 16px 87px;
-    border: $border-subtle;
-    border-radius: $border-radius;
+    padding: 24px;
+    border: 1px solid $black-80;
+    border-radius: 12px;
     background: linear-gradient(180deg, $black-80, $black-90);
+    margin-bottom: 0;
 
     .type {
       display: inline-block;
-      margin-bottom: 24px;
-      font-size: 42px;
+      margin-bottom: 16px;
+      font-size: 32px;
       @include bold;
       @include gradient-title;
+
+      @include for-size(tablet-landscape-up) {
+        font-size: 38px;
+      }
+    }
+
+    .tx-status {
+      display: inline-flex;
+      margin-left: 16px;
+      vertical-align: middle;
+
+      .status-message {
+        padding: 2px 12px;
+        border-radius: 100px;
+      }
     }
 
     .txid {
-      .title {
-        @include semibold;
-      }
-
       display: flex;
       overflow: hidden;
       margin-top: 8px;
       color: $black-40;
       font-size: 12px;
-      letter-spacing: 0px;
+      font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace;
+      letter-spacing: 0;
       line-height: 20px;
       text-overflow: ellipsis;
       text-transform: uppercase;
       white-space: nowrap;
       @include medium;
-    }
 
-    .tx-status {
-      margin-left: 15px;
+      .title {
+        @include semibold;
+        margin-right: 4px;
+        color: $black-50;
+        font-family: 'Inter', 'Work Sans', system-ui, sans-serif;
+      }
     }
+  }
+
+  .tab-body {
+    border: 1px solid $black-80;
+    border-top: none;
+    border-radius: 0 0 12px 12px;
+    background: $black-90;
   }
 }

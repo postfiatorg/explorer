@@ -7,7 +7,7 @@ const render = (t, language, action, node, index) => {
   const fields = node.FinalFields || node.NewFields || { Balance: 0 }
   const prev = node.PreviousFields || { Balance: 0 }
   const change = (fields.Balance - prev.Balance) / XRP_BASE
-  const numberOption = { ...CURRENCY_OPTIONS, currency: 'XRP' }
+  const numberOption = { ...CURRENCY_OPTIONS, currency: 'PFT' }
   const prevBalance = localizeNumber(
     prev.Balance / XRP_BASE,
     language,

@@ -29,7 +29,7 @@ export const Description = ({ data }: TransactionDescriptionProps) => {
       <div data-testid="documentation-line">
         <Trans
           i18nKey="setfee_docs_description"
-          components={[<a href="https://xrpl.org/fees.html">Fees</a>]}
+          components={[<a href="https://docs.postfiat.org/fees">Fees</a>]}
         />
       </div>
     </>

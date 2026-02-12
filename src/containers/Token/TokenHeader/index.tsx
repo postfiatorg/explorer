@@ -106,7 +106,7 @@ export const TokenHeader = ({
           <TokenTableRow label="Rippling" value={rippling} />
           <TokenTableRow label="Deposit Auth" value={depositAuth} />
           <TokenTableRow label="Master Key" value={masterKey} />
-          <TokenTableRow label="Receiving XRP" value={receivingXRP} />
+          <TokenTableRow label="Receiving PFT" value={receivingXRP} />
           <TokenTableRow label="Frozen" value={frozen} />
           <TokenTableRow label="No freeze" value={noFreeze} />
           <TokenTableRow label="Require Auth" value={requireAuth} />

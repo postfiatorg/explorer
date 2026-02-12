@@ -308,7 +308,7 @@ export const removeRoutes = (routes, ...routesToRemove) =>
 
 export const formatAsset = (asset) =>
   typeof asset === 'string'
-    ? { currency: 'XRP' }
+    ? { currency: 'PFT' }
     : {
         currency: asset.currency,
         issuer: asset.issuer,

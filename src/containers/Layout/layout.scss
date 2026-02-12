@@ -1,0 +1,34 @@
+@use '../shared/css/variables' as *;
+
+:root {
+  --topbar-height: 56px;
+  --statusbar-height: 32px;
+  --sidebar-width: 240px;
+  --sidebar-collapsed-width: 64px;
+}
+
+.layout {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+}
+
+.layout-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: flex-start;
+  margin-top: var(--topbar-height);
+  margin-bottom: var(--statusbar-height);
+  padding: 24px;
+  min-height: calc(100vh - var(--topbar-height) - var(--statusbar-height));
+
+  @media (min-width: $tablet-landscape-upper-boundary) {
+    margin-left: var(--sidebar-width);
+    transition: margin-left 250ms ease;
+
+    .sidebar-collapsed & {
+      margin-left: var(--sidebar-collapsed-width);
+    }
+  }
+}

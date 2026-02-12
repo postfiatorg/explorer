@@ -19,7 +19,7 @@ const renderApp = () => {
         </Router>
       </I18nextProvider>
     </Suspense>,
-    document.getElementById('xrpl-explorer'),
+    document.getElementById('pft-explorer'),
   )
 }
 

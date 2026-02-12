@@ -5,11 +5,11 @@
   .nft-bottom-container {
     display: flex;
     flex-direction: column;
-    padding-top: 64px;
+    padding-top: 24px;
 
     @include for-size(desktop-up) {
       flex-direction: row;
-      padding-top: 80px;
+      padding-top: 32px;
     }
 
     .details {
@@ -31,11 +31,11 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    margin-top: 68px;
+    margin-top: 24px;
 
     @include for-size(desktop-up) {
       flex-direction: row;
-      margin-top: 80px;
+      margin-top: 32px;
     }
 
     .values {

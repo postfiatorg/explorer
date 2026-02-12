@@ -1,23 +1,29 @@
 @use 'variables' as *;
 
 .tabs {
-  border-top: 1px solid $black-70;
+  position: relative;
+  display: flex;
+  border-bottom: 1px solid $black-70;
   margin: 8px auto 40px;
   font-size: 14px;
+  gap: 4px;
 
   a {
     color: inherit;
   }
 
   .tab {
+    position: relative;
     display: inline-block;
-    padding: 24px 24px 0;
-    border-top: 2px solid transparent;
+    padding: 12px 24px;
+    border: none;
     color: $black-40;
     cursor: pointer;
     text-align: center;
     text-transform: capitalize;
-    transition: color $transition-fast, border-color $transition-fast, box-shadow $transition-fast;
+    transition:
+      color $transition-fast,
+      background-color $transition-fast;
 
     &:hover,
     &:focus {
@@ -26,10 +32,19 @@
     }
 
     &.selected {
-      border-top: 3px solid $green;
-      box-shadow: 0 -2px 6px rgb(50 230 133 / 25%);
       color: $white;
       @include bold;
+
+      &::after {
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: $green;
+        box-shadow: 0 1px 6px rgba(var(--green-50-rgb), 0.4);
+        content: '';
+      }
     }
   }
 }

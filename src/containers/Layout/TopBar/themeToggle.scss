@@ -1,0 +1,20 @@
+@use '../../shared/css/variables' as *;
+
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid $black-70;
+  border-radius: 8px;
+  background: transparent;
+  color: $black-40;
+  cursor: pointer;
+
+  &:hover {
+    border-color: $black-60;
+    color: $white;
+  }
+}

@@ -3,8 +3,8 @@ import { formatAmount } from '../../../../../rippled/lib/txSummary/formatAmount'
 
 export function parser(tx: any) {
   const gets = formatAmount(tx.TakerGets)
-  const base = tx.TakerGets.currency ? tx.TakerGets : { currency: 'XRP' }
-  const counter = tx.TakerPays.currency ? tx.TakerPays : { currency: 'XRP' }
+  const base = tx.TakerGets.currency ? tx.TakerGets : { currency: 'PFT' }
+  const counter = tx.TakerPays.currency ? tx.TakerPays : { currency: 'PFT' }
   const pays = formatAmount(tx.TakerPays)
   const price = Number(pays.amount) / Number(gets.amount)
   const invert =

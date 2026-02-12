@@ -49,11 +49,15 @@ export const TOKEN_ROUTE: RouteDefinition<{
   path: `/token/:token`,
 }
 
+export const TRANSACTIONS_LIST_ROUTE: RouteDefinition = {
+  path: '/transactions',
+}
+
 export const TRANSACTION_ROUTE: RouteDefinition<{
   identifier: string
   tab?: 'simple' | 'detailed' | 'raw'
 }> = {
-  path: `/transactions/:identifier?/:tab?`,
+  path: `/transactions/:identifier/:tab?`,
 }
 
 export const VALIDATOR_ROUTE: RouteDefinition<{
@@ -77,4 +81,12 @@ export const MPT_ROUTE: RouteDefinition<{
   id: string
 }> = {
   path: '/mpt/:id',
+}
+
+export const ANALYTICS_ROUTE: RouteDefinition = {
+  path: '/analytics',
+}
+
+export const DEVELOPERS_ROUTE: RouteDefinition = {
+  path: '/developers',
 }

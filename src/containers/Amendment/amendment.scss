@@ -12,13 +12,13 @@
 
   .type {
     display: inline-block;
-    margin-top: 80px;
-    margin-bottom: 32px;
+    margin-top: 32px;
+    margin-bottom: 24px;
     font-size: 32px;
 
     @include for-size(tablet-portrait-up) {
-      margin-top: 120px;
-      margin-bottom: 64px;
+      margin-top: 40px;
+      margin-bottom: 32px;
       font-size: 42px;
     }
 
@@ -117,7 +117,7 @@
             white-space: nowrap;
 
             &:hover {
-              background-color: rgba($black-70, 0.5);
+              background-color: rgba(var(--black-70-rgb), 0.5);
             }
 
             &:last-child {

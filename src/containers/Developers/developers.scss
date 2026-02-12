@@ -1,0 +1,217 @@
+@use '../shared/css/variables' as *;
+
+.developers-page {
+  max-width: 900px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.developers-title {
+  margin: 0 0 8px;
+  padding: 0;
+  border: none;
+  color: $white;
+  font-size: 28px;
+  @include bold;
+}
+
+.developers-intro {
+  color: $black-40;
+  font-size: 15px;
+  margin: 0 0 32px;
+  line-height: 1.5;
+}
+
+.developers-section {
+  margin-bottom: 32px;
+}
+
+.developers-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid $black-80;
+  margin: 0 0 16px;
+  color: $white;
+  font-size: 18px;
+  border-image: none;
+  @include semibold;
+}
+
+.developers-endpoints {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.endpoint-card {
+  padding: 16px;
+  border: 1px solid $black-80;
+  border-radius: 8px;
+  background: $black-90;
+}
+
+.endpoint-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.endpoint-method {
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--green-90);
+  color: var(--green-50);
+  font-size: 11px;
+  text-transform: uppercase;
+  @include bold;
+}
+
+.endpoint-path {
+  color: $white;
+  font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace;
+  font-size: 14px;
+}
+
+.endpoint-description {
+  margin: 0 0 8px;
+  color: $black-40;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.endpoint-response {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+
+  .endpoint-response-label {
+    color: $black-50;
+    @include medium;
+  }
+
+  code {
+    color: $black-30;
+    font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace;
+  }
+}
+
+.developers-card {
+  padding: 16px;
+  border: 1px solid $black-80;
+  border-radius: 8px;
+  background: $black-90;
+}
+
+.developers-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 0;
+  border-bottom: 1px solid $black-80;
+
+  &:first-child {
+    padding-top: 0;
+  }
+
+  &:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+}
+
+.developers-label {
+  color: $black-50;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  @include medium;
+}
+
+.developers-value {
+  color: $white;
+  font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace;
+  font-size: 14px;
+}
+
+.developers-tags {
+  display: flex;
+  gap: 8px;
+}
+
+.developers-tag {
+  padding: 4px 10px;
+  border: 1px solid $black-70;
+  border-radius: 4px;
+  color: $blue;
+  font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace;
+  font-size: 13px;
+}
+
+.developers-code-block {
+  display: block;
+  padding: 12px;
+  border: 1px solid $black-80;
+  border-radius: 6px;
+  background: $black-100;
+  color: $green-30;
+  font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.developers-links {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+
+  @media (max-width: $tablet-portrait-upper-boundary) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.developers-link-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid $black-80;
+  border-radius: 8px;
+  background: $black-90;
+  color: $white;
+  text-decoration: none;
+  transition: border-color 150ms ease;
+
+  &:hover {
+    border-color: $green-70;
+  }
+
+  &::after {
+    display: none !important;
+  }
+
+  svg {
+    flex-shrink: 0;
+    color: $black-40;
+  }
+
+  div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+}
+
+.developers-link-title {
+  font-size: 14px;
+  @include semibold;
+}
+
+.developers-link-desc {
+  color: $black-50;
+  font-size: 12px;
+}

@@ -101,7 +101,7 @@ export const AmendmentsTable: FC<{
       <td className="version">
         {amendment.rippled_version ? (
           <Link
-            to={`https://github.com/XRPLF/rippled/releases/tag/${amendment.rippled_version}`}
+            to={`https://github.com/postfiatorg/pftld/releases/tag/${amendment.rippled_version}`}
             target="_blank"
           >
             {amendment.rippled_version}

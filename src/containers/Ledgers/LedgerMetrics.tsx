@@ -132,7 +132,7 @@ export const LedgerMetrics = ({
                 >
                   <a
                     key={`link ${key}`}
-                    href="https://xrpl.org/negative-unl.html"
+                    href="https://docs.postfiat.org/negative-unl"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="n-unl-metric"

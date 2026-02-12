@@ -30,7 +30,7 @@
   border-radius: $border-radius;
   margin-top: 5px;
   backdrop-filter: blur(8px);
-  background: rgba($black, 0.96);
+  background: rgba(var(--black-100-rgb), 0.96);
   box-shadow: 0 8px 24px rgb(0 0 0 / 60%);
 }
 

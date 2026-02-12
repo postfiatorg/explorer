@@ -106,7 +106,7 @@ export const Simple = ({ data, validators, width }: SimpleProps) => {
 
   const rowIndex = renderRowIndex()
 
-  const details = `https://xrpl.org/known-amendments.html#${data.name.toLowerCase()}`
+  const details = `https://docs.postfiat.org/known-amendments#${data.name.toLowerCase()}`
 
   return (
     <>
@@ -116,7 +116,7 @@ export const Simple = ({ data, validators, width }: SimpleProps) => {
         <SimpleRow label={t('introduced_in')}>
           {data.rippled_version ? (
             <Link
-              to={`https://github.com/XRPLF/rippled/releases/tag/${data.rippled_version}`}
+              to={`https://github.com/postfiatorg/pftld/releases/tag/${data.rippled_version}`}
               target="_blank"
             >
               {`v${data.rippled_version}`}

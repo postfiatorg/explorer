@@ -96,7 +96,7 @@
   .details {
     min-height: 30px;
     padding: 32px;
-    background: rgba($black-70, 0.5);
+    background: rgba(var(--black-70-rgb), 0.5);
     color: $black-40;
     font-size: 10px;
     line-height: 12px;
@@ -210,7 +210,7 @@
 
     &:hover {
       .upper {
-        background-color: rgba($black-70, 0.7);
+        background-color: rgba(var(--black-70-rgb), 0.7);
         transition: background-color $transition-fast;
       }
     }

@@ -3,7 +3,8 @@ import { TOKEN_ROUTE, MPT_ROUTE } from '../../App/routes'
 
 // https://xrpl.org/currency-formats.html#nonstandard-currency-codes
 const NON_STANDARD_CODE_LENGTH = 40
-const XRP = 'PFT'
+const DISPLAY_CURRENCY = 'PFT'
+const NATIVE_CURRENCY_CODES = ['XRP', 'PFT']
 const LP_TOKEN_IDENTIFIER = '03'
 
 export interface Props {
@@ -58,9 +59,13 @@ const Currency = (props: Props) => {
       currencyCode = `Fake${currencyCode}`
     }
 
+    if (NATIVE_CURRENCY_CODES.includes(currencyCode)) {
+      currencyCode = DISPLAY_CURRENCY
+    }
+
     let display = `${currencyCode}`
 
-    if (currencyCode === XRP && displaySymbol) {
+    if (currencyCode === DISPLAY_CURRENCY && displaySymbol) {
       display = `\uE900 ${display}`
     }
 

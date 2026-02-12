@@ -136,7 +136,7 @@ $subdued-color: $black-40;
       border: $border-subtle;
       border-radius: $border-radius;
       margin: 16px 0 16px -16px;
-      background: linear-gradient(180deg, rgba($black-80, 0.7), rgba($black-90, 0.7));
+      background: linear-gradient(180deg, rgba(var(--black-80-rgb), 0.7), rgba(var(--black-90-rgb), 0.7));
       gap: 15px;
 
       &:first-child {

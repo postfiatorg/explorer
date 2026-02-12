@@ -42,9 +42,29 @@
     }
   }
 
-  // Because of an optical illusion caused by white space the link icon looks to be too lower
   &::after {
     position: relative;
     top: -1px;
+  }
+
+  /* Pill badge variant */
+  .status-message {
+    padding: 2px 10px;
+    border-radius: 100px;
+    font-size: 12px;
+    line-height: 18px;
+    @include semibold;
+  }
+
+  &.success .status-message {
+    background: rgba(var(--green-50-rgb), 0.15);
+    box-shadow: 0 0 8px rgba(var(--green-50-rgb), 0.2);
+    color: $green;
+  }
+
+  &.fail .status-message {
+    background: rgba(var(--orange-50-rgb), 0.15);
+    box-shadow: 0 0 8px rgba(var(--orange-50-rgb), 0.2);
+    color: $orange;
   }
 }

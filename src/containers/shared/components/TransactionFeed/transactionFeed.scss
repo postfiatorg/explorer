@@ -1,0 +1,206 @@
+@use '../../css/variables' as *;
+
+.tx-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tx-feed-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tx-feed-empty {
+  padding: 32px;
+  color: $black-40;
+  font-size: 14px;
+  text-align: center;
+}
+
+.tx-feed-card {
+  border: 1px solid $black-80;
+  border-left: 3px solid $black-60;
+  border-radius: 8px;
+  background: $black-90;
+  transition: border-color 150ms ease, background-color 150ms ease;
+
+  &:hover {
+    background: $black-80;
+  }
+
+  // Category border colors
+  &.tx-category-border-PAYMENT { border-left-color: var(--green-50); }
+  &.tx-category-border-DEX { border-left-color: var(--blue-50); }
+  &.tx-category-border-ACCOUNT { border-left-color: var(--magenta-50); }
+  &.tx-category-border-NFT { border-left-color: var(--blue-purple-40); }
+  &.tx-category-border-XCHAIN { border-left-color: var(--yellow-50); }
+  &.tx-category-border-MPT { border-left-color: var(--blue-50); }
+  &.tx-category-border-PSEUDO { border-left-color: var(--black-50); }
+  &.tx-category-border-OTHER { border-left-color: var(--black-60); }
+}
+
+.tx-feed-card-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+}
+
+.tx-feed-card-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: $black-80;
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  // Category background colors
+  &.tx-category-bg-PAYMENT { background: var(--green-100); color: var(--green-50); }
+  &.tx-category-bg-DEX { background: var(--blue-90); color: var(--blue-50); }
+  &.tx-category-bg-ACCOUNT { background: var(--magenta-90); color: var(--magenta-50); }
+  &.tx-category-bg-NFT { background: var(--blue-purple-90); color: var(--blue-purple-40); }
+  &.tx-category-bg-XCHAIN { background: var(--yellow-90); color: var(--yellow-50); }
+  &.tx-category-bg-MPT { background: var(--blue-90); color: var(--blue-50); }
+}
+
+.tx-feed-card-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.tx-feed-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.tx-feed-card-type {
+  color: $white;
+  font-size: 14px;
+  text-decoration: none;
+  @include medium;
+
+  &:hover {
+    color: $green;
+  }
+
+  &::after {
+    display: none !important;
+  }
+}
+
+.tx-feed-card-time {
+  color: $black-50;
+  font-size: 12px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.tx-feed-card-details {
+  margin-top: 2px;
+}
+
+.tx-feed-card-account {
+  .account {
+    font-size: 12px;
+    color: $black-40;
+
+    &:hover {
+      color: $green-30;
+    }
+  }
+
+  a::after {
+    display: none !important;
+  }
+}
+
+.tx-feed-card-status {
+  flex-shrink: 0;
+}
+
+.tx-feed-card-pill {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 100px;
+  font-size: 11px;
+  text-transform: uppercase;
+  @include semibold;
+
+  &.success {
+    background: rgba(var(--green-50-rgb), 0.15);
+    color: var(--green-50);
+  }
+
+  &.fail {
+    background: rgba(var(--orange-50-rgb), 0.15);
+    color: var(--orange-40);
+  }
+}
+
+.tx-feed-card-expand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: $black-50;
+  cursor: pointer;
+  transition: color 150ms ease;
+
+  &:hover {
+    color: $white;
+  }
+
+  .rotated {
+    transform: rotate(180deg);
+  }
+}
+
+.tx-feed-card-expanded {
+  padding: 0 12px 12px;
+  border-top: 1px solid $black-80;
+  margin: 0 12px;
+  padding-top: 12px;
+  color: $black-40;
+  font-size: 12px;
+}
+
+// Compact mode
+.tx-feed-compact .tx-feed-card {
+  border-radius: 6px;
+
+  .tx-feed-card-main {
+    padding: 8px 12px;
+    gap: 8px;
+  }
+
+  .tx-feed-card-icon-wrapper {
+    width: 28px;
+    height: 28px;
+
+    svg {
+      width: 14px;
+      height: 14px;
+    }
+  }
+
+  .tx-feed-card-type {
+    font-size: 13px;
+  }
+}

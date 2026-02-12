@@ -9,14 +9,14 @@ import { localizeNumber } from '../../../shared/utils'
 import { Account } from '../../../shared/components/Account'
 
 const normalize = (value, currency) =>
-  currency === 'XRP' ? (value / XRP_BASE).toString() : value
+  currency === 'PFT' ? (value / XRP_BASE).toString() : value
 
 const renderChanges = (t, language, node, index) => {
   const meta = []
   const final = node.FinalFields
   const prev = node?.PreviousFields
-  const paysCurrency = final.TakerPays.currency || 'XRP'
-  const getsCurrency = final.TakerGets.currency || 'XRP'
+  const paysCurrency = final.TakerPays.currency || 'PFT'
+  const getsCurrency = final.TakerGets.currency || 'PFT'
   const finalPays = final.TakerPays.value || final.TakerPays
   const finalGets = final.TakerGets.value || final.TakerGets
   const prevPays = prev?.TakerPays?.value || prev?.TakerPays
@@ -107,8 +107,8 @@ const renderChanges = (t, language, node, index) => {
 const render = (t, language, action, node, index, tx) => {
   const lines = []
   const fields = node.FinalFields || node.NewFields
-  const paysCurrency = fields.TakerPays.currency || 'XRP'
-  const getsCurrency = fields.TakerGets.currency || 'XRP'
+  const paysCurrency = fields.TakerPays.currency || 'PFT'
+  const getsCurrency = fields.TakerGets.currency || 'PFT'
   const takerPaysValue = normalize(
     fields.TakerPays.value || fields.TakerPays,
     paysCurrency,

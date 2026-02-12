@@ -275,7 +275,7 @@
   "number_of_affected_node": "It affected {{count}} nodes in the ledger:",
   "nodes_type": "{{action}} nodes",
   "node_meta_type": "It {{action}} a node with type",
-  "transaction_balance_line_one": "It <1><0>{{action}}</0></1> a <3><0>{{currency}}</0></3> RippleState node between <5><0>{{account}}</0></5> and <7><0>{{counterAccount}}</0></7>",
+  "transaction_balance_line_one": "It <1><0>{{action}}</0></1> a <3><0>{{currency}}</0></3> TrustLine node between <5><0>{{account}}</0></5> and <7><0>{{counterAccount}}</0></7>",
   "transaction_balance_line_two": "Balance changed by <1><0>{{change}}</0></1> from <3><0>{{previousBalance}}</0></3> to <5><0>{{finalBalance}}</0></5>",
   "transaction_outstanding_balance_line_two": "Outstanding balance changed by <1><0>{{change}}</0></1> from <3><0>{{previousBalance}}</0></3> to <5><0>{{finalBalance}}</0></5>",
   "transaction_owned_directory": "It {{action}} a DirectoryNode node owned by",
@@ -499,7 +499,7 @@
   "auth_accounts": "Authorized Accounts",
   "network_cannot_be_crawled": "This network cannot be crawled",
   "check_crawl_existed": "Please contact the operator to make sure they have /crawl accessible or a vl set.",
-  "peer_crawled_context": "For more context, see https://xrpl.org/peer-crawler.html",
+  "peer_crawled_context": "For more context, see the peer crawler documentation",
   "xchainbridge": "XChainBridge",
   "xchain_account_claim_count": "XChain Account Claim Count",
   "xchain_account_create_count": "XChain Account Create Count",
@@ -607,5 +607,11 @@
   "batch_description": "Batch Signers: <SignerList/>",
   "batch": "Batch",
   "successful": "Successful",
-  "failed": "Failed"
+  "failed": "Failed",
+  "dashboard": "Dashboard",
+  "analytics": "Analytics",
+  "developers": "Developers",
+  "meta.analytics.description": "Real-time analytics for the PFT network. Monitor transaction volume, fees, ledger intervals, and validator activity.",
+  "meta.developers.description": "Developer resources for the PFT Ledger. API endpoints, WebSocket connections, and integration guides.",
+  "meta.transactions.description": "Browse recent transactions on the PFT Ledger. Filter by type and status."
 }

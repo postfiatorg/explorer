@@ -1,0 +1,235 @@
+:root {
+  // Greyscale
+  --black-0: #fff;
+  --black-0-rgb: 255, 255, 255;
+  --black-10: #f2f2f6;
+  --black-10-rgb: 242, 242, 246;
+  --black-20: #dddee4;
+  --black-20-rgb: 221, 222, 228;
+  --black-30: #bdbfc8;
+  --black-30-rgb: 189, 191, 200;
+  --black-40: #9d9fac;
+  --black-40-rgb: 157, 159, 172;
+  --black-50: #7e808d;
+  --black-50-rgb: 126, 128, 141;
+  --black-60: #41434f;
+  --black-60-rgb: 65, 67, 79;
+  --black-70: #30323e;
+  --black-70-rgb: 48, 50, 62;
+  --black-80: #1e2029;
+  --black-80-rgb: 30, 32, 41;
+  --black-90: #0f1018;
+  --black-90-rgb: 15, 16, 24;
+  --black-100: #06060e;
+  --black-100-rgb: 6, 6, 14;
+
+  // Green
+  --green-10: #d6fae7;
+  --green-10-rgb: 214, 250, 231;
+  --green-20: #adf5ce;
+  --green-20-rgb: 173, 245, 206;
+  --green-30: #84f0b6;
+  --green-30-rgb: 132, 240, 182;
+  --green-40: #5beb9d;
+  --green-40-rgb: 91, 235, 157;
+  --green-50: #32e685;
+  --green-50-rgb: 50, 230, 133;
+  --green-60: #2dcf78;
+  --green-60-rgb: 45, 207, 120;
+  --green-70: #28b86a;
+  --green-70-rgb: 40, 184, 106;
+  --green-80: #1e8a50;
+  --green-80-rgb: 30, 138, 80;
+  --green-90: #145c35;
+  --green-90-rgb: 20, 92, 53;
+  --green-100: #0a2e1b;
+  --green-100-rgb: 10, 46, 27;
+
+  // Blue
+  --blue-10: #e5f5ff;
+  --blue-10-rgb: 229, 245, 255;
+  --blue-20: #b2e0ff;
+  --blue-20-rgb: 178, 224, 255;
+  --blue-30: #80ccff;
+  --blue-30-rgb: 128, 204, 255;
+  --blue-40: #4bb7ff;
+  --blue-40-rgb: 75, 183, 255;
+  --blue-50: #19a3ff;
+  --blue-50-rgb: 25, 163, 255;
+  --blue-60: #008ae5;
+  --blue-60-rgb: 0, 138, 229;
+  --blue-70: #006bb2;
+  --blue-70-rgb: 0, 107, 178;
+  --blue-80: #004d80;
+  --blue-80-rgb: 0, 77, 128;
+  --blue-90: #002e4c;
+  --blue-90-rgb: 0, 46, 76;
+
+  // Blue-purple
+  --blue-purple-10: #f0e5ff;
+  --blue-purple-10-rgb: 240, 229, 255;
+  --blue-purple-20: #d2b2ff;
+  --blue-purple-20-rgb: 210, 178, 255;
+  --blue-purple-30: #b480ff;
+  --blue-purple-30-rgb: 180, 128, 255;
+  --blue-purple-40: #9a52ff;
+  --blue-purple-40-rgb: 154, 82, 255;
+  --blue-purple-50: #7919ff;
+  --blue-purple-50-rgb: 121, 25, 255;
+  --blue-purple-60: #5f00e5;
+  --blue-purple-60-rgb: 95, 0, 229;
+  --blue-purple-70: #4a00b2;
+  --blue-purple-70-rgb: 74, 0, 178;
+  --blue-purple-80: #350080;
+  --blue-purple-80-rgb: 53, 0, 128;
+  --blue-purple-90: #20004c;
+  --blue-purple-90-rgb: 32, 0, 76;
+
+  // Red-purple
+  --red-purple-10: #fbe5ff;
+  --red-purple-10-rgb: 251, 229, 255;
+  --red-purple-20: #f2b2ff;
+  --red-purple-20-rgb: 242, 178, 255;
+  --red-purple-30: #ea80ff;
+  --red-purple-30-rgb: 234, 128, 255;
+  --red-purple-40: #e24cff;
+  --red-purple-40-rgb: 226, 76, 255;
+  --red-purple-50: #d919ff;
+  --red-purple-50-rgb: 217, 25, 255;
+  --red-purple-60: #c000e5;
+  --red-purple-60-rgb: 192, 0, 229;
+  --red-purple-70: #9500b2;
+  --red-purple-70-rgb: 149, 0, 178;
+  --red-purple-80: #6b0080;
+  --red-purple-80-rgb: 107, 0, 128;
+  --red-purple-90: #40004c;
+  --red-purple-90-rgb: 64, 0, 76;
+
+  // Magenta
+  --magenta-10: #ffe5f2;
+  --magenta-10-rgb: 255, 229, 242;
+  --magenta-20: #ffb2d8;
+  --magenta-20-rgb: 255, 178, 216;
+  --magenta-30: #ff80bf;
+  --magenta-30-rgb: 255, 128, 191;
+  --magenta-40: #ff4ba4;
+  --magenta-40-rgb: 255, 75, 164;
+  --magenta-50: #ff198b;
+  --magenta-50-rgb: 255, 25, 139;
+  --magenta-60: #e50071;
+  --magenta-60-rgb: 229, 0, 113;
+  --magenta-70: #b20058;
+  --magenta-70-rgb: 178, 0, 88;
+  --magenta-80: #80003f;
+  --magenta-80-rgb: 128, 0, 63;
+  --magenta-90: #4c0026;
+  --magenta-90-rgb: 76, 0, 38;
+
+  // Orange
+  --orange-10: #ffeee5;
+  --orange-10-rgb: 255, 238, 229;
+  --orange-20: #ffccb2;
+  --orange-20-rgb: 255, 204, 178;
+  --orange-30: #ffaa80;
+  --orange-30-rgb: 255, 170, 128;
+  --orange-40: #ff884b;
+  --orange-40-rgb: 255, 136, 75;
+  --orange-50: #ff6719;
+  --orange-50-rgb: 255, 103, 25;
+  --orange-60: #e54d00;
+  --orange-60-rgb: 229, 77, 0;
+  --orange-70: #b23c00;
+  --orange-70-rgb: 178, 60, 0;
+  --orange-80: #802b00;
+  --orange-80-rgb: 128, 43, 0;
+  --orange-90: #4c1a00;
+  --orange-90-rgb: 76, 26, 0;
+
+  // Yellow
+  --yellow-10: #feffe5;
+  --yellow-10-rgb: 254, 255, 229;
+  --yellow-20: #fdffb2;
+  --yellow-20-rgb: 253, 255, 178;
+  --yellow-30: #fcff80;
+  --yellow-30-rgb: 252, 255, 128;
+  --yellow-40: #fbff4c;
+  --yellow-40-rgb: 251, 255, 76;
+  --yellow-50: #faff19;
+  --yellow-50-rgb: 250, 255, 25;
+  --yellow-60: #e0e500;
+  --yellow-60-rgb: 224, 229, 0;
+  --yellow-70: #aeb200;
+  --yellow-70-rgb: 174, 178, 0;
+  --yellow-80: #7d8000;
+  --yellow-80-rgb: 125, 128, 0;
+  --yellow-90: #4b4c00;
+  --yellow-90-rgb: 75, 76, 0;
+
+  // Standalone colors
+  --red: #ff668b;
+  --red-rgb: 255, 102, 139;
+  --red-dark: #940443;
+  --red-dark-rgb: 148, 4, 67;
+  --white: #fff;
+  --white-rgb: 255, 255, 255;
+}
+
+[data-theme='light'] {
+  --black-0: #06060e;
+  --black-0-rgb: 6, 6, 14;
+  --black-10: #0f1018;
+  --black-10-rgb: 15, 16, 24;
+  --black-20: #1e2029;
+  --black-20-rgb: 30, 32, 41;
+  --black-30: #41434f;
+  --black-30-rgb: 65, 67, 79;
+  --black-40: #7e808d;
+  --black-40-rgb: 126, 128, 141;
+  --black-50: #9d9fac;
+  --black-50-rgb: 157, 159, 172;
+  --black-60: #bdbfc8;
+  --black-60-rgb: 189, 191, 200;
+  --black-70: #dddee4;
+  --black-70-rgb: 221, 222, 228;
+  --black-80: #f2f2f6;
+  --black-80-rgb: 242, 242, 246;
+  --black-90: #f8f8fa;
+  --black-90-rgb: 248, 248, 250;
+  --black-100: #fff;
+  --black-100-rgb: 255, 255, 255;
+  --white: #06060e;
+  --white-rgb: 6, 6, 14;
+}
+
+// Spacing scale
+$space-1: 4px;
+$space-2: 8px;
+$space-3: 12px;
+$space-4: 16px;
+$space-5: 20px;
+$space-6: 24px;
+$space-8: 32px;
+$space-10: 40px;
+$space-12: 48px;
+$space-16: 64px;
+
+// Border radius scale
+$radius-sm: 4px;
+$radius-md: 8px;
+$radius-lg: 12px;
+$radius-xl: 16px;
+
+// Elevation shadows
+$elevation-1: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+$elevation-2: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+$elevation-3: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
+$elevation-4: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+
+// Transition timing
+$transition-micro: 150ms;
+$transition-layout: 250ms;
+$transition-page: 400ms;
+
+// Font stacks
+$font-ui: 'Inter', 'Work Sans', system-ui, sans-serif;
+$font-mono: 'JetBrains Mono', 'IBM Plex Mono', monospace;

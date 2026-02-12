@@ -4,7 +4,7 @@
 .amendments-page {
   .summary {
     padding: 0 16px;
-    margin-top: 100px;
+    margin-top: 32px;
 
     @include for-size(tablet-portrait-up) {
       padding: 0;
@@ -39,7 +39,7 @@
   table {
     .incoming {
       border-left: 3px solid $green-70;
-      background: rgba($green-90, 0.7);
+      background: rgba(var(--green-90-rgb), 0.7);
     }
 
     .eta-label {
