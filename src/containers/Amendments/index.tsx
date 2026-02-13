@@ -1,9 +1,11 @@
 import axios from 'axios'
-import { useContext } from 'react'
+import { useContext, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from 'react-query'
+import { FileText, CheckCircle, Vote, Clock } from 'lucide-react'
 import Log from '../shared/log'
 import { SEOHelmet } from '../shared/components/SEOHelmet'
+import { MetricCard } from '../shared/components/MetricCard/MetricCard'
 import NetworkContext from '../shared/NetworkContext'
 import {
   FETCH_INTERVAL_ERROR_MILLIS,
@@ -44,6 +46,14 @@ export const Amendments = () => {
       )
       .catch((e) => Log.error(e))
 
+  const stats = useMemo(() => {
+    if (!data) return { total: 0, enabled: 0, voting: 0, withEta: 0 }
+    const enabled = data.filter((a: any) => !a.voted).length
+    const voting = data.filter((a: any) => a.voted && !a.eta).length
+    const withEta = data.filter((a: any) => a.eta).length
+    return { total: data.length, enabled, voting, withEta }
+  }, [data])
+
   return (
     <div className="amendments-page">
       <SEOHelmet
@@ -51,10 +61,16 @@ export const Amendments = () => {
         description={t('meta.amendments.description')}
         path="/amendments"
       />
-      <div className="wrap">
-        <div className="summary">
-          <div className="type">{t('amendments')}</div>
-        </div>
+      <div className="amendments-page-title">{t('amendments')}</div>
+
+      <div className="amendments-stats">
+        <MetricCard label="Total" value={stats.total || undefined} icon={FileText} />
+        <MetricCard label="Enabled" value={stats.enabled || undefined} icon={CheckCircle} />
+        <MetricCard label="In Voting" value={stats.voting || undefined} icon={Vote} />
+        <MetricCard label="With ETA" value={stats.withEta || undefined} icon={Clock} />
+      </div>
+
+      <div className="dashboard-panel">
         <AmendmentsTable amendments={data} />
       </div>
     </div>

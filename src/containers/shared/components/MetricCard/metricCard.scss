@@ -1,0 +1,56 @@
+@use '../../css/variables' as *;
+
+.metric-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 16px;
+  border: 1px solid $black-80;
+  border-radius: 12px;
+  background: $black-90;
+  transition: border-color $transition-fast;
+
+  &:hover {
+    border-color: $black-70;
+  }
+}
+
+.metric-card-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.metric-card-icon {
+  color: $black-50;
+}
+
+.metric-card-label {
+  color: $black-40;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  @include medium;
+}
+
+.metric-card-value {
+  color: $white;
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+  white-space: nowrap;
+  @include bold;
+}
+
+.metric-card-unit {
+  margin-left: 4px;
+  color: $black-40;
+  font-size: 13px;
+  @include medium;
+}
+
+.metric-card-sparkline {
+  margin-top: 4px;
+  width: 100%;
+}

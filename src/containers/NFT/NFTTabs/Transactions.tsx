@@ -3,7 +3,7 @@ import { useInfiniteQuery } from 'react-query'
 import './styles.scss'
 import SocketContext from '../../shared/SocketContext'
 import { getNFTTransactions } from '../../../rippled/NFTTransactions'
-import { TransactionTable } from '../../shared/components/TransactionTable/TransactionTable'
+import { TransactionFeed } from '../../shared/components/TransactionFeed/TransactionFeed'
 
 interface Props {
   tokenId: string
@@ -27,17 +27,14 @@ export const Transactions = (props: Props) => {
     },
   )
 
-  const renderListContents = () => {
-    const flatData = data?.pages?.map((page: any) => page.transactions).flat()
-    return (
-      <TransactionTable
-        loading={loading}
-        onLoadMore={() => fetchNextPage()}
-        transactions={flatData}
-        hasAdditionalResults={hasNextPage}
-      />
-    )
-  }
+  const flatData = data?.pages?.map((page: any) => page.transactions).flat()
 
-  return renderListContents()
+  return (
+    <TransactionFeed
+      transactions={flatData ?? []}
+      loading={loading}
+      onLoadMore={() => fetchNextPage()}
+      hasAdditionalResults={hasNextPage}
+    />
+  )
 }

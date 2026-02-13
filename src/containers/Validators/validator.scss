@@ -1,120 +1,71 @@
 @use '../shared/css/variables' as *;
 
 .validator {
-  position: relative;
-  min-height: 600px;
-
-  @include for-size(tablet-landscape-up) {
-    width: 552px;
-    margin: auto;
-  }
-  @include for-size(desktop-up) {
-    width: 772px;
-  }
-  @include for-size(big-desktop-up) {
-    width: 1140px;
-  }
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  min-height: 400px;
 
   .loader {
-    position: absolute;
     z-index: 1;
-    top: 0;
   }
+}
 
-  .summary {
-    width: calc(100% - 32px);
-    padding: 30px 16px 20px;
-    border: $border-subtle;
-    border-radius: $border-radius;
-    background: linear-gradient(180deg, $black-80, $black-90);
+.validator-hero {
+  padding: 24px;
+}
 
-    .type {
-      display: inline-block;
-      margin-bottom: 24px;
-      font-size: 32px;
-      @include bold;
-      @include gradient-title;
-    }
+.validator-hero-title {
+  font-size: 28px;
+  margin-bottom: 12px;
+  @include bold;
+  @include gradient-title;
 
-    .label {
-      margin-top: 16px;
-      margin-bottom: 4px;
-      color: $black-80;
-      font-size: 24px;
-      line-height: 32px;
-      @include bold;
-
-      @include for-size(tablet-landscape-up) {
-        font-size: 32px;
-        line-height: 40px;
-      }
-      @include for-size(desktop-up) {
-        font-size: 40px;
-        line-height: 48px;
-      }
-      @include for-size(big-desktop-up) {
-        font-size: 40px;
-        line-height: 48px;
-      }
-    }
-
-    .hash {
-      overflow: hidden;
-      padding-bottom: 87px;
-      color: $black-40;
-      font-size: 12px;
-      letter-spacing: 0px;
-      line-height: 20px;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      @include medium;
-    }
-
-    .status {
-      display: inline-block;
-      padding: 0px 15px 5px;
-      font-size: 10px;
-      line-height: 18px;
-      text-transform: uppercase;
-      vertical-align: middle;
-      @include bold;
-
-      @include for-size(tablet-landscape-up) {
-        font-size: 12px;
-        line-height: 20px;
-      }
-      @include for-size(desktop-up) {
-        font-size: 12px;
-        line-height: 20px;
-      }
-      @include for-size(big-desktop-up) {
-        font-size: 12px;
-        line-height: 20px;
-      }
-
-      &.success {
-        color: $green;
-      }
-
-      &.fail {
-        color: $orange-40;
-
-        span {
-          text-transform: none;
-        }
-      }
-
-      img {
-        position: relative;
-        top: 4px;
-        width: 16px;
-        height: 16px;
-        margin-right: 4px;
-      }
-    }
+  @include for-size(tablet-landscape-up) {
+    font-size: 34px;
   }
+}
 
-  .tab-body {
-    margin: 0px auto;
+.validator-hero-badges {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.validator-hero-key {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid $black-80;
+
+  &:first-of-type {
+    margin-top: 16px;
   }
+}
+
+.validator-hero-key-label {
+  color: $black-40;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  min-width: 90px;
+  flex-shrink: 0;
+  @include medium;
+}
+
+.validator-tab-body {
+  padding: 16px;
+  min-height: 200px;
+}
+
+.validator-empty {
+  text-align: center;
+  font-size: 14px;
+  color: $black-40;
+  padding: 32px;
 }

@@ -1,18 +1,19 @@
-import { useContext } from 'react'
+import { useContext, useMemo } from 'react'
 import axios from 'axios'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from 'react-query'
+import { Server, Globe, GitBranch, MapPinOff } from 'lucide-react'
 import { Map } from './Map'
 import { NodesTable } from './NodesTable'
 import { SEOHelmet } from '../shared/components/SEOHelmet'
+import { MetricCard } from '../shared/components/MetricCard/MetricCard'
+import { CollapsiblePanel } from '../shared/components/CollapsiblePanel/CollapsiblePanel'
 import Log from '../shared/log'
 import {
   FETCH_INTERVAL_ERROR_MILLIS,
   FETCH_INTERVAL_NODES_MILLIS,
   isEarlierVersion,
-  localizeNumber,
 } from '../shared/utils'
-import { useLanguage } from '../shared/hooks'
 import { NodeData, NodeResponse } from '../shared/vhsTypes'
 import NetworkContext from '../shared/NetworkContext'
 import './css/style.scss'
@@ -25,7 +26,6 @@ export const ledgerCompare = (a: NodeData, b: NodeData) => {
 }
 
 export const Nodes = () => {
-  const language = useLanguage()
   const { t } = useTranslation()
   const network = useContext(NetworkContext)
 
@@ -77,6 +77,18 @@ export const Nodes = () => {
       })
       .catch((e) => Log.error(e))
 
+  const countryCount = useMemo(() => {
+    if (!data?.locations) return 0
+    const countries = new Set(data.locations.map((n: any) => n.country).filter(Boolean))
+    return countries.size
+  }, [data?.locations])
+
+  const uniqueVersions = useMemo(() => {
+    if (!data?.nodes) return 0
+    const versions = new Set(data.nodes.map((n: any) => n.version).filter(Boolean))
+    return versions.size
+  }, [data?.nodes])
+
   return (
     <div className="network-page">
       <SEOHelmet
@@ -84,30 +96,29 @@ export const Nodes = () => {
         description={t('meta.nodes.description')}
         path="/network/nodes"
       />
-      <div className="type">{t('nodes')}</div>
-      {
-        // @ts-ignore - Work around for complex type assignment issues
-        <Map locations={data?.locations} />
-      }
-      <div className="stat">
-        {data?.nodes && (
-          <>
-            <span>{t('nodes_found')}: </span>
-            <span>
-              {localizeNumber(data?.nodes.length, language)}
-              {data?.unmapped ? (
-                <i>
-                  {' '}
-                  ({data?.unmapped} {t('unmapped')})
-                </i>
-              ) : null}
-            </span>
-          </>
-        )}
+      <div className="network-page-title">{t('nodes')}</div>
+
+      <div className="network-stats">
+        <MetricCard label="Total Nodes" value={data?.nodes?.length} icon={Server} />
+        <MetricCard label="Countries" value={countryCount || undefined} icon={Globe} />
+        <MetricCard label="Versions" value={uniqueVersions || undefined} icon={GitBranch} />
+        <MetricCard label="Unmapped" value={data?.unmapped} icon={MapPinOff} />
       </div>
-      <div className="wrap">
+
+      <div className="dashboard-panel network-map-panel">
+        {
+          // @ts-ignore - Work around for complex type assignment issues
+          <Map locations={data?.locations} />
+        }
+      </div>
+
+      <CollapsiblePanel
+        title={t('nodes')}
+        defaultOpen={false}
+        count={data?.nodes?.length}
+      >
         <NodesTable nodes={data?.nodes} />
-      </div>
+      </CollapsiblePanel>
     </div>
   )
 }

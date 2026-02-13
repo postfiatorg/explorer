@@ -1,10 +1,11 @@
-import { useEffect, useContext, useState } from 'react'
+import { useEffect, useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from 'react-query'
 import { Loader } from '../../shared/components/Loader'
+import { CopyableAddress } from '../../shared/components/CopyableAddress/CopyableAddress'
+import { StatusBadge } from '../../shared/components/StatusBadge/StatusBadge'
 import './styles.scss'
 import SocketContext from '../../shared/SocketContext'
-import { Tooltip, TooltipInstance } from '../../shared/components/Tooltip'
 import { BAD_REQUEST, HASH192_REGEX } from '../../shared/utils'
 import { Account } from '../../shared/components/Account'
 import { useAnalytics } from '../../shared/analytics'
@@ -24,7 +25,6 @@ export const MPTHeader = (props: Props) => {
   const { tokenId, setError } = props
   const rippledSocket = useContext(SocketContext)
   const { trackException } = useAnalytics()
-  const [tooltip, setTooltip] = useState<TooltipInstance | undefined>(undefined)
 
   const { data, isFetching: loading } = useQuery<MPTIssuanceFormattedInfo>(
     ['getMPTIssuance', tokenId],
@@ -46,72 +46,41 @@ export const MPTHeader = (props: Props) => {
     }
   }, [setError, tokenId])
 
-  const showTooltip = (event: any, d: any) => {
-    setTooltip({
-      data: d,
-      mode: 'mptId',
-      x: event.currentTarget.offsetLeft,
-      y: event.currentTarget.offsetTop,
-    })
-  }
+  if (loading) return <Loader />
 
-  const hideTooltip = () => {
-    setTooltip(undefined)
-  }
-
-  const renderHeaderContent = () => {
-    const { issuer } = data!
-
-    return (
-      <div className="section mpt-header-container">
-        <div className="mpt-info-container">
-          <div className="values">
-            <div className="title">{t('issuer_address')}</div>
-            <div className="value">
-              <div className="mpt-issuer">
-                <Account account={issuer!} />
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="mpt-bottom-container">
-          <div className="details">
-            <h2>{t('details')}</h2>
-            <Details data={data!} />
-          </div>
-          <div className="settings">
-            <h2 className="title">{t('settings')}</h2>
-            <Settings flags={data!.flags!} />
-          </div>
-        </div>
-      </div>
-    )
-  }
+  if (!data) return null
 
   return (
-    <div className="mpt-token-header">
-      <div className="section">
-        {!loading && (
-          <div className="mpt-box-header">
-            <div className="token-title">
-              MPT Issuance ID
-              <div className="badge">mpt</div>
-            </div>
-            <div
-              className="title-content"
-              onMouseOver={(e) => showTooltip(e, { tokenId })}
-              onFocus={() => {}}
-              onMouseLeave={hideTooltip}
-            >
-              {tokenId}
-            </div>
+    <>
+      <div className="mpt-hero dashboard-panel">
+        <div className="mpt-hero-top">
+          <StatusBadge status="verified" label="MPT" />
+        </div>
+        <div className="mpt-hero-id">
+          <CopyableAddress address={tokenId} truncate />
+        </div>
+        {data.issuer && (
+          <div className="mpt-hero-issuer">
+            <span className="mpt-hero-label">{t('issuer_address')}</span>
+            <Account account={data.issuer} />
           </div>
         )}
       </div>
-      <div className="box-content">
-        {loading ? <Loader /> : renderHeaderContent()}
+
+      <div className="mpt-details-columns">
+        <div className="mpt-details-panel dashboard-panel">
+          <h3 className="dashboard-panel-title">{t('details')}</h3>
+          <div className="mpt-details-content">
+            <Details data={data} />
+          </div>
+        </div>
+        <div className="mpt-settings-panel dashboard-panel">
+          <h3 className="dashboard-panel-title">{t('settings')}</h3>
+          <div className="mpt-details-content">
+            <Settings flags={data.flags!} />
+          </div>
+        </div>
       </div>
-      <Tooltip tooltip={tooltip} />
-    </div>
+    </>
   )
 }

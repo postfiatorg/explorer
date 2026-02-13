@@ -1,0 +1,47 @@
+@use '../../css/variables' as *;
+
+.collapsible-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 16px;
+  border: none;
+  background: none;
+  color: $white;
+  cursor: pointer;
+  text-align: left;
+
+  &:hover {
+    background: $black-80;
+  }
+}
+
+.collapsible-panel-title {
+  flex: 1;
+  font-size: 16px;
+  @include semibold;
+}
+
+.collapsible-panel-count {
+  padding: 1px 8px;
+  border-radius: 100px;
+  background: $black-70;
+  color: $black-30;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  @include medium;
+}
+
+.collapsible-panel-chevron {
+  color: $black-40;
+  transition: transform $transition-fast;
+
+  &.open {
+    transform: rotate(180deg);
+  }
+}
+
+.collapsible-panel-body {
+  padding: 0 16px 16px;
+}

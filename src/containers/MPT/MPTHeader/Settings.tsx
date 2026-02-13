@@ -1,6 +1,5 @@
-import './styles.scss'
 import { useTranslation } from 'react-i18next'
-import { TokenTableRow } from '../../shared/components/TokenTableRow'
+import { StatusBadge } from '../../shared/components/StatusBadge/StatusBadge'
 
 interface Props {
   flags: string[]
@@ -9,33 +8,35 @@ interface Props {
 export const Settings = ({ flags }: Props) => {
   const { t } = useTranslation()
 
-  const locked = flags.includes('lsfMPTLocked') ? 'enabled' : 'disabled'
-  const canLock = flags.includes('lsfMPTCanLock') ? 'enabled' : 'disabled'
+  const locked = flags.includes('lsfMPTLocked')
+  const canLock = flags.includes('lsfMPTCanLock')
   const requireAuth = flags.includes('lsfMPTRequireAuth')
-    ? 'enabled'
-    : 'disabled'
-
-  const canEscrow = flags.includes('lsfMPTCanEscrow') ? 'enabled' : 'disabled'
-  const canTrade = flags.includes('lsfMPTCanTrade') ? 'enabled' : 'disabled'
+  const canEscrow = flags.includes('lsfMPTCanEscrow')
+  const canTrade = flags.includes('lsfMPTCanTrade')
   const canTransfer = flags.includes('lsfMPTCanTransfer')
-    ? 'enabled'
-    : 'disabled'
-
   const canClawback = flags.includes('lsfMPTCanClawback')
-    ? 'enabled'
-    : 'disabled'
+
+  const FLAG_MAP = [
+    { key: 'locked', value: locked },
+    { key: 'can_lock', value: canLock },
+    { key: 'require_auth', value: requireAuth },
+    { key: 'can_escrow', value: canEscrow },
+    { key: 'can_trade', value: canTrade },
+    { key: 'can_transfer', value: canTransfer },
+    { key: 'can_clawback', value: canClawback },
+  ]
 
   return (
-    <table className="token-table">
-      <tbody>
-        <TokenTableRow label={t('locked')} value={locked} />
-        <TokenTableRow label={t('can_lock')} value={canLock} />
-        <TokenTableRow label={t('require_auth')} value={requireAuth} />
-        <TokenTableRow label={t('can_escrow')} value={canEscrow} />
-        <TokenTableRow label={t('can_trade')} value={canTrade} />
-        <TokenTableRow label={t('can_transfer')} value={canTransfer} />
-        <TokenTableRow label={t('can_clawback')} value={canClawback} />
-      </tbody>
-    </table>
+    <div className="mpt-settings-list">
+      {FLAG_MAP.map(({ key, value }) => (
+        <div key={key} className="mpt-setting-row">
+          <span className="mpt-setting-label">{t(key)}</span>
+          <StatusBadge
+            status={value ? 'enabled' : 'disabled'}
+            label={value ? 'Enabled' : 'Disabled'}
+          />
+        </div>
+      ))}
+    </div>
   )
 }

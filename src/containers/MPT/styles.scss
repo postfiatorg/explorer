@@ -1,8 +1,12 @@
-@use '../shared/css/variables';
+@use '../shared/css/variables' as *;
 
 .mpt-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
   width: 100%;
-  margin-top: 32px;
 
   .loader {
     min-height: 100px;
@@ -12,4 +16,6 @@
 .mpt-warning {
   font-size: 14px;
   text-align: center;
+  color: $black-40;
+  padding: 32px;
 }

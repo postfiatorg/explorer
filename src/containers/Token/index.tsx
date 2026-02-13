@@ -1,13 +1,8 @@
 import { FC, PropsWithChildren, useContext, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-
 import { useQuery } from 'react-query'
 import { SEOHelmet } from '../shared/components/SEOHelmet'
-import { TokenHeader } from './TokenHeader'
-import { TokenTransactionTable } from './TokenTransactionTable'
 import NoMatch from '../NoMatch'
-
-import './styles.scss'
 import { NOT_FOUND, BAD_REQUEST } from '../shared/utils'
 import { useAnalytics } from '../shared/analytics'
 import { ErrorMessages } from '../shared/Interfaces'
@@ -16,6 +11,12 @@ import { useRouteParams } from '../shared/routing'
 import { getToken } from '../../rippled'
 import SocketContext from '../shared/SocketContext'
 import { Loader } from '../shared/components/Loader'
+import { TokenHero } from './TokenHero'
+import { TokenStats } from './TokenStats'
+import { TokenSettings } from './TokenSettings'
+import { TokenTransactionTable } from './TokenTransactionTable'
+
+import './styles.scss'
 
 const ERROR_MESSAGES: ErrorMessages = {
   default: {
@@ -82,15 +83,11 @@ export const Token = () => {
     }
   }, [accountId, currency, trackScreenLoaded])
 
-  const renderError = () => {
-    const message = getErrorMessage(tokenDataError)
-    return <NoMatch title={message.title} hints={message.hints} />
-  }
-
   if (tokenDataError) {
+    const message = getErrorMessage(tokenDataError)
     return (
       <Page token={token} issuer={accountId}>
-        {renderError()}
+        <NoMatch title={message.title} hints={message.hints} />
       </Page>
     )
   }
@@ -101,21 +98,35 @@ export const Token = () => {
         <Loader />
       ) : (
         tokenData && (
-          <TokenHeader
-            accountId={accountId}
-            currency={currency}
-            data={tokenData}
-          />
+          <>
+            <TokenHero
+              currency={currency}
+              accountId={accountId}
+              domain={tokenData.domain}
+              emailHash={tokenData.emailHash}
+            />
+            <TokenStats
+              balance={tokenData.balance}
+              reserve={tokenData.reserve}
+              obligations={tokenData.obligations}
+              sequence={tokenData.sequence}
+            />
+            <TokenSettings data={tokenData} />
+          </>
         )
       )}
       {accountId && tokenData && (
-        <div className="section">
-          <h2>{t('token_transactions')}</h2>
-          <TokenTransactionTable accountId={accountId} currency={currency} />
+        <div className="dashboard-panel">
+          <div className="dashboard-panel-header">
+            <h2 className="dashboard-panel-title">{t('token_transactions')}</h2>
+          </div>
+          <div className="token-feed-scroll">
+            <TokenTransactionTable accountId={accountId} currency={currency} />
+          </div>
         </div>
       )}
       {!accountId && (
-        <div style={{ textAlign: 'center', fontSize: '14px' }}>
+        <div className="token-empty-message">
           <h2>Enter an account ID in the search box</h2>
         </div>
       )}

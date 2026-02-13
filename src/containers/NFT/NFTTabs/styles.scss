@@ -1,75 +1,70 @@
 @use '../../shared/css/variables' as *;
-@use '../../shared/css/table';
 
-.nft-tabs {
-  margin-top: 24px;
+.nft-offers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 12px;
 }
 
-.offers-table {
-  position: relative;
-  min-height: 150px;
+.nft-offer-card {
+  padding: 16px;
+  border: 1px solid $black-80;
+  border-radius: 8px;
+  background: $black-90;
+  transition: border-color $transition-fast;
 
-  table {
-    .no-info-panel {
-      color: $black-40;
-      font-size: 14px;
-      font-weight: 400;
-      line-height: 150%;
-      text-align: center;
-
-      .no-info-content {
-        display: flex;
-        flex-direction: column;
-
-        .no-info-img {
-          max-width: 100%;
-          height: auto;
-          margin: 10px auto;
-        }
-      }
-    }
-
-    .offer-id {
-      width: 55%;
-      padding-left: 32px;
-
-      @include for-size(tablet-portrait-up) {
-        max-width: 140px;
-      }
-
-      @include for-size(big-desktop-up) {
-        max-width: 180px;
-      }
-    }
-
-    .amount {
-      display: table-cell;
-      width: 15%;
-      padding-right: 32px;
-      @include medium;
-
-      span.amount {
-        padding: 0;
-      }
-    }
-
-    .owner {
-      display: table-cell;
-      width: 30%;
-      min-width: 0;
-      @include for-size(tablet-portrait-up) {
-        max-width: 80px;
-      }
-
-      @include for-size(big-desktop-up) {
-        max-width: 120px;
-      }
-      @include medium;
-    }
-    @include for-size(tablet-landscape-up) {
-      .offer-id {
-        display: table-cell;
-      }
-    }
+  &:hover {
+    border-color: $black-60;
   }
+}
+
+.nft-offer-id {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: $black-40;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid $black-80;
+}
+
+.nft-offer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0;
+}
+
+.nft-offer-label {
+  color: $black-40;
+  font-size: 13px;
+  @include medium;
+}
+
+.nft-offer-owner {
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 180px;
+  color: $green;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.nft-offer-amount {
+  font-size: 14px;
+  @include bold;
+}
+
+.nft-offers-empty {
+  font-size: 14px;
+  text-align: center;
+  color: $black-40;
+  padding: 32px;
 }

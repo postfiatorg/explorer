@@ -1,148 +1,71 @@
 @use '../../shared/css/variables' as *;
 @use '../../shared/css/table';
 
-.nft-header-container {
-  .nft-bottom-container {
-    display: flex;
-    flex-direction: column;
-    padding-top: 24px;
+.nft-hero {
+  padding: 24px;
+}
 
-    @include for-size(desktop-up) {
-      flex-direction: row;
-      padding-top: 32px;
-    }
+.nft-hero-top {
+  margin-bottom: 12px;
+}
 
-    .details {
-      width: 100%;
-      @include for-size(desktop-up) {
-        width: 490px;
-      }
-    }
+.nft-hero-id {
+  margin-bottom: 16px;
 
-    .settings {
-      width: 100%;
-      @include for-size(desktop-up) {
-        width: 650px;
-      }
-    }
-  }
+  .copyable-address-text {
+    font-size: 18px;
+    color: $white;
 
-  .nft-info-container {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    margin-top: 24px;
-
-    @include for-size(desktop-up) {
-      flex-direction: row;
-      margin-top: 32px;
-    }
-
-    .values {
-      display: flex;
-      flex-direction: row;
-      justify-content: space-between;
-      margin-bottom: 18px;
-      color: $white;
-
-      @include for-size(desktop-up) {
-        flex-direction: column;
-        margin-bottom: 0;
-      }
-
-      .title {
-        padding-bottom: 4px;
-        margin-bottom: 4.5px;
-        color: $black-40;
-        font-size: 14px;
-        text-transform: uppercase;
-        @include semibold;
-      }
-
-      .value {
-        display: flex;
-
-        .nft-issuer {
-          margin: auto;
-          color: $white;
-          font-size: 18px;
-          font-style: normal;
-          line-height: 125%;
-          text-align: right;
-          text-decoration: none;
-          @include bold;
-        }
-
-        .copy {
-          width: 24px;
-          height: 24px;
-          flex: none;
-          flex-grow: 0;
-          order: 1;
-          margin-left: 10px;
-        }
-      }
+    @include for-size(tablet-landscape-up) {
+      font-size: 22px;
     }
   }
 }
 
-.nft-token-header {
-  width: 100%;
-  margin-bottom: 16px;
+.nft-hero-issuer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid $black-80;
+  font-size: 14px;
+}
 
-  .nft-box-header {
-    display: flex;
+.nft-hero-label {
+  color: $black-40;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+  @include medium;
+}
+
+.nft-details-columns {
+  display: flex;
+  gap: 16px;
+
+  @media (max-width: $tablet-landscape-upper-boundary) {
     flex-direction: column;
-    align-items: flex-start;
-    padding: 16px;
-    border: $border-subtle;
-    border-radius: $border-radius;
-    margin-top: 0;
-    background: linear-gradient(180deg, $black-80, $black-90);
-    text-align: left;
-
-    .title-content {
-      overflow: hidden;
-      width: 100%;
-      min-width: 0;
-      min-height: 0;
-      padding-top: 0;
-      margin-top: 0;
-      margin-bottom: 0;
-      color: $white;
-      font-size: 24px;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      @include bold;
-    }
-
-    .token-title {
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      padding-bottom: 4px;
-      color: $black-40;
-      font-size: 14px;
-      text-transform: uppercase;
-
-      @include semibold;
-
-      .badge {
-        background: $nft;
-        color: $white;
-      }
-    }
-
-    img {
-      width: 24px;
-      height: 24px;
-      margin-left: 16px;
-      object-fit: contain;
-    }
   }
+}
 
-  .box-content {
-    min-height: 100px;
-    padding-bottom: 20px;
+.nft-details-panel,
+.nft-settings-panel {
+  flex: 1;
+  min-width: 0;
+  padding-bottom: 16px;
+}
+
+.nft-details-content {
+  padding: 0 16px;
+}
+
+.nft-tabs {
+  .tab-body {
+    border: 1px solid $black-80;
+    border-top: none;
+    border-radius: 0 0 12px 12px;
+    background: $black-90;
+    padding: 16px;
   }
 }

@@ -1,0 +1,40 @@
+@use '../../css/variables' as *;
+
+.copyable-address {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.copyable-address-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: $black-30;
+  white-space: nowrap;
+}
+
+.copyable-address-truncate .copyable-address-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.copyable-address-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: $black-50;
+  cursor: pointer;
+  transition: color $transition-fast, background-color $transition-fast;
+  flex-shrink: 0;
+
+  &:hover {
+    color: $green;
+    background: $black-80;
+  }
+}

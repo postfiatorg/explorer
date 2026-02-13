@@ -5,7 +5,6 @@ import { useWindowSize } from 'usehooks-ts'
 import { SEOHelmet } from '../shared/components/SEOHelmet'
 import NoMatch from '../NoMatch'
 import { Loader } from '../shared/components/Loader'
-import { Tabs } from '../shared/components/Tabs'
 import {
   NOT_FOUND,
   BAD_REQUEST,
@@ -14,16 +13,18 @@ import {
 } from '../shared/utils'
 import { SimpleTab } from './SimpleTab'
 import { DetailTab } from './DetailTab'
+import { TransactionFlowDiagram } from './TransactionFlowDiagram'
+import { CollapsibleJsonPanel } from './CollapsibleJsonPanel'
+import { CopyableAddress } from '../shared/components/CopyableAddress/CopyableAddress'
 import './transaction.scss'
 import { AnalyticsFields, useAnalytics } from '../shared/analytics'
 import SocketContext from '../shared/SocketContext'
 import { TxStatus } from '../shared/components/TxStatus'
 import { getAction, getCategory } from '../shared/components/Transaction'
-import { buildPath, useRouteParams } from '../shared/routing'
-import { SUCCESSFUL_TRANSACTION } from '../shared/transactionUtils'
+import { useRouteParams } from '../shared/routing'
+import { SUCCESSFUL_TRANSACTION, XRP_BASE } from '../shared/transactionUtils'
 import { getTransaction } from '../../rippled'
 import { TRANSACTION_ROUTE } from '../App/routes'
-import { JsonView } from '../shared/components/JsonView'
 
 const WRONG_NETWORK = 406
 
@@ -49,16 +50,14 @@ const getErrorMessage = (error) =>
   ERROR_MESSAGES[error] || ERROR_MESSAGES.default
 
 export const Transaction = () => {
-  const { identifier = '', tab = 'simple' } = useRouteParams(TRANSACTION_ROUTE)
+  const { identifier = '' } = useRouteParams(TRANSACTION_ROUTE)
   const { t } = useTranslation()
   const rippledSocket = useContext(SocketContext)
   const { trackException, trackScreenLoaded } = useAnalytics()
   const { isLoading, data, error, isError } = useQuery(
     ['transaction', identifier],
     () => {
-      if (identifier === '') {
-        return undefined
-      }
+      if (identifier === '') return undefined
       if (HASH256_REGEX.test(identifier) || CTID_REGEX.test(identifier)) {
         return getTransaction(identifier, rippledSocket).catch(
           (transactionRequestError) => {
@@ -68,12 +67,10 @@ export const Transaction = () => {
                 transactionRequestError.message,
               )}`,
             )
-
             return Promise.reject(status)
           },
         )
       }
-
       return Promise.reject(BAD_REQUEST)
     },
   )
@@ -81,80 +78,82 @@ export const Transaction = () => {
 
   useEffect(() => {
     if (!data?.processed) return
-
-    const type = data?.processed.tx.TransactionType
-    const status = data?.processed.meta.TransactionResult
-
+    const type = data.processed.tx.TransactionType
+    const status = data.processed.meta.TransactionResult
     const transactionProperties: AnalyticsFields = {
       transaction_action: getAction(type),
       transaction_category: getCategory(type),
       transaction_type: type,
     }
-
     if (status !== SUCCESSFUL_TRANSACTION) {
       transactionProperties.tec_code = status
     }
-
     trackScreenLoaded(transactionProperties)
-  }, [identifier, data?.processed, tab, trackScreenLoaded])
-
-  function renderSummary() {
-    const type = data?.processed.tx.TransactionType
-    return (
-      <div className="summary">
-        <div className="type">{type}</div>
-        <TxStatus status={data?.processed.meta.TransactionResult} />
-        <div className="txid" title={data?.processed.hash}>
-          <div className="title">{t('hash')}: </div>
-          {data?.processed.hash}
-        </div>
-        {data?.processed.tx.ctid && (
-          <div className="txid" title={data.processed.tx.ctid}>
-            <div className="title">CTID: </div>
-            {data.processed.tx.ctid}
-          </div>
-        )}
-      </div>
-    )
-  }
-
-  function renderTabs() {
-    const tabs = ['simple', 'detailed', 'raw']
-    const mainPath = buildPath(TRANSACTION_ROUTE, { identifier })
-    return <Tabs tabs={tabs} selected={tab} path={mainPath} />
-  }
+  }, [identifier, data?.processed, trackScreenLoaded])
 
   function renderTransaction() {
     if (!data) return undefined
+    const { processed, raw } = data
+    const type = processed.tx.TransactionType
+    const category = getCategory(type)
+    const destination = processed.tx.Destination
+    const deliverAmount = processed.tx.DeliverMax || processed.tx.Amount
+    let amountStr: string | undefined
+    let currencyStr: string | undefined
 
-    let body
-
-    switch (tab) {
-      case 'detailed':
-        body = <DetailTab data={data.processed} />
-        break
-      case 'raw':
-        body = <JsonView data={data.raw} />
-        break
-      default:
-        body = <SimpleTab data={data} width={width} />
-        break
+    if (deliverAmount && typeof deliverAmount === 'string') {
+      amountStr = (Number(deliverAmount) / XRP_BASE).toFixed(6)
+      currencyStr = 'PFT'
+    } else if (deliverAmount && typeof deliverAmount === 'object') {
+      amountStr = deliverAmount.value
+      currencyStr = deliverAmount.currency
     }
+
     return (
       <>
-        {renderSummary()}
-        {renderTabs()}
-        <div className="tab-body">{body}</div>
+        <div className={`tx-summary dashboard-panel tx-border-${category}`}>
+          <div className="tx-summary-type">{type}</div>
+          <TxStatus status={processed.meta.TransactionResult} />
+          <div className="tx-summary-hash">
+            <span className="tx-summary-hash-label">{t('hash')}:</span>
+            <CopyableAddress address={processed.hash} truncate />
+          </div>
+          {processed.tx.ctid && (
+            <div className="tx-summary-hash">
+              <span className="tx-summary-hash-label">CTID:</span>
+              <CopyableAddress address={processed.tx.ctid} truncate />
+            </div>
+          )}
+        </div>
+
+        <TransactionFlowDiagram
+          type={type}
+          account={processed.tx.Account}
+          destination={destination}
+          amount={amountStr}
+          currency={currencyStr}
+        />
+
+        <div className="tx-content-columns">
+          <div className="tx-content-left dashboard-panel">
+            <SimpleTab data={data} width={width} />
+          </div>
+        </div>
+
+        <div className="tx-detail-section dashboard-panel">
+          <DetailTab data={processed} />
+        </div>
+
+        <CollapsibleJsonPanel data={raw} />
       </>
     )
   }
 
   let body
-
   if (isError) {
     const message = getErrorMessage(error)
     body = <NoMatch title={message.title} hints={message.hints} />
-  } else if (data?.processed && data?.processed.hash) {
+  } else if (data?.processed?.hash) {
     body = renderTransaction()
   } else if (!identifier) {
     body = (
@@ -165,6 +164,7 @@ export const Transaction = () => {
       />
     )
   }
+
   return (
     <div className="transaction">
       <SEOHelmet

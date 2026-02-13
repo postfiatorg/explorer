@@ -7,6 +7,8 @@ import { useRouteParams } from '../shared/routing'
 import { AMENDMENT_ROUTE } from '../App/routes'
 import NetworkContext from '../shared/NetworkContext'
 import { SEOHelmet } from '../shared/components/SEOHelmet'
+import { CopyableAddress } from '../shared/components/CopyableAddress/CopyableAddress'
+import { StatusBadge } from '../shared/components/StatusBadge/StatusBadge'
 import {
   FETCH_INTERVAL_ERROR_MILLIS,
   FETCH_INTERVAL_VHS_MILLIS,
@@ -17,7 +19,6 @@ import { Simple } from './Simple'
 import { AmendmentData } from '../shared/vhsTypes'
 import Log from '../shared/log'
 import { Votes } from './Votes'
-
 import './amendment.scss'
 import NoMatch from '../NoMatch'
 import { useAnalytics } from '../shared/analytics'
@@ -78,9 +79,7 @@ export const Amendment = () => {
       .then((resp) => resp.data.amendment)
       .catch((axiosError) => {
         const status =
-          axiosError.response && axiosError.response.status
-            ? axiosError.response.status
-            : SERVER_ERROR
+          axiosError.response?.status ?? SERVER_ERROR
         trackException(`${url} --- ${JSON.stringify(axiosError)}`)
         return Promise.reject(status)
       })
@@ -88,7 +87,6 @@ export const Amendment = () => {
 
   const fetchValidatorsData = () => {
     const url = `${process.env.VITE_DATA_URL}/validators/${network}`
-
     return axios
       .get(url)
       .then((resp) => resp.data.validators)
@@ -103,6 +101,21 @@ export const Amendment = () => {
       .catch((e) => Log.error(e))
   }
 
+  const getStatus = (): 'enabled' | 'voting' | 'deprecated' | 'disabled' => {
+    if (!data) return 'disabled'
+    if (data.deprecated) return 'deprecated'
+    if (!data.voted) return 'enabled'
+    return 'voting'
+  }
+
+  const getStatusLabel = (): string => {
+    const status = getStatus()
+    if (status === 'enabled') return 'Enabled'
+    if (status === 'voting') return 'In Voting'
+    if (status === 'deprecated') return 'Deprecated'
+    return 'Not Enabled'
+  }
+
   let body
   const shortId = identifier.substring(0, 12)
 
@@ -112,10 +125,19 @@ export const Amendment = () => {
   } else if (data?.id && validators instanceof Array) {
     body = (
       <>
-        <div className="summary">
-          <div className="type">{t('amendment_summary')}</div>
+        <div className="amendment-hero dashboard-panel">
+          <div className="amendment-hero-title">
+            {data.name || shortId}
+          </div>
+          <div className="amendment-hero-badges">
+            <StatusBadge status={getStatus()} label={getStatusLabel()} />
+          </div>
+          <div className="amendment-hero-id">
+            <span className="amendment-hero-id-label">Amendment ID</span>
+            <CopyableAddress address={data.id} truncate />
+          </div>
         </div>
-        <div className="simple-body">
+        <div className="amendment-content dashboard-panel">
           {data && validators && (
             <Simple data={data} validators={validators} width={width} />
           )}
@@ -126,7 +148,7 @@ export const Amendment = () => {
   }
 
   return (
-    <div className="amendment-summary">
+    <div className="amendment-page">
       <SEOHelmet
         title={`${t('amendments')} ${shortId}...`}
         description={t('meta.amendment.description', { id: shortId })}

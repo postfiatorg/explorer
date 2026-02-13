@@ -1,74 +1,193 @@
 @use '../shared/css/variables' as *;
 
 .transaction {
-  position: relative;
-  max-width: 960px;
-  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 1200px;
   margin: 0 auto;
+  width: 100%;
+  min-height: 400px;
 
   .loader {
-    position: absolute;
     z-index: 1;
-    top: 0px;
   }
+}
 
-  .summary {
-    padding: 24px;
-    border: 1px solid $black-80;
-    border-radius: 12px;
-    background: linear-gradient(180deg, $black-80, $black-90);
-    margin-bottom: 0;
+// Summary card with category-colored top border
+.tx-summary {
+  padding: 24px;
 
-    .type {
-      display: inline-block;
-      margin-bottom: 16px;
-      font-size: 32px;
-      @include bold;
-      @include gradient-title;
+  &.tx-border-PAYMENT { border-top: 3px solid var(--green-50); }
+  &.tx-border-DEX { border-top: 3px solid var(--blue-50); }
+  &.tx-border-ACCOUNT { border-top: 3px solid var(--blue-purple-40); }
+  &.tx-border-NFT { border-top: 3px solid var(--magenta-50); }
+  &.tx-border-XCHAIN { border-top: 3px solid var(--orange-50); }
+  &.tx-border-MPT { border-top: 3px solid var(--blue-50); }
+  &.tx-border-PSEUDO { border-top: 3px solid var(--yellow-50); }
+  &.tx-border-OTHER { border-top: 3px solid var(--black-50); }
+}
 
-      @include for-size(tablet-landscape-up) {
-        font-size: 38px;
-      }
-    }
+.tx-summary-type {
+  display: inline-block;
+  margin-bottom: 12px;
+  font-size: 32px;
+  @include bold;
+  @include gradient-title;
 
-    .tx-status {
-      display: inline-flex;
-      margin-left: 16px;
-      vertical-align: middle;
-
-      .status-message {
-        padding: 2px 12px;
-        border-radius: 100px;
-      }
-    }
-
-    .txid {
-      display: flex;
-      overflow: hidden;
-      margin-top: 8px;
-      color: $black-40;
-      font-size: 12px;
-      font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace;
-      letter-spacing: 0;
-      line-height: 20px;
-      text-overflow: ellipsis;
-      text-transform: uppercase;
-      white-space: nowrap;
-      @include medium;
-
-      .title {
-        @include semibold;
-        margin-right: 4px;
-        color: $black-50;
-        font-family: 'Inter', 'Work Sans', system-ui, sans-serif;
-      }
-    }
+  @include for-size(tablet-landscape-up) {
+    font-size: 38px;
   }
+}
 
-  .tab-body {
-    border: 1px solid $black-80;
-    border-top: none;
-    border-radius: 0 0 12px 12px;
-    background: $black-90;
+.tx-summary .tx-status {
+  display: inline-flex;
+  margin-left: 16px;
+  vertical-align: middle;
+
+  .status-message {
+    padding: 2px 12px;
+    border-radius: 100px;
   }
+}
+
+.tx-summary-hash {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+
+.tx-summary-hash-label {
+  color: $black-50;
+  font-size: 12px;
+  font-family: 'Inter', 'Work Sans', system-ui, sans-serif;
+  flex-shrink: 0;
+  @include semibold;
+}
+
+// Flow Diagram
+.tx-flow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 24px;
+  border: 1px solid $black-80;
+  border-radius: 12px;
+  background: $black-90;
+  flex-wrap: wrap;
+
+  @media (max-width: $tablet-landscape-upper-boundary) {
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+.tx-flow-box {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px;
+  border: 1px solid $black-70;
+  border-radius: 8px;
+  background: $black-100;
+  min-width: 180px;
+  text-align: center;
+
+  .account {
+    font-size: 13px;
+  }
+}
+
+.tx-flow-box-label {
+  color: $black-40;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  @include medium;
+}
+
+.tx-flow-action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.tx-flow-action-type {
+  color: $black-30;
+  font-size: 12px;
+  @include medium;
+}
+
+.tx-flow-action-amount {
+  color: $white;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  @include semibold;
+}
+
+.tx-flow-arrow {
+  color: $green;
+}
+
+// Content columns
+.tx-content-columns {
+  display: flex;
+  gap: 16px;
+
+  @media (max-width: $tablet-landscape-upper-boundary) {
+    flex-direction: column;
+  }
+}
+
+.tx-content-left {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+// Detail section
+.tx-detail-section {
+  padding: 16px;
+}
+
+// JSON panel
+.json-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 16px;
+  border: none;
+  background: none;
+  color: $white;
+  cursor: pointer;
+  text-align: left;
+
+  &:hover {
+    background: $black-80;
+  }
+}
+
+.json-panel-title {
+  flex: 1;
+  font-size: 16px;
+  @include semibold;
+}
+
+.json-panel-chevron {
+  color: $black-40;
+  transition: transform $transition-fast;
+
+  &.open {
+    transform: rotate(180deg);
+  }
+}
+
+.json-panel-body {
+  padding: 0 16px 16px;
+  overflow-x: auto;
 }

@@ -1,63 +1,38 @@
 @use '../../shared/css/variables' as *;
 
 .network-page {
-  // Needs additional bottom margin to break up table from the horizontal
-  // rule that delineates the footer
-  margin: 0 0 50px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
 
   .loader {
-    position: absolute;
-    top: 1px;
     min-height: 100px;
   }
+}
 
-  .stat {
-    min-height: 15px;
-    padding: 2px;
-    color: $black-40;
-    font-size: 11px;
-    text-align: center;
-    text-transform: uppercase;
-
-    i {
-      font-size: 10px;
-    }
-
-    @include for-size(tablet-landscape-up) {
-      padding: 4px 10px;
-      font-size: 12px;
-
-      i {
-        font-size: 11px;
-      }
-    }
+.network-page-title {
+  font-size: 32px;
+  @include for-size(tablet-portrait-up) {
+    font-size: 38px;
   }
+  @include bold;
+  @include gradient-title;
+}
 
-  .wrap {
-    overflow: auto;
-    width: 100%;
-    max-width: 1500px;
-    margin: auto;
-  }
+.network-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 12px;
+}
 
-  .type {
-    display: inline-block;
-    margin-top: 32px;
-    margin-bottom: 24px;
-    margin-left: 16px;
-    margin-left: calc((100vw - 1500px) / 2);
-    margin-left: clamp(
-      16px,
-      calc((100vw - 1500px) / 2),
-      calc((100vw - 1500px) / 2)
-    ); // Adjust based on wrap margin with min 16px
+.network-map-panel {
+  overflow: hidden;
+}
 
-    font-size: 32px;
-    @include for-size(tablet-portrait-up) {
-      font-size: 42px;
-    }
-
-    @include bold;
-    @include gradient-title;
-  }
+.wrap {
+  overflow: auto;
+  width: 100%;
 }

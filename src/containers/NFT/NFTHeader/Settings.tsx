@@ -1,6 +1,5 @@
-import './styles.scss'
 import { useTranslation } from 'react-i18next'
-import { TokenTableRow } from '../../shared/components/TokenTableRow'
+import { StatusBadge } from '../../shared/components/StatusBadge/StatusBadge'
 
 interface Props {
   flags: string[]
@@ -9,19 +8,33 @@ interface Props {
 export const Settings = ({ flags }: Props) => {
   const { t } = useTranslation()
 
-  const burnable = flags.includes('lsfBurnable') ? 'enabled' : 'disabled'
-  const onlyXRP = flags.includes('lsfOnlyXRP') ? 'enabled' : 'disabled'
+  const burnable = flags.includes('lsfBurnable')
+  const onlyXRP = flags.includes('lsfOnlyXRP')
   const transferable = flags.includes('lsfTransferable')
-    ? 'enabled'
-    : 'disabled'
 
   return (
-    <table className="token-table">
-      <tbody>
-        <TokenTableRow label={t('burnable')} value={burnable} />
-        <TokenTableRow label={t('only_xrp')} value={onlyXRP} />
-        <TokenTableRow label={t('transferable')} value={transferable} />
-      </tbody>
-    </table>
+    <div className="nft-settings-list">
+      <div className="nft-setting-row">
+        <span className="nft-setting-label">{t('burnable')}</span>
+        <StatusBadge
+          status={burnable ? 'enabled' : 'disabled'}
+          label={burnable ? 'Enabled' : 'Disabled'}
+        />
+      </div>
+      <div className="nft-setting-row">
+        <span className="nft-setting-label">{t('only_xrp')}</span>
+        <StatusBadge
+          status={onlyXRP ? 'enabled' : 'disabled'}
+          label={onlyXRP ? 'Enabled' : 'Disabled'}
+        />
+      </div>
+      <div className="nft-setting-row">
+        <span className="nft-setting-label">{t('transferable')}</span>
+        <StatusBadge
+          status={transferable ? 'enabled' : 'disabled'}
+          label={transferable ? 'Enabled' : 'Disabled'}
+        />
+      </div>
+    </div>
   )
 }

@@ -10,6 +10,8 @@ import { SEOHelmet } from '../shared/components/SEOHelmet'
 import NoMatch from '../NoMatch'
 import { Loader } from '../shared/components/Loader'
 import { Tabs } from '../shared/components/Tabs'
+import { CopyableAddress } from '../shared/components/CopyableAddress/CopyableAddress'
+import { StatusBadge } from '../shared/components/StatusBadge/StatusBadge'
 import { useAnalytics } from '../shared/analytics'
 import {
   FETCH_INTERVAL_ERROR_MILLIS,
@@ -32,29 +34,15 @@ import logger from '../../rippled/lib/logger'
 
 const log = logger({ name: 'validator' })
 
-// Convert validator public key (nXXX...) to account address (rXXX...)
 function validatorPublicKeyToAddress(
   validatorPublicKey: string,
 ): string | null {
   try {
-    if (!validatorPublicKey.startsWith('n')) {
-      // If it's already an address, return it
-      return validatorPublicKey
-    }
-
-    // Decode the validator public key to get raw bytes
+    if (!validatorPublicKey.startsWith('n')) return validatorPublicKey
     const publicKeyBytes = decodeNodePublic(validatorPublicKey)
-
-    // Convert bytes to hex string (deriveAddress expects hex string)
     const publicKeyHex = bytesToHex(publicKeyBytes)
-
-    // Derive the address from the public key
-    const address = deriveAddress(publicKeyHex)
-
-    // Successfully converted validator key to address
-    return address
-  } catch (error) {
-    // Error converting validator public key to address
+    return deriveAddress(publicKeyHex)
+  } catch {
     return null
   }
 }
@@ -125,25 +113,17 @@ export const Validator = () => {
     return axios
       .get(`${process.env.VITE_DATA_URL}/validator/${identifier}/reports`)
       .then((resp) => resp.data.reports)
-      .then((vhsReports: ValidatorReport[]) => {
-        const sortedValidatorReports = vhsReports.sort((a, b) =>
-          a.date > b.date ? -1 : 1,
-        )
-        return sortedValidatorReports
-      })
+      .then((vhsReports: ValidatorReport[]) =>
+        vhsReports.sort((a, b) => (a.date > b.date ? -1 : 1)),
+      )
   }
 
   function fetchExclusionData() {
-    // Use WebSocket connection to fetch exclusion data
     return rippledSocket
-      .send({
-        command: 'exclusion_info',
-      })
+      .send({ command: 'exclusion_info' })
       .then((resp) => {
         if (resp.error) {
-          log.error(
-            `Error fetching exclusion data: ${resp.error_message || resp.error}`,
-          )
+          log.error(`Error fetching exclusion data: ${resp.error_message || resp.error}`)
           return null
         }
         return resp
@@ -168,7 +148,6 @@ export const Validator = () => {
               last_ledger_time: ledgerData.close_time,
             }))
             .catch((ledgerError) => {
-              // Log the error and return response without ledger data
               log.error(`Error fetching ledger data: ${ledgerError.message}`)
               return response
             })
@@ -177,28 +156,18 @@ export const Validator = () => {
       })
       .catch((axiosError) => {
         const status =
-          axiosError.response && axiosError.response.status
-            ? axiosError.response.status
-            : SERVER_ERROR
+          axiosError.response?.status ?? SERVER_ERROR
         trackException(`${url} --- ${JSON.stringify(axiosError)}`)
         return Promise.reject(status)
       })
   }
 
   function renderPageTitle() {
-    if (!data) {
-      return undefined
-    }
-
+    if (!data) return undefined
     let short = ''
-    if (data.domain) {
-      short = data.domain
-    } else if (data.master_key) {
-      short = `${data.master_key.substring(0, 8)}...`
-    } else if (data.signing_key) {
-      short = `${data.signing_key.substring(0, 8)}...`
-    }
-
+    if (data.domain) short = data.domain
+    else if (data.master_key) short = `${data.master_key.substring(0, 8)}...`
+    else if (data.signing_key) short = `${data.signing_key.substring(0, 8)}...`
     return (
       <SEOHelmet
         title={`${t('validator')} ${short}`}
@@ -206,38 +175,39 @@ export const Validator = () => {
         path={`/validators/${identifier}`}
         breadcrumbs={[
           { name: t('validators'), path: '/network/validators' },
-          {
-            name: `${t('validator')} ${short}`,
-            path: `/validators/${identifier}`,
-          },
+          { name: `${t('validator')} ${short}`, path: `/validators/${identifier}` },
         ]}
       />
     )
   }
 
-  function renderSummary() {
-    let name = 'Unknown Validator'
-    if (data?.domain) {
-      name = `Validator / Domain: ${data.domain}`
-    } else if (data?.master_key) {
-      name = `Validator / Public Key: ${data.master_key.substring(0, 8)}...`
-    } else if (data?.signing_key) {
-      name = `Validator / Ephemeral Key: ${data.signing_key.substring(0, 8)}...`
-    }
-
-    let subtitle = 'UNKNOWN KEY'
-    if (data?.master_key) {
-      subtitle = `MASTER KEY: ${data.master_key}`
-    } else if (data?.signing_key) {
-      subtitle = `SIGNING KEY: ${data.signing_key}`
-    }
+  function renderHero() {
+    const domain = data?.domain
+    const masterKey = data?.master_key
+    const signingKey = data?.signing_key
+    const isUnl = Boolean(data?.unl)
 
     return (
-      <div className="summary">
-        <div className="type">{name}</div>
-        <div className="hash" title={subtitle}>
-          {subtitle}
+      <div className="validator-hero dashboard-panel">
+        <div className="validator-hero-title">
+          {domain || (masterKey ? `${masterKey.substring(0, 12)}...` : 'Unknown Validator')}
         </div>
+        <div className="validator-hero-badges">
+          {isUnl && <StatusBadge status="verified" label="UNL" />}
+          {data?.domain_verified && <StatusBadge status="verified" label="Domain Verified" />}
+        </div>
+        {masterKey && (
+          <div className="validator-hero-key">
+            <span className="validator-hero-key-label">Master Key</span>
+            <CopyableAddress address={masterKey} truncate />
+          </div>
+        )}
+        {signingKey && signingKey !== masterKey && (
+          <div className="validator-hero-key">
+            <span className="validator-hero-key-label">Signing Key</span>
+            <CopyableAddress address={signingKey} truncate />
+          </div>
+        )}
       </div>
     )
   }
@@ -250,7 +220,6 @@ export const Validator = () => {
 
   function renderValidator() {
     let body
-
     switch (tab) {
       case 'history':
         body = <HistoryTab reports={reports ?? []} />
@@ -259,7 +228,6 @@ export const Validator = () => {
         body = data && <VotingTab validatorData={data} network={network} />
         break
       case 'exclusions': {
-        // Convert validator public key to address for matching with exclusion data
         const validatorAddress = validatorPublicKeyToAddress(identifier)
         body = (
           <ExclusionsTab
@@ -274,21 +242,18 @@ export const Validator = () => {
         body = data && <SimpleTab data={data} width={width} />
         break
     }
-
     return (
       <>
         {renderPageTitle()}
-        {renderSummary()}
+        {renderHero()}
         {renderTabs()}
-        <div className="tab-body">{body}</div>
+        <div className="validator-tab-body dashboard-panel">{body}</div>
       </>
     )
   }
 
   const isLoading =
-    dataIsLoading ||
-    reportIsLoading ||
-    (tab === 'exclusions' && exclusionIsLoading)
+    dataIsLoading || reportIsLoading || (tab === 'exclusions' && exclusionIsLoading)
   let body
 
   if (error) {
@@ -298,7 +263,7 @@ export const Validator = () => {
     body = renderValidator()
   } else if (!isLoading) {
     body = (
-      <div style={{ textAlign: 'center', fontSize: '14px' }}>
+      <div className="validator-empty">
         <h2>Could not load validator</h2>
       </div>
     )

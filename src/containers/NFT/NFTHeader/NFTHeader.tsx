@@ -1,10 +1,11 @@
-import { useEffect, useContext, useState } from 'react'
+import { useEffect, useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from 'react-query'
 import { Loader } from '../../shared/components/Loader'
+import { CopyableAddress } from '../../shared/components/CopyableAddress/CopyableAddress'
+import { StatusBadge } from '../../shared/components/StatusBadge/StatusBadge'
 import './styles.scss'
 import SocketContext from '../../shared/SocketContext'
-import { Tooltip, TooltipInstance } from '../../shared/components/Tooltip'
 import { getNFTInfo, getAccountInfo } from '../../../rippled/lib/rippled'
 import { formatNFTInfo, formatAccountInfo } from '../../../rippled/lib/utils'
 import { localizeDate, BAD_REQUEST, HASH256_REGEX } from '../../shared/utils'
@@ -39,7 +40,6 @@ export const NFTHeader = (props: Props) => {
   const { tokenId, setError } = props
   const rippledSocket = useContext(SocketContext)
   const { trackException } = useAnalytics()
-  const [tooltip, setTooltip] = useState<TooltipInstance | undefined>(undefined)
 
   const { data, isFetching: loading } = useQuery<NFTFormattedInfo>(
     ['getNFTInfo', tokenId],
@@ -61,16 +61,12 @@ export const NFTHeader = (props: Props) => {
     }
   }, [setError, tokenId])
 
-  // fetch the oldest NFT transaction to get its minted data
   const { data: firstTransaction } = useQuery(
     ['getFirstTransaction', tokenId],
     () => getOldestNFTTransaction(rippledSocket, tokenId),
-    {
-      enabled: !!data,
-    },
+    { enabled: !!data },
   )
 
-  // fetch account from issuer to get the domain
   const { data: accountData } = useQuery<AccountFormattedInfo>(
     ['getAccountInfo'],
     async () => {
@@ -89,36 +85,31 @@ export const NFTHeader = (props: Props) => {
         )} ${TIME_ZONE}`
       : undefined
 
-  const showTooltip = (event: any, d: any) => {
-    setTooltip({
-      data: d,
-      mode: 'nftId',
-      x: event.currentTarget.offsetLeft,
-      y: event.currentTarget.offsetTop,
-    })
-  }
+  if (loading) return <Loader />
 
-  const hideTooltip = () => {
-    setTooltip(undefined)
-  }
+  if (!data) return null
 
-  const renderHeaderContent = () => {
-    const { issuer } = data!
-    return (
-      <div className="section nft-header-container">
-        <div className="nft-info-container">
-          <div className="values">
-            <div className="title">{t('issuer_address')}</div>
-            <div className="value">
-              <div className="nft-issuer">
-                <Account account={issuer!} />
-              </div>
-            </div>
-          </div>
+  return (
+    <>
+      <div className="nft-hero dashboard-panel">
+        <div className="nft-hero-top">
+          <StatusBadge status="verified" label="NFT" />
         </div>
-        <div className="nft-bottom-container">
-          <div className="details">
-            <h2>{t('details')}</h2>
+        <div className="nft-hero-id">
+          <CopyableAddress address={tokenId} truncate />
+        </div>
+        {data.issuer && (
+          <div className="nft-hero-issuer">
+            <span className="nft-hero-label">{t('issuer_address')}</span>
+            <Account account={data.issuer} />
+          </div>
+        )}
+      </div>
+
+      <div className="nft-details-columns">
+        <div className="nft-details-panel dashboard-panel">
+          <h3 className="dashboard-panel-title">{t('details')}</h3>
+          <div className="nft-details-content">
             <Details
               data={{
                 ...data,
@@ -127,39 +118,14 @@ export const NFTHeader = (props: Props) => {
               }}
             />
           </div>
-          <div className="settings">
-            <h2 className="title">{t('settings')}</h2>
-            <Settings flags={data!.flags!} />
+        </div>
+        <div className="nft-settings-panel dashboard-panel">
+          <h3 className="dashboard-panel-title">{t('settings')}</h3>
+          <div className="nft-details-content">
+            <Settings flags={data.flags!} />
           </div>
         </div>
       </div>
-    )
-  }
-
-  return (
-    <div className="nft-token-header">
-      <div className="section">
-        {!loading && (
-          <div className="nft-box-header">
-            <div className="token-title">
-              NFT ID
-              <div className="badge">NFT</div>
-            </div>
-            <div
-              className="title-content"
-              onMouseOver={(e) => showTooltip(e, { tokenId })}
-              onFocus={() => {}}
-              onMouseLeave={hideTooltip}
-            >
-              {tokenId}
-            </div>
-          </div>
-        )}
-      </div>
-      <div className="box-content">
-        {loading ? <Loader /> : renderHeaderContent()}
-      </div>
-      <Tooltip tooltip={tooltip} />
-    </div>
+    </>
   )
 }

@@ -2,39 +2,32 @@
 @use '../shared/css/table';
 
 .amendments-page {
-  .summary {
-    padding: 0 16px;
-    margin-top: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
 
-    @include for-size(tablet-portrait-up) {
-      padding: 0;
-    }
-
-    .type {
-      display: inline-block;
-      padding-bottom: 24px;
-      font-size: 32px;
-
-      @include for-size(tablet-portrait-up) {
-        font-size: 42px;
-      }
-
-      @include bold;
-      @include gradient-title;
-    }
+.amendments-page-title {
+  font-size: 32px;
+  @include for-size(tablet-portrait-up) {
+    font-size: 38px;
   }
+  @include bold;
+  @include gradient-title;
+}
 
-  .wrap {
-    overflow: auto;
-    width: 100%;
-    max-width: 1500px;
-    min-height: 150px;
-    margin: auto;
-  }
+.amendments-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 12px;
 }
 
 .amendments-table {
   position: relative;
+  overflow: auto;
 
   table {
     .incoming {

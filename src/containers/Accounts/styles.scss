@@ -1,7 +1,198 @@
-@use '../shared/css/variables';
+@use '../shared/css/variables' as *;
 
 .accounts-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+
   .loader {
     min-height: 100px;
   }
+}
+
+// Two-column layout: sidebar + main
+.accounts-layout {
+  display: flex;
+  gap: 16px;
+
+  @media (max-width: $tablet-landscape-upper-boundary) {
+    flex-direction: column;
+  }
+}
+
+// Sidebar
+.account-sidebar {
+  width: 340px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  @media (max-width: $tablet-landscape-upper-boundary) {
+    width: 100%;
+  }
+}
+
+.sidebar-balance-card {
+  padding: 24px;
+  border-left: 3px solid $green;
+}
+
+.sidebar-balance-label {
+  color: $black-40;
+  font-size: 12px;
+  text-transform: uppercase;
+  @include semibold;
+}
+
+.sidebar-balance-value {
+  color: $white;
+  font-size: 28px;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+  @include bold;
+}
+
+.sidebar-reserve {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid $black-80;
+}
+
+.sidebar-reserve-label {
+  color: $black-40;
+  font-size: 12px;
+  text-transform: uppercase;
+  @include medium;
+}
+
+.sidebar-reserve-value {
+  color: $black-30;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  @include semibold;
+}
+
+.sidebar-meta,
+.sidebar-card {
+  padding-bottom: 12px;
+}
+
+.sidebar-meta-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 16px;
+}
+
+.sidebar-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  min-width: 0;
+}
+
+.sidebar-meta-label {
+  color: $black-40;
+  flex-shrink: 0;
+  @include medium;
+}
+
+.sidebar-meta-value {
+  color: $white;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: right;
+
+  &.mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+  }
+
+  .account {
+    font-size: 12px;
+  }
+}
+
+.sidebar-flags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-top: 4px;
+}
+
+.sidebar-flag {
+  padding: 2px 8px;
+  border-radius: 100px;
+  background: $black-80;
+  color: $blue-purple-30;
+  font-size: 11px;
+  font-style: italic;
+}
+
+// Token list
+.sidebar-tokens-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-token-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 16px;
+  border: none;
+  background: none;
+  color: $white;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color $transition-fast;
+  width: 100%;
+
+  &:hover {
+    background: $black-80;
+  }
+
+  &.active {
+    background: $black-80;
+    border-left: 2px solid $green;
+  }
+}
+
+.sidebar-token-currency {
+  font-size: 14px;
+  @include semibold;
+}
+
+.sidebar-token-amount {
+  color: $black-30;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+// Main content area
+.accounts-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.accounts-feed-panel {
+  overflow: hidden;
+}
+
+.accounts-feed-scroll {
+  padding: 0 12px 12px;
 }
