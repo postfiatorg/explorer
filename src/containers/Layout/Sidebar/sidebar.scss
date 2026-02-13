@@ -92,33 +92,6 @@ $sidebar-collapsed: 64px;
   white-space: nowrap;
 }
 
-.sidebar-group-toggle {
-  .sidebar-chevron {
-    margin-left: auto;
-    transition: transform 200ms ease;
-
-    &.expanded {
-      transform: rotate(180deg);
-    }
-  }
-}
-
-.sidebar-children {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  padding-left: 12px;
-
-  &.collapsed-children {
-    padding-left: 0;
-  }
-
-  .sidebar-item {
-    padding: 8px 12px;
-    font-size: 13px;
-  }
-}
-
 .sidebar-link {
   color: $black-50;
 

@@ -1,6 +1,6 @@
-import { FC, useState } from 'react'
+import { FC } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { PanelLeftClose, PanelLeftOpen, ChevronDown } from 'lucide-react'
+import { PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { sidebarConfig, sidebarFooterLinks, SidebarItem } from './sidebarConfig'
 import { useSidebarContext } from '../Layout'
 import './sidebar.scss'
@@ -12,56 +12,11 @@ interface SidebarNavItemProps {
 }
 
 const SidebarNavItem: FC<SidebarNavItemProps> = ({ item, collapsed, pathname }) => {
-  const [expanded, setExpanded] = useState(() => {
-    if (!item.children) return false
-    return item.children.some((child) => child.path && pathname.startsWith(child.path))
-  })
-
   const isActive = item.path === '/'
     ? pathname === '/'
     : item.path && pathname.startsWith(item.path)
 
-  const isGroupActive = item.children?.some(
-    (child) => child.path && pathname.startsWith(child.path),
-  )
-
   const Icon = item.icon
-
-  if (item.children) {
-    return (
-      <div className={`sidebar-group ${isGroupActive ? 'active' : ''}`}>
-        <button
-          type="button"
-          className={`sidebar-item sidebar-group-toggle ${isGroupActive ? 'active' : ''}`}
-          onClick={() => setExpanded(!expanded)}
-          title={collapsed ? item.label : undefined}
-        >
-          <Icon size={20} />
-          {!collapsed && (
-            <>
-              <span className="sidebar-item-label">{item.label}</span>
-              <ChevronDown
-                size={14}
-                className={`sidebar-chevron ${expanded ? 'expanded' : ''}`}
-              />
-            </>
-          )}
-        </button>
-        {(expanded || collapsed) && (
-          <div className={`sidebar-children ${collapsed ? 'collapsed-children' : ''}`}>
-            {item.children.map((child) => (
-              <SidebarNavItem
-                key={child.label}
-                item={child}
-                collapsed={collapsed}
-                pathname={pathname}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-    )
-  }
 
   if (item.href) {
     return (

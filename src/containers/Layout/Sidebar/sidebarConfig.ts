@@ -1,7 +1,7 @@
 import {
   LayoutDashboard,
   ArrowLeftRight,
-  Globe,
+
   BarChart3,
   Code2,
   Github,
@@ -18,23 +18,16 @@ export interface SidebarItem {
   icon: typeof LayoutDashboard
   path?: string
   href?: string
-  children?: SidebarItem[]
 }
 
 export const sidebarConfig: SidebarItem[] = [
   { label: 'Dashboard', icon: LayoutDashboard, path: '/' },
   { label: 'Transactions', icon: ArrowLeftRight, path: '/transactions' },
-  {
-    label: 'Network',
-    icon: Globe,
-    children: [
-      { label: 'Nodes', icon: Cpu, path: '/network/nodes' },
-      { label: 'Validators', icon: Shield, path: '/network/validators' },
-      { label: 'Amendments', icon: FileText, path: '/amendments' },
-      { label: 'Upgrade Status', icon: ArrowUpCircle, path: '/network/upgrade-status' },
-      { label: 'Exclusions', icon: Ban, path: '/network/exclusions' },
-    ],
-  },
+  { label: 'Nodes', icon: Cpu, path: '/network/nodes' },
+  { label: 'Validators', icon: Shield, path: '/network/validators' },
+  { label: 'Amendments', icon: FileText, path: '/amendments' },
+  { label: 'Upgrade Status', icon: ArrowUpCircle, path: '/network/upgrade-status' },
+  { label: 'Exclusions', icon: Ban, path: '/network/exclusions' },
   { label: 'Analytics', icon: BarChart3, path: '/analytics' },
   { label: 'Developers', icon: Code2, path: '/developers' },
 ]
