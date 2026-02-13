@@ -1,7 +1,7 @@
 import { FC } from 'react'
 import { Link } from 'react-router-dom'
 import { Menu } from 'lucide-react'
-import Logo from '../../shared/images/XRPLedger.svg'
+import Logo from '../../shared/images/PFTLedger.svg'
 import { CommandSearch } from './CommandSearch'
 import { ThemeToggle } from './ThemeToggle'
 import { NetworkPicker } from '../../Header/NetworkPicker/NetworkPicker'

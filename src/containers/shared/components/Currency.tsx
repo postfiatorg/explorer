@@ -12,7 +12,7 @@ export interface Props {
   currency: string
   link?: boolean
   shortenIssuer?: boolean
-  displaySymbol?: boolean
+
   isMPT?: boolean
 }
 
@@ -26,7 +26,6 @@ const Currency = (props: Props) => {
     currency,
     link = true,
     shortenIssuer = false,
-    displaySymbol = true,
     isMPT = false,
   } = props
   let content: string
@@ -64,10 +63,6 @@ const Currency = (props: Props) => {
     }
 
     let display = `${currencyCode}`
-
-    if (currencyCode === DISPLAY_CURRENCY && displaySymbol) {
-      display = `\uE900 ${display}`
-    }
 
     if (issuer) {
       display += '.'

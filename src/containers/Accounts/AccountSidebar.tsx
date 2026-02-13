@@ -53,7 +53,7 @@ export const AccountSidebar: FC<AccountSidebarProps> = ({
         <div className="sidebar-balance-card dashboard-panel">
           <div className="sidebar-balance-label">
             <Trans i18nKey="currency_balance">
-              <Currency currency={currencySelected} displaySymbol={false} />
+              <Currency currency={currencySelected} />
             </Trans>
           </div>
           <div className="sidebar-balance-value">{balance}</div>

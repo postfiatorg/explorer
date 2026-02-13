@@ -8,7 +8,6 @@ const TRADING_FEE_TOTAL = 1000
 
 const EXOTIC_SYMBOLS = {
   BTC: '\u20BF',
-  XRP: '\uE900',
   ETH: '\uE902',
 }
 
