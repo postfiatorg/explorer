@@ -32,10 +32,6 @@ export const UPGRADE_STATUS_ROUTE: RouteDefinition = {
   path: '/network/upgrade-status',
 }
 
-export const EXCLUSIONS_ROUTE: RouteDefinition = {
-  path: '/network/exclusions',
-}
-
 export const NFT_ROUTE: RouteDefinition<{
   id: string
   tab?: 'transactions' | 'buy-offers' | 'sell-offers'
@@ -85,8 +81,4 @@ export const MPT_ROUTE: RouteDefinition<{
 
 export const ANALYTICS_ROUTE: RouteDefinition = {
   path: '/analytics',
-}
-
-export const DEVELOPERS_ROUTE: RouteDefinition = {
-  path: '/developers',
 }

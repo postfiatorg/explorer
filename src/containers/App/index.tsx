@@ -27,9 +27,7 @@ import {
   NODES_ROUTE,
   VALIDATORS_ROUTE,
   UPGRADE_STATUS_ROUTE,
-  EXCLUSIONS_ROUTE,
   ANALYTICS_ROUTE,
-  DEVELOPERS_ROUTE,
 } from './routes'
 import { Dashboard } from '../Dashboard/Dashboard'
 import { LedgersPage as Ledgers } from '../Ledgers'
@@ -48,9 +46,7 @@ import { MPT } from '../MPT/MPT'
 import { Nodes } from '../Network/Nodes'
 import { Validators } from '../Network/Validators'
 import { UpgradeStatus } from '../Network/UpgradeStatus'
-import { Exclusions } from '../Network/Exclusions'
 import { Analytics } from '../Analytics/Analytics'
-import { Developers } from '../Developers/Developers'
 
 export const AppWrapper = () => {
   const mode = process.env.VITE_ENVIRONMENT
@@ -81,7 +77,6 @@ export const AppWrapper = () => {
     [NODES_ROUTE, Nodes],
     [VALIDATORS_ROUTE, Validators],
     [UPGRADE_STATUS_ROUTE, UpgradeStatus],
-    [EXCLUSIONS_ROUTE, Exclusions],
     [AMENDMENTS_ROUTE, Amendments],
     [VALIDATOR_ROUTE, Validator],
     [TOKEN_ROUTE, Token],
@@ -89,7 +84,6 @@ export const AppWrapper = () => {
     [AMENDMENT_ROUTE, Amendment],
     [MPT_ROUTE, MPT],
     [ANALYTICS_ROUTE, Analytics],
-    [DEVELOPERS_ROUTE, Developers],
   ]
 
   const redirect = legacyRedirect(basename, location)

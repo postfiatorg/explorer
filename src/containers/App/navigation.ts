@@ -6,14 +6,12 @@ import {
   NODES_ROUTE,
   UPGRADE_STATUS_ROUTE,
   VALIDATORS_ROUTE,
-  EXCLUSIONS_ROUTE,
 } from './routes'
 
 const isNetwork = (path) =>
   path.indexOf(buildPath(VALIDATORS_ROUTE, {})) === 0 ||
   path.indexOf(buildPath(NODES_ROUTE, {})) === 0 ||
   path.indexOf(buildPath(UPGRADE_STATUS_ROUTE, {})) === 0 ||
-  path.indexOf(buildPath(EXCLUSIONS_ROUTE, {})) === 0 ||
   path.indexOf(buildPath(AMENDMENTS_ROUTE, {})) === 0
 
 // NOTE: for submenus, remove `path` field and add `children` array of objects
@@ -38,10 +36,6 @@ export const navigationConfig: NavigationMenuAnyRoute[] = [
       {
         route: UPGRADE_STATUS_ROUTE,
         title: 'upgrade_status',
-      },
-      {
-        route: EXCLUSIONS_ROUTE,
-        title: 'exclusions',
       },
       {
         route: AMENDMENTS_ROUTE,

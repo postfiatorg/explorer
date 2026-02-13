@@ -1,15 +1,12 @@
 import {
   LayoutDashboard,
   ArrowLeftRight,
-
   BarChart3,
-  Code2,
   Github,
   ExternalLink,
   Cpu,
   Shield,
   ArrowUpCircle,
-  Ban,
   FileText,
 } from 'lucide-react'
 
@@ -27,9 +24,7 @@ export const sidebarConfig: SidebarItem[] = [
   { label: 'Validators', icon: Shield, path: '/network/validators' },
   { label: 'Amendments', icon: FileText, path: '/amendments' },
   { label: 'Upgrade Status', icon: ArrowUpCircle, path: '/network/upgrade-status' },
-  { label: 'Exclusions', icon: Ban, path: '/network/exclusions' },
   { label: 'Analytics', icon: BarChart3, path: '/analytics' },
-  { label: 'Developers', icon: Code2, path: '/developers' },
 ]
 
 export const sidebarFooterLinks: SidebarItem[] = [
