@@ -132,7 +132,7 @@ export const Transaction = () => {
 
     return (
       <div className="tx-overview-grid">
-        <div className="tx-overview-item">
+        <div className="tx-overview-item tx-overview-item-date">
           <span className="tx-overview-label">
             {t('formatted_date', { timeZone: TIME_ZONE })}
           </span>
@@ -147,7 +147,7 @@ export const Transaction = () => {
           </span>
         </div>
         {account && (
-          <div className="tx-overview-item">
+          <div className="tx-overview-item tx-overview-item-account">
             <span className="tx-overview-label">{t('account')}</span>
             <span className="tx-overview-value">
               <Account account={account} />
@@ -155,7 +155,7 @@ export const Transaction = () => {
           </div>
         )}
         {delegate && (
-          <div className="tx-overview-item">
+          <div className="tx-overview-item tx-overview-item-account">
             <span className="tx-overview-label">{t('delegate')}</span>
             <span className="tx-overview-value">
               <Account account={delegate} />

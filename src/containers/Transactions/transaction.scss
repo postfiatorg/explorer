@@ -102,12 +102,23 @@
   display: flex;
   flex: 1 1 0;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: 6px;
-  min-width: 140px;
-  padding: 14px 16px;
+  min-width: 100px;
+  padding: 14px 12px;
   border: 1px solid $black-80;
   border-radius: $border-radius;
   background: $black-90;
+  text-align: center;
+
+  &.tx-overview-item-date {
+    flex: 1.55 1 0;
+  }
+
+  &.tx-overview-item-account {
+    flex: 1.85 1 0;
+  }
 }
 
 .tx-overview-label {
