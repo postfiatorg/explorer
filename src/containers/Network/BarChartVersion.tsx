@@ -14,7 +14,6 @@ import {
 } from 'recharts'
 import { Loader } from '../shared/components/Loader'
 import {
-  PURPLE,
   GREY_600,
   GREY_800,
   GREEN_500,
@@ -168,7 +167,7 @@ const BarChartVersion = (props: Props) => {
           <Bar
             dataKey="validatorPercent"
             barSize={30}
-            fill={PURPLE}
+            fill={GREEN_500}
             radius={[4, 4, 0, 0]}
             isAnimationActive={false}
             onMouseOver={() => setShowTooltips(true)}
@@ -189,7 +188,7 @@ const BarChartVersion = (props: Props) => {
           <Bar
             dataKey="nodePercent"
             barSize={30}
-            fill={PURPLE}
+            fill={PURPLE_500}
             radius={[4, 4, 0, 0]}
             isAnimationActive={false}
             onMouseOver={() => setShowTooltips(true)}
