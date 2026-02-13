@@ -20,11 +20,11 @@
 
   &.tx-border-PAYMENT { border-top: 3px solid var(--green-50); }
   &.tx-border-DEX { border-top: 3px solid var(--blue-50); }
-  &.tx-border-ACCOUNT { border-top: 3px solid var(--blue-purple-40); }
-  &.tx-border-NFT { border-top: 3px solid var(--magenta-50); }
-  &.tx-border-XCHAIN { border-top: 3px solid var(--orange-50); }
+  &.tx-border-ACCOUNT { border-top: 3px solid var(--magenta-50); }
+  &.tx-border-NFT { border-top: 3px solid var(--blue-purple-50); }
+  &.tx-border-XCHAIN { border-top: 3px solid var(--yellow-50); }
   &.tx-border-MPT { border-top: 3px solid var(--blue-50); }
-  &.tx-border-PSEUDO { border-top: 3px solid var(--yellow-50); }
+  &.tx-border-PSEUDO { border-top: 3px solid var(--black-50); }
   &.tx-border-OTHER { border-top: 3px solid var(--black-50); }
 }
 
