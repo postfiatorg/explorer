@@ -81,91 +81,86 @@
   @include semibold;
 }
 
-// Flow Diagram
-.tx-flow {
+// Section titles
+.transaction .dashboard-panel-title {
+  padding: 16px 16px 8px;
+  margin: 0;
+  font-size: 20px;
+  border-bottom: 1px solid $black-70;
+  @include bold;
+  @include gradient-title;
+}
+
+// Overview — horizontal cards that fill the row
+.tx-overview-grid {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  padding: 24px;
-  border: 1px solid $black-80;
-  border-radius: 12px;
-  background: $black-90;
   flex-wrap: wrap;
-
-  @media (max-width: $tablet-landscape-upper-boundary) {
-    flex-direction: column;
-    gap: 12px;
-  }
+  gap: 12px;
 }
 
-.tx-flow-box {
+.tx-overview-item {
   display: flex;
+  flex: 1 1 0;
   flex-direction: column;
-  gap: 4px;
-  padding: 16px;
-  border: 1px solid $black-70;
-  border-radius: 8px;
-  background: $black-100;
-  min-width: 180px;
-  text-align: center;
-
-  .account {
-    font-size: 13px;
-  }
+  gap: 6px;
+  min-width: 140px;
+  padding: 14px 16px;
+  border: 1px solid $black-80;
+  border-radius: $border-radius;
+  background: $black-90;
 }
 
-.tx-flow-box-label {
+.tx-overview-label {
   color: $black-40;
-  font-size: 11px;
+  font-size: 10px;
+  line-height: 14px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   @include medium;
 }
 
-.tx-flow-action {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-}
-
-.tx-flow-action-type {
-  color: $black-30;
-  font-size: 12px;
-  @include medium;
-}
-
-.tx-flow-action-amount {
+.tx-overview-value {
+  overflow: hidden;
   color: $white;
   font-size: 14px;
-  font-variant-numeric: tabular-nums;
-  @include semibold;
-}
+  line-height: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  @include medium;
 
-.tx-flow-arrow {
-  color: $green;
-}
+  a {
+    color: $green;
+    text-decoration: none;
 
-// Content columns
-.tx-content-columns {
-  display: flex;
-  gap: 16px;
+    &:hover {
+      color: $green-30;
+    }
+  }
 
-  @media (max-width: $tablet-landscape-upper-boundary) {
-    flex-direction: column;
+  .account {
+    font-size: 12px;
+    color: $green;
   }
 }
 
-.tx-content-left {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-}
-
-// Detail section
+// Detail section — align content with the panel title
 .tx-detail-section {
-  padding: 16px;
+  .detail-body {
+    padding: 0 16px 16px;
+    margin-top: 8px;
+
+    .detail-section {
+      padding: 5px 0;
+
+      .title {
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: $white;
+        @include semibold;
+      }
+    }
+  }
 }
 
 // JSON panel

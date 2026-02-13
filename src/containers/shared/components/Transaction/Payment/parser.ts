@@ -23,6 +23,7 @@ export const parser = (tx: any, meta: any): PaymentInstructions => {
 
   if (tx.Account === tx.Destination) {
     return {
+      sender: tx.Account,
       amount,
       convert: max,
       destination,
@@ -31,6 +32,7 @@ export const parser = (tx: any, meta: any): PaymentInstructions => {
   }
 
   return {
+    sender: tx.Account,
     amount,
     max,
     destination: `${tx.Destination}${dt}`,

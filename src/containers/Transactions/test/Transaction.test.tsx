@@ -29,15 +29,14 @@ window.location.assign(
 describe('Transaction container', () => {
   const createWrapper = (
     hash = '50BB0CC6EFC4F5EF9954E654D3230D4480DC83907A843C736B28420C7F02F774',
-    tab = 'simple',
   ) =>
     mount(
       <QuickHarness
         i18n={i18n}
-        initialEntries={[`/transactions/${hash}/${tab}`]}
+        initialEntries={[`/transactions/${hash}`]}
       >
         <Route
-          path="/transactions/:identifier?/:tab?"
+          path="/transactions/:identifier?"
           element={<Transaction />}
         />
       </QuickHarness>,
@@ -113,53 +112,18 @@ describe('Transaction container', () => {
       )
     })
 
-    it('renders summary section', async () => {
+    it('renders transaction page sections', async () => {
       wrapper = createWrapper(mockTransaction.hash)
       await flushPromises()
       wrapper.update()
 
       expect(wrapper.find('.transaction').length).toBe(1)
-      const summary = wrapper.find('.summary')
-      expect(summary.length).toBe(1)
-      expect(summary.contains(<div className="type">OfferCreate</div>)).toBe(
-        true,
-      )
-
-      // console.log(wrapper.debug())
-      expect(wrapper.find('.txid').length).toBe(2)
-      expect(wrapper.find('.txid').at(0).text()).toBe(
-        `hash: ${mockTransaction.hash}`,
-      )
-      expect(wrapper.find('.txid').at(1).text()).toBe(
-        `CTID: ${mockTransaction.tx.ctid}`,
-      )
-      expect(summary.contains(<TxStatus status="tesSUCCESS" />)).toBe(true)
-      expect(wrapper.find('.tabs').length).toBe(1)
-      expect(wrapper.find('a.tab').length).toBe(3)
-      expect(wrapper.find('a.tab').at(0).props().title).toBe('simple')
-      expect(wrapper.find('a.tab').at(1).props().title).toBe('detailed')
-      expect(wrapper.find('a.tab').at(2).props().title).toBe('raw')
-      expect(wrapper.find('a.tab.selected').text()).toEqual('simple')
-      wrapper.unmount()
-    })
-
-    it('renders detailed tab', async () => {
-      wrapper = createWrapper(mockTransaction.hash, 'detailed')
-      await flushPromises()
-      wrapper.update()
-
-      expect(wrapper.find('a.tab.selected').text()).toEqual('detailed')
+      expect(wrapper.find('.tx-summary').length).toBe(1)
+      expect(wrapper.find('.tx-summary-type').text()).toBe('OfferCreate')
+      expect(wrapper.find(TxStatus).length).toBe(1)
+      expect(wrapper.find('.tx-overview-grid').length).toBe(1)
+      expect(wrapper.find('.simple-body').length).toBe(1)
       expect(wrapper.find('.detail-body').length).toBe(1)
-      wrapper.unmount()
-    })
-
-    it('renders raw tab', async () => {
-      wrapper = createWrapper(mockTransaction.hash, 'raw')
-      await flushPromises()
-      wrapper.update()
-
-      expect(wrapper.find('a.tab.selected').text()).toEqual('raw')
-      expect(wrapper.find('.json-view').length).toBe(1)
       wrapper.unmount()
     })
   })

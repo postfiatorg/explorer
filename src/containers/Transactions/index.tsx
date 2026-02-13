@@ -1,7 +1,6 @@
 import { useContext, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from 'react-query'
-import { useWindowSize } from 'usehooks-ts'
 import { SEOHelmet } from '../shared/components/SEOHelmet'
 import NoMatch from '../NoMatch'
 import { Loader } from '../shared/components/Loader'
@@ -10,12 +9,15 @@ import {
   BAD_REQUEST,
   HASH256_REGEX,
   CTID_REGEX,
+  localizeDate,
+  localizeNumber,
 } from '../shared/utils'
 import { SimpleTab } from './SimpleTab'
 import { DetailTab } from './DetailTab'
-import { TransactionFlowDiagram } from './TransactionFlowDiagram'
 import { CollapsibleJsonPanel } from './CollapsibleJsonPanel'
 import { CopyableAddress } from '../shared/components/CopyableAddress/CopyableAddress'
+import { Account } from '../shared/components/Account'
+import { Sequence } from '../shared/components/Sequence'
 import './transaction.scss'
 import { AnalyticsFields, useAnalytics } from '../shared/analytics'
 import SocketContext from '../shared/SocketContext'
@@ -23,12 +25,25 @@ import { TxStatus } from '../shared/components/TxStatus'
 import { getAction, getCategory } from '../shared/components/Transaction'
 import { TransactionActionIcon } from '../shared/components/TransactionActionIcon/TransactionActionIcon'
 import { useRouteParams } from '../shared/routing'
-import { SUCCESSFUL_TRANSACTION, XRP_BASE } from '../shared/transactionUtils'
-import { hexToString } from '../shared/components/Currency'
+import { RouteLink } from '../shared/routing'
+import { SUCCESSFUL_TRANSACTION, CURRENCY_OPTIONS, XRP_BASE } from '../shared/transactionUtils'
 import { getTransaction } from '../../rippled'
-import { TRANSACTION_ROUTE } from '../App/routes'
+import { TRANSACTION_ROUTE, LEDGER_ROUTE } from '../App/routes'
+import { useLanguage } from '../shared/hooks'
 
 const WRONG_NETWORK = 406
+
+const TIME_ZONE = 'UTC'
+const DATE_OPTIONS = {
+  hour: 'numeric',
+  minute: 'numeric',
+  second: 'numeric',
+  year: 'numeric',
+  month: 'numeric',
+  day: 'numeric',
+  hour12: true,
+  timeZone: TIME_ZONE,
+}
 
 const ERROR_MESSAGES: Record<string, { title: string; hints: string[] }> = {}
 ERROR_MESSAGES[NOT_FOUND] = {
@@ -54,6 +69,7 @@ const getErrorMessage = (error) =>
 export const Transaction = () => {
   const { identifier = '' } = useRouteParams(TRANSACTION_ROUTE)
   const { t } = useTranslation()
+  const language = useLanguage()
   const rippledSocket = useContext(SocketContext)
   const { trackException, trackScreenLoaded } = useAnalytics()
   const { isLoading, data, error, isError } = useQuery(
@@ -76,7 +92,6 @@ export const Transaction = () => {
       return Promise.reject(BAD_REQUEST)
     },
   )
-  const { width } = useWindowSize()
 
   useEffect(() => {
     if (!data?.processed) return
@@ -93,26 +108,79 @@ export const Transaction = () => {
     trackScreenLoaded(transactionProperties)
   }, [identifier, data?.processed, trackScreenLoaded])
 
+  function renderOverview(processed: any) {
+    const numberOptions = { ...CURRENCY_OPTIONS, currency: 'PFT' }
+    const time = localizeDate(new Date(processed.date), language, DATE_OPTIONS)
+    const ledgerIndex = processed.ledger_index
+    const fee = processed.tx.Fee
+      ? localizeNumber(
+          Number.parseFloat(processed.tx.Fee) / XRP_BASE,
+          language,
+          numberOptions,
+        )
+      : 0
+    const account = processed.tx.Account
+    const delegate = processed.tx.Delegate
+    const sequence = processed.tx.Sequence
+    const ticketSequence = processed.tx.TicketSequence
+    const isHook = !!processed.tx.EmitDetails
+
+    return (
+      <div className="tx-overview-grid">
+          <div className="tx-overview-item">
+            <span className="tx-overview-label">
+              {t('formatted_date', { timeZone: TIME_ZONE })}
+            </span>
+            <span className="tx-overview-value">{time}</span>
+          </div>
+          <div className="tx-overview-item">
+            <span className="tx-overview-label">{t('ledger_index')}</span>
+            <span className="tx-overview-value">
+              <RouteLink to={LEDGER_ROUTE} params={{ identifier: ledgerIndex }}>
+                {ledgerIndex}
+              </RouteLink>
+            </span>
+          </div>
+          {account && (
+            <div className="tx-overview-item">
+              <span className="tx-overview-label">{t('account')}</span>
+              <span className="tx-overview-value">
+                <Account account={account} />
+              </span>
+            </div>
+          )}
+          {delegate && (
+            <div className="tx-overview-item">
+              <span className="tx-overview-label">{t('delegate')}</span>
+              <span className="tx-overview-value">
+                <Account account={delegate} />
+              </span>
+            </div>
+          )}
+          <div className="tx-overview-item">
+            <span className="tx-overview-label">{t('sequence_number')}</span>
+            <span className="tx-overview-value">
+              <Sequence
+                sequence={sequence}
+                ticketSequence={ticketSequence}
+                account={account}
+                isHook={isHook}
+              />
+            </span>
+          </div>
+          <div className="tx-overview-item">
+            <span className="tx-overview-label">{t('transaction_cost')}</span>
+            <span className="tx-overview-value">{fee}</span>
+          </div>
+        </div>
+    )
+  }
+
   function renderTransaction() {
     if (!data) return undefined
     const { processed, raw } = data
     const type = processed.tx.TransactionType
     const category = getCategory(type)
-    const destination = processed.tx.Destination
-    const deliverAmount = processed.tx.DeliverMax || processed.tx.Amount
-    let amountStr: string | undefined
-    let currencyStr: string | undefined
-
-    if (deliverAmount && typeof deliverAmount === 'string') {
-      amountStr = (Number(deliverAmount) / XRP_BASE).toFixed(6)
-      currencyStr = 'PFT'
-    } else if (deliverAmount && typeof deliverAmount === 'object') {
-      amountStr = deliverAmount.value
-      currencyStr =
-        deliverAmount.currency.length > 3
-          ? hexToString(deliverAmount.currency)
-          : deliverAmount.currency
-    }
 
     return (
       <>
@@ -134,21 +202,19 @@ export const Transaction = () => {
           )}
         </div>
 
-        <TransactionFlowDiagram
-          type={type}
-          account={processed.tx.Account}
-          destination={destination}
-          amount={amountStr}
-          currency={currencyStr}
-        />
+        {renderOverview(processed)}
 
-        <div className="tx-content-columns">
-          <div className="tx-content-left dashboard-panel">
-            <SimpleTab data={data} width={width} />
-          </div>
+        <div className="dashboard-panel">
+          <h3 className="dashboard-panel-title">
+            {t('transaction_details')}
+          </h3>
+          <SimpleTab data={data} />
         </div>
 
         <div className="tx-detail-section dashboard-panel">
+          <h3 className="dashboard-panel-title">
+            {t('execution_details')}
+          </h3>
           <DetailTab data={processed} />
         </div>
 
