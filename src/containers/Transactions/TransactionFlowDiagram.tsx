@@ -1,7 +1,6 @@
 import { FC } from 'react'
 import { ArrowRight } from 'lucide-react'
 import { Account } from '../shared/components/Account'
-import { TransactionActionIcon } from '../shared/components/TransactionActionIcon/TransactionActionIcon'
 
 interface TransactionFlowDiagramProps {
   type: string
@@ -36,7 +35,6 @@ export const TransactionFlowDiagram: FC<TransactionFlowDiagramProps> = ({
           <Account account={account} />
         </div>
         <div className="tx-flow-action">
-          <TransactionActionIcon type={type} withBackground />
           <span className="tx-flow-action-type">{type}</span>
         </div>
       </div>
@@ -50,7 +48,6 @@ export const TransactionFlowDiagram: FC<TransactionFlowDiagramProps> = ({
         <Account account={account} />
       </div>
       <div className="tx-flow-action">
-        <TransactionActionIcon type={type} withBackground />
         {amount && (
           <span className="tx-flow-action-amount">
             {amount} {currency || ''}

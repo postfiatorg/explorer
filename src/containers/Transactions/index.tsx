@@ -21,8 +21,10 @@ import { AnalyticsFields, useAnalytics } from '../shared/analytics'
 import SocketContext from '../shared/SocketContext'
 import { TxStatus } from '../shared/components/TxStatus'
 import { getAction, getCategory } from '../shared/components/Transaction'
+import { TransactionActionIcon } from '../shared/components/TransactionActionIcon/TransactionActionIcon'
 import { useRouteParams } from '../shared/routing'
 import { SUCCESSFUL_TRANSACTION, XRP_BASE } from '../shared/transactionUtils'
+import { hexToString } from '../shared/components/Currency'
 import { getTransaction } from '../../rippled'
 import { TRANSACTION_ROUTE } from '../App/routes'
 
@@ -106,13 +108,19 @@ export const Transaction = () => {
       currencyStr = 'PFT'
     } else if (deliverAmount && typeof deliverAmount === 'object') {
       amountStr = deliverAmount.value
-      currencyStr = deliverAmount.currency
+      currencyStr =
+        deliverAmount.currency.length > 3
+          ? hexToString(deliverAmount.currency)
+          : deliverAmount.currency
     }
 
     return (
       <>
         <div className={`tx-summary dashboard-panel tx-border-${category}`}>
-          <div className="tx-summary-type">{type}</div>
+          <div className="tx-summary-top">
+            <TransactionActionIcon type={type} withBackground />
+            <div className="tx-summary-type">{type}</div>
+          </div>
           <TxStatus status={processed.meta.TransactionResult} />
           <div className="tx-summary-hash">
             <span className="tx-summary-hash-label">{t('hash')}:</span>

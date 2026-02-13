@@ -28,9 +28,20 @@
   &.tx-border-OTHER { border-top: 3px solid var(--black-50); }
 }
 
-.tx-summary-type {
-  display: inline-block;
+.tx-summary-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   margin-bottom: 12px;
+  flex-wrap: wrap;
+
+  .tx-action-icon-circle {
+    width: 40px !important;
+    height: 40px !important;
+  }
+}
+
+.tx-summary-type {
   font-size: 32px;
   @include bold;
   @include gradient-title;
@@ -42,8 +53,11 @@
 
 .tx-summary .tx-status {
   display: inline-flex;
-  margin-left: 16px;
-  vertical-align: middle;
+  margin-bottom: 12px;
+
+  .status-icon {
+    display: none;
+  }
 
   .status-message {
     padding: 2px 12px;
