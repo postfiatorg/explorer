@@ -114,7 +114,7 @@ export const Nodes = () => {
 
       <CollapsiblePanel
         title={t('nodes')}
-        defaultOpen={false}
+        defaultOpen
         count={data?.nodes?.length}
       >
         <NodesTable nodes={data?.nodes} />

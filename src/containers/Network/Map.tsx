@@ -1,12 +1,12 @@
 import axios from 'axios'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from 'react-query'
 import { geoPath, geoNaturalEarth1 } from 'd3-geo'
 import { scaleLinear } from 'd3-scale'
 import { hexbin } from 'd3-hexbin'
 import { feature } from 'topojson-client'
-import { useWindowSize } from 'usehooks-ts'
+import { useResizeObserver } from 'usehooks-ts'
 import { Loader } from '../shared/components/Loader'
 import './css/map.scss'
 
@@ -19,13 +19,15 @@ export interface MapProps {
 }
 
 export const Map = ({ locations = undefined }: MapProps) => {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const { width: containerWidth = 0 } = useResizeObserver({ ref: containerRef })
   const [tooltip, setTooltip] = useState<{
     count: number
     x: number
     y: number
   } | null>(null)
   const { t } = useTranslation()
-  const { width: propsWidth } = useWindowSize()
+  const propsWidth = containerWidth
   const { data: countries } = useQuery('countries', () =>
     axios
       .get('/countries.json')
@@ -185,7 +187,7 @@ export const Map = ({ locations = undefined }: MapProps) => {
 
   const { width, height } = getDimensions()
   return (
-    <div className="nodes-map" style={{ height }}>
+    <div className="nodes-map" ref={containerRef} style={{ height }}>
       {!locations && <Loader />}
       <svg width={propsWidth} height={height}>
         {locations && renderMap(width, height)}
