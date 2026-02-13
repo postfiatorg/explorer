@@ -3,11 +3,12 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { ChevronDown } from 'lucide-react'
 import { TransactionActionIcon } from '../TransactionActionIcon/TransactionActionIcon'
-import { TxStatus } from '../TxStatus'
+
 import { Account } from '../Account'
 import { getCategory } from '../Transaction'
 import { buildPath } from '../../routing'
 import { TRANSACTION_ROUTE } from '../../../App/routes'
+import { TxDetails } from '../TxDetails'
 import { SUCCESSFUL_TRANSACTION } from '../../transactionUtils'
 import { localizeDate } from '../../utils'
 
@@ -78,7 +79,7 @@ export const TransactionFeedCard: FC<TransactionFeedCardProps> = ({ tx, compact 
       </div>
       {expanded && tx.details && (
         <div className="tx-feed-card-expanded">
-          {tx.details}
+          <TxDetails type={tx.type} instructions={tx.details.instructions} />
         </div>
       )}
     </div>
