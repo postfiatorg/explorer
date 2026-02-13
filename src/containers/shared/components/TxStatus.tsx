@@ -51,7 +51,7 @@ export const TxStatus = ({ shorthand = false, status }: TxStatusProps) => {
       <Plain title={t('fail')}>{content}</Plain>
     ) : (
       <a
-        href={`https://docs.postfiat.org/tec-codes#${status}`}
+        href={`https://xrpl.org/docs/references/protocol/transactions/transaction-results/tec-codes#${status}`}
         title={`${t('fail')} - ${status}`}
         className={wrapperClassName}
       >

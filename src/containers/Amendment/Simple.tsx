@@ -106,7 +106,7 @@ export const Simple = ({ data, validators, width }: SimpleProps) => {
 
   const rowIndex = renderRowIndex()
 
-  const details = `https://docs.postfiat.org/known-amendments#${data.name.toLowerCase()}`
+  const details = `https://xrpl.org/resources/known-amendments#${data.name.toLowerCase()}`
 
   return (
     <>

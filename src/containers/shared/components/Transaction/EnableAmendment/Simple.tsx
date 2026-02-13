@@ -67,7 +67,7 @@ export const Simple = ({ data }: TransactionSimpleProps<EnableAmendment>) => {
         </RouteLink>
       </SimpleRow>
       <SimpleRow label={t('amendment_status')} data-testid="status">
-        <a href="https://docs.postfiat.org/enableamendment#flags">
+        <a href="https://xrpl.org/docs/references/protocol/transactions/pseudo-transaction-types/enableamendment#flags">
           {amendmentStatus}
         </a>
       </SimpleRow>
