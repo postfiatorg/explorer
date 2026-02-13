@@ -8,7 +8,9 @@ import { Account } from '../Account'
 import { getCategory } from '../Transaction'
 import { buildPath } from '../../routing'
 import { TRANSACTION_ROUTE } from '../../../App/routes'
-import { TxDetails } from '../TxDetails'
+import { Simple } from '../../../Transactions/Simple'
+import '../../css/simpleTab.scss'
+import '../../../Transactions/simpleTab.scss'
 import { SUCCESSFUL_TRANSACTION } from '../../transactionUtils'
 import { localizeDate } from '../../utils'
 
@@ -78,8 +80,10 @@ export const TransactionFeedCard: FC<TransactionFeedCardProps> = ({ tx, compact 
         )}
       </div>
       {expanded && tx.details && (
-        <div className="tx-feed-card-expanded">
-          <TxDetails type={tx.type} instructions={tx.details.instructions} />
+        <div className="tx-feed-card-expanded simple-body simple-body-tx">
+          <div className="rows">
+            <Simple type={tx.type} data={tx.details} />
+          </div>
         </div>
       )}
     </div>

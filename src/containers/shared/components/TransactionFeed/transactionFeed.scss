@@ -173,12 +173,26 @@
 }
 
 .tx-feed-card-expanded {
-  padding: 0 12px 12px;
   border-top: 1px solid $black-80;
   margin: 0 12px;
-  padding-top: 12px;
-  color: $black-40;
-  font-size: 12px;
+
+  a::after {
+    display: none !important;
+  }
+
+  .rows {
+    padding: 0 4px;
+    margin-bottom: 0;
+    border-right: none;
+
+    .row {
+      padding: 8px 0;
+
+      .value .amount .currency {
+        margin: 0;
+      }
+    }
+  }
 }
 
 // Compact mode
