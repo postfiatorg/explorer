@@ -1,4 +1,4 @@
-import { useContext, useEffect } from 'react'
+import { useCallback, useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from 'react-query'
 import { SEOHelmet } from '../shared/components/SEOHelmet'
@@ -108,6 +108,11 @@ export const Transaction = () => {
     trackScreenLoaded(transactionProperties)
   }, [identifier, data?.processed, trackScreenLoaded])
 
+  const [simpleTabEmpty, setSimpleTabEmpty] = useState(false)
+  const handleSimpleTabEmpty = useCallback((empty: boolean) => {
+    setSimpleTabEmpty(empty)
+  }, [])
+
   function renderOverview(processed: any) {
     const numberOptions = { ...CURRENCY_OPTIONS, currency: 'PFT' }
     const time = localizeDate(new Date(processed.date), language, DATE_OPTIONS)
@@ -127,52 +132,52 @@ export const Transaction = () => {
 
     return (
       <div className="tx-overview-grid">
-          <div className="tx-overview-item">
-            <span className="tx-overview-label">
-              {t('formatted_date', { timeZone: TIME_ZONE })}
-            </span>
-            <span className="tx-overview-value">{time}</span>
-          </div>
-          <div className="tx-overview-item">
-            <span className="tx-overview-label">{t('ledger_index')}</span>
-            <span className="tx-overview-value">
-              <RouteLink to={LEDGER_ROUTE} params={{ identifier: ledgerIndex }}>
-                {ledgerIndex}
-              </RouteLink>
-            </span>
-          </div>
-          {account && (
-            <div className="tx-overview-item">
-              <span className="tx-overview-label">{t('account')}</span>
-              <span className="tx-overview-value">
-                <Account account={account} />
-              </span>
-            </div>
-          )}
-          {delegate && (
-            <div className="tx-overview-item">
-              <span className="tx-overview-label">{t('delegate')}</span>
-              <span className="tx-overview-value">
-                <Account account={delegate} />
-              </span>
-            </div>
-          )}
-          <div className="tx-overview-item">
-            <span className="tx-overview-label">{t('sequence_number')}</span>
-            <span className="tx-overview-value">
-              <Sequence
-                sequence={sequence}
-                ticketSequence={ticketSequence}
-                account={account}
-                isHook={isHook}
-              />
-            </span>
-          </div>
-          <div className="tx-overview-item">
-            <span className="tx-overview-label">{t('transaction_cost')}</span>
-            <span className="tx-overview-value">{fee}</span>
-          </div>
+        <div className="tx-overview-item">
+          <span className="tx-overview-label">
+            {t('formatted_date', { timeZone: TIME_ZONE })}
+          </span>
+          <span className="tx-overview-value">{time}</span>
         </div>
+        <div className="tx-overview-item">
+          <span className="tx-overview-label">{t('ledger_index')}</span>
+          <span className="tx-overview-value">
+            <RouteLink to={LEDGER_ROUTE} params={{ identifier: ledgerIndex }}>
+              {ledgerIndex}
+            </RouteLink>
+          </span>
+        </div>
+        {account && (
+          <div className="tx-overview-item">
+            <span className="tx-overview-label">{t('account')}</span>
+            <span className="tx-overview-value">
+              <Account account={account} />
+            </span>
+          </div>
+        )}
+        {delegate && (
+          <div className="tx-overview-item">
+            <span className="tx-overview-label">{t('delegate')}</span>
+            <span className="tx-overview-value">
+              <Account account={delegate} />
+            </span>
+          </div>
+        )}
+        <div className="tx-overview-item">
+          <span className="tx-overview-label">{t('sequence_number')}</span>
+          <span className="tx-overview-value">
+            <Sequence
+              sequence={sequence}
+              ticketSequence={ticketSequence}
+              account={account}
+              isHook={isHook}
+            />
+          </span>
+        </div>
+        <div className="tx-overview-item">
+          <span className="tx-overview-label">{t('transaction_cost')}</span>
+          <span className="tx-overview-value">{fee}</span>
+        </div>
+      </div>
     )
   }
 
@@ -204,11 +209,14 @@ export const Transaction = () => {
 
         {renderOverview(processed)}
 
-        <div className="dashboard-panel">
+        <div
+          className="dashboard-panel"
+          style={simpleTabEmpty ? { display: 'none' } : undefined}
+        >
           <h3 className="dashboard-panel-title">
             {t('transaction_details')}
           </h3>
-          <SimpleTab data={data} />
+          <SimpleTab data={data} onEmpty={handleSimpleTabEmpty} />
         </div>
 
         <div className="tx-detail-section dashboard-panel">
