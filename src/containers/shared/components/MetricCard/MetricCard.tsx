@@ -21,6 +21,7 @@ export const MetricCard: FC<MetricCardProps> = ({
   sparklineColor = '#32e685',
 }) => {
   const chartData = sparklineData?.map((v, i) => ({ i, v })) || []
+  const gradientId = `spark-${label.replace(/[^a-zA-Z0-9]/g, '-')}`
 
   return (
     <div className="metric-card">
@@ -37,7 +38,7 @@ export const MetricCard: FC<MetricCardProps> = ({
           <ResponsiveContainer width="100%" height={32}>
             <AreaChart data={chartData} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
               <defs>
-                <linearGradient id={`spark-${label}`} x1="0" y1="0" x2="0" y2="1">
+                <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor={sparklineColor} stopOpacity={0.3} />
                   <stop offset="100%" stopColor={sparklineColor} stopOpacity={0} />
                 </linearGradient>
@@ -47,7 +48,7 @@ export const MetricCard: FC<MetricCardProps> = ({
                 dataKey="v"
                 stroke={sparklineColor}
                 strokeWidth={1.5}
-                fill={`url(#spark-${label})`}
+                fill={`url(#${gradientId})`}
                 dot={false}
                 isAnimationActive={false}
               />
