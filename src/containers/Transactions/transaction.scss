@@ -209,6 +209,43 @@
 }
 
 .json-panel-body {
-  padding: 0 16px 16px;
+  position: relative;
   overflow-x: auto;
+
+  .json-view {
+    padding: 16px;
+    border: none;
+    border-top: 1px solid $black-80;
+    border-radius: 0;
+    margin-bottom: 0;
+    background: $black-100;
+    font-family: 'SF Mono', 'Fira Code', 'Fira Mono', 'Roboto Mono', 'Consolas', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+}
+
+.json-panel-copy {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border: 1px solid $black-60;
+  border-radius: 6px;
+  background: $black-80;
+  color: $black-30;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all $transition-fast;
+  @include medium;
+
+  &:hover {
+    border-color: $black-50;
+    background: $black-70;
+    color: $white;
+  }
 }
