@@ -1,39 +1,101 @@
 @use '../shared/css/variables' as *;
 
 .no-match {
-  margin: 10% auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  padding: 40px 24px;
+}
+
+.no-match-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 480px;
   text-align: center;
+}
 
-  .uh-oh {
-    display: inline-block;
-    padding: 4px 12px;
-    border: 1px solid $green-80;
-    border-radius: $border-radius;
-    margin-bottom: 24px;
+.no-match-code {
+  color: $green;
+  font-size: 120px;
+  line-height: 1;
+  letter-spacing: -4px;
+  opacity: 0.15;
+  @include bold;
+
+  @include for-size(tablet-portrait-up) {
+    font-size: 160px;
+  }
+}
+
+.no-match-title {
+  margin-top: -8px;
+  margin-bottom: 12px;
+  color: $white;
+  font-size: 24px;
+  line-height: 32px;
+  @include bold;
+
+  @include for-size(tablet-portrait-up) {
+    font-size: 28px;
+    line-height: 36px;
+  }
+}
+
+.no-match-hints {
+  margin-bottom: 32px;
+  color: $black-40;
+  font-size: 15px;
+  line-height: 24px;
+
+  p {
+    margin: 0 0 4px;
+  }
+}
+
+.no-match-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.no-match-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border: 1px solid $black-60;
+  border-radius: 8px;
+  font-size: 14px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 150ms ease;
+  @include medium;
+
+  &::after {
+    display: none !important;
+  }
+}
+
+.no-match-btn-secondary {
+  background: transparent;
+  color: $black-30;
+
+  &:hover {
+    border-color: $black-40;
+    background: $black-80;
+    color: $white;
+  }
+}
+
+.no-match-btn-primary {
+  border-color: $green-80;
+  background: rgba(var(--green-50-rgb), 0.1);
+  color: $green;
+
+  &:hover {
+    border-color: $green;
+    background: rgba(var(--green-50-rgb), 0.2);
     box-shadow: $glow-green-subtle;
-    color: $black-20;
-    font-size: 12px;
-    line-height: 20px;
-    @include bold;
-  }
-
-  .title {
-    margin-bottom: 16px;
-    color: $black-20;
-    font-size: 40px;
-    line-height: 48px;
-    @include bold;
-  }
-
-  .hint {
-    margin-bottom: 16px;
-    color: $black-50;
-    font-size: 16px;
-    line-height: 24px;
-    @include bold;
-  }
-
-  .warning {
-    justify-content: center;
   }
 }
