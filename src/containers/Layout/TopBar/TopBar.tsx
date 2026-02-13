@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import { Menu } from 'lucide-react'
 import Logo from '../../shared/images/PFTLedger.svg'
 import { CommandSearch } from './CommandSearch'
-import { ThemeToggle } from './ThemeToggle'
 import { NetworkPicker } from '../../Header/NetworkPicker/NetworkPicker'
 import { LanguagePicker } from '../../Header/LanguagePicker/LanguagePicker'
 import './topbar.scss'
@@ -33,7 +32,6 @@ export const TopBar: FC<TopBarProps> = ({ onMenuClick }) => (
     <div className="topbar-right">
       <NetworkPicker />
       <LanguagePicker />
-      <ThemeToggle />
     </div>
   </header>
 )
