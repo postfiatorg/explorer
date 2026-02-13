@@ -5,8 +5,9 @@ $subdued-color: $black-40;
 .simple-body-tx {
   .rows {
     width: 100%;
-    padding: 0 16px 16px;
+    padding: 0 16px;
     border-right: none;
+    margin-bottom: 0;
 
     .partial-row {
       display: flex;
@@ -24,6 +25,12 @@ $subdued-color: $black-40;
     }
 
     .row {
+      padding: 10px 0 10px 8px;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
       .value {
         text-align: right;
 
@@ -117,7 +124,7 @@ $subdued-color: $black-40;
       }
 
       &:first-child {
-        padding-top: 16px;
+        padding-top: 10px;
       }
     }
 

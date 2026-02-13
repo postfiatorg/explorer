@@ -31,7 +31,10 @@ export const Amount = ({
     typeof value === 'string' ? parseInt(value, 10) / XRP_BASE : value.amount
   const isMPT = typeof value === 'string' ? false : (value.isMPT ?? false)
 
-  const options = { ...CURRENCY_OPTIONS, currency }
+  const options = {
+    minimumFractionDigits: CURRENCY_OPTIONS.minimumFractionDigits,
+    maximumFractionDigits: CURRENCY_OPTIONS.maximumFractionDigits,
+  }
 
   const renderAmount = (localizedAmount) => (
     <span className="amount" data-testid="amount">
