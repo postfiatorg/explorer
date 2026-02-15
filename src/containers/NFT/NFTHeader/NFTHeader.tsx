@@ -1,13 +1,15 @@
 import { useEffect, useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from 'react-query'
+import { Calendar, Percent } from 'lucide-react'
 import { Loader } from '../../shared/components/Loader'
 import { CopyableAddress } from '../../shared/components/CopyableAddress/CopyableAddress'
+import { MetricCard } from '../../shared/components/MetricCard/MetricCard'
 import './styles.scss'
 import SocketContext from '../../shared/SocketContext'
 import { getNFTInfo, getAccountInfo } from '../../../rippled/lib/rippled'
 import { formatNFTInfo, formatAccountInfo } from '../../../rippled/lib/utils'
-import { localizeDate, BAD_REQUEST, HASH256_REGEX } from '../../shared/utils'
+import { localizeDate, localizeNumber, BAD_REQUEST, HASH256_REGEX } from '../../shared/utils'
 import { Details } from './Details'
 import { Settings } from './Settings'
 import { Account } from '../../shared/components/Account'
@@ -18,13 +20,9 @@ import { NFTFormattedInfo, AccountFormattedInfo } from '../../shared/Interfaces'
 
 const TIME_ZONE = 'UTC'
 const DATE_OPTIONS = {
-  hour: 'numeric',
-  minute: 'numeric',
-  second: 'numeric',
   year: 'numeric',
-  month: 'numeric',
+  month: 'short',
   day: 'numeric',
-  hour12: true,
   timeZone: TIME_ZONE,
 }
 
@@ -75,14 +73,15 @@ export const NFTHeader = (props: Props) => {
     { enabled: !!data },
   )
 
-  const mintedDate =
+  const mintedDisplay =
     firstTransaction?.transaction?.type === 'NFTokenMint'
-      ? `${localizeDate(
-          new Date(firstTransaction.transaction.date),
-          language,
-          DATE_OPTIONS,
-        )} ${TIME_ZONE}`
-      : undefined
+      ? localizeDate(new Date(firstTransaction.transaction.date), language, DATE_OPTIONS) ?? '—'
+      : '—'
+
+  const transferFee = data?.transferFee
+  const feeDisplay = transferFee
+    ? `${localizeNumber((transferFee / 1000).toPrecision(5), language, { minimumFractionDigits: 3 })}%`
+    : '0%'
 
   if (loading) return <Loader />
 
@@ -103,24 +102,19 @@ export const NFTHeader = (props: Props) => {
         )}
       </div>
 
+      <div className="nft-stats">
+        <MetricCard label="Minted" value={mintedDisplay} icon={Calendar} />
+        <MetricCard label="Transfer Fee" value={feeDisplay} icon={Percent} />
+      </div>
+
       <div className="nft-details-columns">
         <div className="nft-details-panel dashboard-panel">
           <h3 className="dashboard-panel-title">{t('details')}</h3>
-          <div className="nft-details-content">
-            <Details
-              data={{
-                ...data,
-                domain: accountData?.domain,
-                minted: mintedDate,
-              }}
-            />
-          </div>
+          <Details data={{ ...data, domain: accountData?.domain }} />
         </div>
         <div className="nft-settings-panel dashboard-panel">
           <h3 className="dashboard-panel-title">{t('settings')}</h3>
-          <div className="nft-details-content">
-            <Settings flags={data.flags!} />
-          </div>
+          <Settings flags={data.flags!} />
         </div>
       </div>
     </>

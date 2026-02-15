@@ -1,55 +1,55 @@
-import { useTranslation } from 'react-i18next'
-import './styles.scss'
-import { useLanguage } from '../../shared/hooks'
-import { localizeNumber } from '../../shared/utils'
 import { NFTFormattedInfo, AccountFormattedInfo } from '../../shared/Interfaces'
 import { Account } from '../../shared/components/Account'
-import { TokenTableRow } from '../../shared/components/TokenTableRow'
-
-interface MintedProps {
-  minted?: string
-}
+import DomainLink from '../../shared/components/DomainLink'
 
 interface Props {
-  data: NFTFormattedInfo & AccountFormattedInfo & MintedProps
+  data: NFTFormattedInfo & AccountFormattedInfo
 }
 
 export const Details = ({ data }: Props) => {
   const {
-    minted,
     domain,
     NFTTaxon: nftTaxon,
     uri,
-    transferFee,
     owner,
     isBurned,
     NFTSerial: nftSerial,
   } = data
-  const { t } = useTranslation()
-  const language = useLanguage()
-  const formattedFee =
-    transferFee &&
-    `${localizeNumber((transferFee / 1000).toPrecision(5), language, {
-      minimumFractionDigits: 3,
-    })}%`
 
   return (
-    <table className="token-table">
-      <tbody>
-        {minted && <TokenTableRow label={t('minted')} value={minted} />}
-        {domain && <TokenTableRow label={t('domain')} value={domain} />}
-        <TokenTableRow label={t('taxon_id')} value={nftTaxon} />
-        <TokenTableRow label={t('serial')} value={nftSerial} />
-        {uri && <TokenTableRow label="URI" value={uri} />}
-        <TokenTableRow label={t('transfer_fee')} value={formattedFee} />
-        {isBurned && <TokenTableRow label={t('is_burned')} value="true" />}
-        {owner && (
-          <TokenTableRow
-            label={t('owner')}
-            value={<Account account={owner!} />}
-          />
-        )}
-      </tbody>
-    </table>
+    <div className="nft-details-list">
+      {domain && (
+        <div className="nft-detail-row">
+          <span className="nft-detail-label">Domain</span>
+          <span className="nft-detail-value"><DomainLink domain={domain} /></span>
+        </div>
+      )}
+      <div className="nft-detail-row">
+        <span className="nft-detail-label">Taxon ID</span>
+        <span className="nft-detail-value">{nftTaxon}</span>
+      </div>
+      <div className="nft-detail-row">
+        <span className="nft-detail-label">Serial</span>
+        <span className="nft-detail-value">{nftSerial}</span>
+      </div>
+      {uri && (
+        <div className="nft-detail-row">
+          <span className="nft-detail-label">URI</span>
+          <span className="nft-detail-value mono">{uri}</span>
+        </div>
+      )}
+      {isBurned && (
+        <div className="nft-detail-row">
+          <span className="nft-detail-label">Burned</span>
+          <span className="nft-detail-value">Yes</span>
+        </div>
+      )}
+      {owner && (
+        <div className="nft-detail-row">
+          <span className="nft-detail-label">Owner</span>
+          <span className="nft-detail-value"><Account account={owner} /></span>
+        </div>
+      )}
+    </div>
   )
 }

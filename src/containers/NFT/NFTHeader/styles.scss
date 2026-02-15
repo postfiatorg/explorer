@@ -1,6 +1,5 @@
 @use '../../shared/css/variables' as *;
 @use '../../shared/css/detail-page';
-@use '../../shared/css/table';
 
 .nft-hero-id {
   margin-bottom: 16px;
@@ -21,6 +20,14 @@
   }
 }
 
+// Stats
+.nft-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 12px;
+}
+
+// Details + Settings columns
 .nft-details-columns {
   display: flex;
   gap: 16px;
@@ -35,12 +42,80 @@
   flex: 1;
   min-width: 0;
   padding-bottom: 16px;
+
+  .dashboard-panel-title {
+    padding-bottom: 16px;
+  }
 }
 
-.nft-details-content {
+// Details rows
+.nft-details-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   padding: 0 16px;
 }
 
+.nft-detail-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+}
+
+.nft-detail-label {
+  color: $black-40;
+  min-width: 140px;
+  flex-shrink: 0;
+  @include medium;
+}
+
+.nft-detail-value {
+  color: $white;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  &.mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    white-space: normal;
+    word-break: break-all;
+  }
+
+  a {
+    color: $green-30;
+    text-decoration: none;
+
+    &:hover {
+      color: $green;
+    }
+  }
+}
+
+// Settings flags
+.nft-flags-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 16px;
+}
+
+.nft-flag-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.nft-flag-label {
+  color: $black-30;
+  font-size: 14px;
+  @include medium;
+}
+
+// Tabs
 .nft-tabs {
   .tab-body {
     border: 1px solid $black-80;
