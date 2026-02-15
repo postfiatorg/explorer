@@ -17,8 +17,10 @@ export const Skeleton: FC<SkeletonProps> = ({
   style,
 }) => {
   const computedStyle: CSSProperties = { ...style }
-  if (width) computedStyle.width = typeof width === 'number' ? `${width}px` : width
-  if (height) computedStyle.height = typeof height === 'number' ? `${height}px` : height
+  if (width)
+    computedStyle.width = typeof width === 'number' ? `${width}px` : width
+  if (height)
+    computedStyle.height = typeof height === 'number' ? `${height}px` : height
 
   return (
     <div

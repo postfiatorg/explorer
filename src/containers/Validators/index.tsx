@@ -58,12 +58,11 @@ export const Validator = () => {
     ['fetchValidatorData', identifier],
     async () => fetchValidatorData(),
     {
-      refetchInterval: (returnedData, query) =>
-        query.state.error === NOT_FOUND
-          ? false
-          : returnedData == null
-            ? FETCH_INTERVAL_ERROR_MILLIS
-            : FETCH_INTERVAL_VHS_MILLIS,
+      refetchInterval: (returnedData, query) => {
+        if (query.state.error === NOT_FOUND) return false
+        if (returnedData == null) return FETCH_INTERVAL_ERROR_MILLIS
+        return FETCH_INTERVAL_VHS_MILLIS
+      },
       retry: (_count, err) => err !== NOT_FOUND,
       refetchOnMount: true,
       enabled: !!network,
@@ -113,8 +112,7 @@ export const Validator = () => {
         return response
       })
       .catch((axiosError) => {
-        const status =
-          axiosError.response?.status ?? SERVER_ERROR
+        const status = axiosError.response?.status ?? SERVER_ERROR
         trackException(`${url} --- ${JSON.stringify(axiosError)}`)
         return Promise.reject(status)
       })
@@ -133,7 +131,10 @@ export const Validator = () => {
         path={`/validators/${identifier}`}
         breadcrumbs={[
           { name: t('validators'), path: '/network/validators' },
-          { name: `${t('validator')} ${short}`, path: `/validators/${identifier}` },
+          {
+            name: `${t('validator')} ${short}`,
+            path: `/validators/${identifier}`,
+          },
         ]}
       />
     )
@@ -155,11 +156,16 @@ export const Validator = () => {
       <div className="validator-hero detail-summary dashboard-panel">
         <div className="detail-summary-label">Validator</div>
         <div className="detail-summary-title">
-          {domain || (masterKey ? `${masterKey.substring(0, 12)}...` : 'Unknown Validator')}
+          {domain ||
+            (masterKey
+              ? `${masterKey.substring(0, 12)}...`
+              : 'Unknown Validator')}
         </div>
         <div className="validator-hero-badges">
           {isUnl && <StatusBadge status="verified" label="UNL" />}
-          {data?.domain_verified && <StatusBadge status="verified" label="Domain Verified" />}
+          {data?.domain_verified && (
+            <StatusBadge status="verified" label="Domain Verified" />
+          )}
         </div>
         {masterKey && (
           <div className="detail-summary-hash-row">
@@ -197,9 +203,10 @@ export const Validator = () => {
           return (
             <div className="detail-overview-item" key={s.label}>
               <span className="detail-overview-label">{s.label}</span>
-              <span className={`detail-overview-value agreement-value ${color}`}>
-                {(value * 100).toFixed(2)}%
-                {s.score.incomplete && '*'}
+              <span
+                className={`detail-overview-value agreement-value ${color}`}
+              >
+                {(value * 100).toFixed(2)}%{s.score.incomplete && '*'}
               </span>
               <div className="agreement-bar-track">
                 <div
@@ -256,7 +263,13 @@ export const Validator = () => {
 
   if (error) {
     const message = getErrorMessage(error)
-    body = <NoMatch title={message.title} hints={message.hints} errorCode={(error as any)?.code} />
+    body = (
+      <NoMatch
+        title={message.title}
+        hints={message.hints}
+        errorCode={(error as any)?.code}
+      />
+    )
   } else if (data?.master_key || data?.signing_key) {
     body = renderValidator()
   } else if (!isLoading) {

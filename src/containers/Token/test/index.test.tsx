@@ -2,7 +2,6 @@ import { mount } from 'enzyme'
 import { Route } from 'react-router-dom'
 import i18n from '../../../i18n/testConfig'
 import { Token } from '../index'
-import { TokenHeader } from '../TokenHeader'
 import { TokenTransactionTable } from '../TokenTransactionTable'
 import { flushPromises, QuickHarness } from '../../test/utils'
 import { TOKEN_ROUTE } from '../../App/routes'
@@ -48,7 +47,6 @@ describe('Token container', () => {
     const wrapper = createWrapper(() => Promise.resolve(mockAccount))
     await flushPromises()
     wrapper.update()
-    expect(wrapper.find(TokenHeader).length).toBe(1)
     expect(wrapper.find(TokenTransactionTable).length).toBe(1)
     wrapper.unmount()
   })

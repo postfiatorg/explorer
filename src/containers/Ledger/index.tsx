@@ -8,7 +8,13 @@ import { Loader } from '../shared/components/Loader'
 import { TransactionFeed } from '../shared/components/TransactionFeed/TransactionFeed'
 import SocketContext from '../shared/SocketContext'
 import { useAnalytics } from '../shared/analytics'
-import { NOT_FOUND, BAD_REQUEST, DECIMAL_REGEX, HASH256_REGEX, localizeNumber } from '../shared/utils'
+import {
+  NOT_FOUND,
+  BAD_REQUEST,
+  DECIMAL_REGEX,
+  HASH256_REGEX,
+  localizeNumber,
+} from '../shared/utils'
 import { useLanguage } from '../shared/hooks'
 import { LedgerSummaryCard } from './LedgerSummaryCard'
 
@@ -110,7 +116,13 @@ export const Ledger = () => {
   const renderError = () => {
     if (!error) return null
     const message = getErrorMessage(error)
-    return <NoMatch title={message.title} hints={message.hints} errorCode={(error as any)?.code} />
+    return (
+      <NoMatch
+        title={message.title}
+        hints={message.hints}
+        errorCode={(error as any)?.code}
+      />
+    )
   }
 
   return (

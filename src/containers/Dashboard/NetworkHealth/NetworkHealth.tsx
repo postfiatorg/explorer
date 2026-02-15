@@ -12,7 +12,9 @@ export const NetworkHealth: FC = () => {
       <div className="network-health-item">
         <Users size={16} />
         <span className="network-health-label">Validators</span>
-        <span className="network-health-value">{validators?.length || '—'}</span>
+        <span className="network-health-value">
+          {validators?.length || '—'}
+        </span>
       </div>
       <div className="network-health-divider" />
       <div className="network-health-item">
@@ -24,7 +26,9 @@ export const NetworkHealth: FC = () => {
       <div className="network-health-item">
         <Globe size={16} />
         <span className="network-health-label">Network</span>
-        <span className="network-health-value network-health-network">{network}</span>
+        <span className="network-health-value network-health-network">
+          {network}
+        </span>
       </div>
     </div>
   )

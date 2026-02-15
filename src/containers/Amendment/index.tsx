@@ -53,11 +53,10 @@ export const Amendment = () => {
   const language = useLanguage()
   const { trackException } = useAnalytics()
 
-  const {
-    data,
-    error,
-    isLoading,
-  } = useQuery<AmendmentData, keyof typeof ERROR_MESSAGES | null>(
+  const { data, error, isLoading } = useQuery<
+    AmendmentData,
+    keyof typeof ERROR_MESSAGES | null
+  >(
     ['fetchAmendmentData', identifier, network],
     async () => {
       const url = `${process.env.VITE_DATA_URL}/amendment/vote/${network}/${identifier}`
@@ -101,7 +100,13 @@ export const Amendment = () => {
   let body
   if (error) {
     const message = getErrorMessage(error)
-    body = <NoMatch title={message.title} hints={message.hints} errorCode={(error as any)?.code} />
+    body = (
+      <NoMatch
+        title={message.title}
+        hints={message.hints}
+        errorCode={(error as any)?.code}
+      />
+    )
   } else if (data?.id) {
     body = (
       <div className="amendment-hero detail-summary dashboard-panel">
@@ -141,7 +146,10 @@ export const Amendment = () => {
             <div className="amendment-info-row">
               <span className="amendment-info-label">{t('enable_tx')}</span>
               <span className="amendment-info-value amendment-info-truncate">
-                <RouteLink to={TRANSACTION_ROUTE} params={{ identifier: data.tx_hash }}>
+                <RouteLink
+                  to={TRANSACTION_ROUTE}
+                  params={{ identifier: data.tx_hash }}
+                >
                   {data.tx_hash}
                 </RouteLink>
               </span>
@@ -151,7 +159,9 @@ export const Amendment = () => {
             <div className="amendment-info-row">
               <span className="amendment-info-label">{t('details')}</span>
               <span className="amendment-info-value amendment-info-truncate">
-                <Link to={detailsUrl} target="_blank">{detailsUrl}</Link>
+                <Link to={detailsUrl} target="_blank">
+                  {detailsUrl}
+                </Link>
               </span>
             </div>
           )}

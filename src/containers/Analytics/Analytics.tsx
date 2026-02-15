@@ -1,5 +1,4 @@
 import { FC, useEffect, useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
 import { Info } from 'lucide-react'
 import { SEOHelmet } from '../shared/components/SEOHelmet'
 import { useAnalytics } from '../shared/analytics'
@@ -9,7 +8,6 @@ import './analytics.scss'
 
 export const Analytics: FC = () => {
   const { trackScreenLoaded } = useAnalytics()
-  const { t } = useTranslation()
   const { metricsHistory } = useStreams()
 
   useEffect(() => {

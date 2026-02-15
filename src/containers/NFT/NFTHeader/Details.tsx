@@ -12,7 +12,9 @@ export const Details = ({ domain, taxon, serial, transferFee }: Props) => (
     {domain && (
       <div className="nft-detail-row">
         <span className="nft-detail-label">Domain</span>
-        <span className="nft-detail-value"><DomainLink domain={domain} /></span>
+        <span className="nft-detail-value">
+          <DomainLink domain={domain} />
+        </span>
       </div>
     )}
     <div className="nft-detail-row">

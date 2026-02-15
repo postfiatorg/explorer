@@ -6,12 +6,11 @@ import './styles.scss'
 import SocketContext from '../../shared/SocketContext'
 import { getAccountInfo } from '../../../rippled/lib/rippled'
 import { formatAccountInfo } from '../../../rippled/lib/utils'
-import { BAD_REQUEST, HASH256_REGEX } from '../../shared/utils'
+import { BAD_REQUEST, HASH256_REGEX, localizeNumber } from '../../shared/utils'
 import { Details } from './Details'
 import { Settings } from './Settings'
 import { Account } from '../../shared/components/Account'
 import { useLanguage } from '../../shared/hooks'
-import { localizeNumber } from '../../shared/utils'
 import { parseIssuerFromNFTokenID } from '../../../rippled/NFTTransactions'
 import { AccountFormattedInfo } from '../../shared/Interfaces'
 
@@ -28,7 +27,8 @@ function parseNFTokenID(tokenId: string) {
   const issuer = parseIssuerFromNFTokenID(tokenId)
   const scrambledTaxon = parseInt(tokenId.substring(48, 56), 16) >>> 0
   const sequence = parseInt(tokenId.substring(56, 64), 16) >>> 0
-  const unscramble = ((TAXON_SCRAMBLE_A * sequence + TAXON_SCRAMBLE_B) & 0xFFFFFFFF) >>> 0
+  const unscramble =
+    ((TAXON_SCRAMBLE_A * sequence + TAXON_SCRAMBLE_B) & 0xffffffff) >>> 0
   const taxon = (scrambledTaxon ^ unscramble) >>> 0
 
   const flags: string[] = []

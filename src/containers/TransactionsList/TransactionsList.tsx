@@ -1,16 +1,17 @@
 import { FC, useEffect, useMemo, useState } from 'react'
-import { useTranslation } from 'react-i18next'
 import { SEOHelmet } from '../shared/components/SEOHelmet'
 import { useAnalytics } from '../shared/analytics'
 import { useStreams } from '../shared/hooks/useStreams'
 import { TransactionFeed } from '../shared/components/TransactionFeed/TransactionFeed'
-import { TransactionFilters, TransactionFilterState } from './TransactionFilters'
+import {
+  TransactionFilters,
+  TransactionFilterState,
+} from './TransactionFilters'
 import { SUCCESSFUL_TRANSACTION } from '../shared/transactionUtils'
 import './transactionsList.scss'
 
 export const TransactionsList: FC = () => {
   const { trackScreenLoaded } = useAnalytics()
-  const { t } = useTranslation()
   const { latestTransactions } = useStreams()
 
   const [filters, setFilters] = useState<TransactionFilterState>({

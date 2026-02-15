@@ -7,11 +7,10 @@ interface TokenStatsProps {
   rate?: number
 }
 
-export const TokenStats: FC<TokenStatsProps> = ({
-  obligations,
-  rate,
-}) => {
-  const obligationsFormatted = formatLargeNumber(Number.parseFloat(obligations || '0'))
+export const TokenStats: FC<TokenStatsProps> = ({ obligations, rate }) => {
+  const obligationsFormatted = formatLargeNumber(
+    Number.parseFloat(obligations || '0'),
+  )
   const supplyDisplay = `${obligationsFormatted.num}${obligationsFormatted.unit}`
   const feeDisplay = rate != null ? `${rate * 100}%` : '0%'
 

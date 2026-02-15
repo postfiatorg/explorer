@@ -140,15 +140,27 @@ export const Accounts = () => {
               <h3 className="dashboard-panel-title">{t('escrows')}</h3>
               <div className="account-details-list">
                 <div className="account-detail-row">
-                  <span className="account-detail-label">{t('inbound_total')}</span>
+                  <span className="account-detail-label">
+                    {t('inbound_total')}
+                  </span>
                   <span className="account-detail-value">
-                    {localizeNumber(escrows.totalIn, language, CURRENCY_OPTIONS)}
+                    {localizeNumber(
+                      escrows.totalIn,
+                      language,
+                      CURRENCY_OPTIONS,
+                    )}
                   </span>
                 </div>
                 <div className="account-detail-row">
-                  <span className="account-detail-label">{t('outbound_total')}</span>
+                  <span className="account-detail-label">
+                    {t('outbound_total')}
+                  </span>
                   <span className="account-detail-value">
-                    {localizeNumber(escrows.totalOut, language, CURRENCY_OPTIONS)}
+                    {localizeNumber(
+                      escrows.totalOut,
+                      language,
+                      CURRENCY_OPTIONS,
+                    )}
                   </span>
                 </div>
               </div>
@@ -162,7 +174,11 @@ export const Accounts = () => {
                 <div className="account-detail-row">
                   <span className="account-detail-label">Available</span>
                   <span className="account-detail-value">
-                    {localizeNumber(paychannels.total_available, language, CURRENCY_OPTIONS)}
+                    {localizeNumber(
+                      paychannels.total_available,
+                      language,
+                      CURRENCY_OPTIONS,
+                    )}
                   </span>
                 </div>
                 <div className="account-detail-row">
@@ -189,7 +205,10 @@ export const Accounts = () => {
                 ))}
                 <div className="account-detail-row">
                   <span className="account-detail-label">
-                    <Trans i18nKey="min_signer_quorum" values={{ quorum: signerList.quorum }} />
+                    <Trans
+                      i18nKey="min_signer_quorum"
+                      values={{ quorum: signerList.quorum }}
+                    />
                   </span>
                 </div>
               </div>

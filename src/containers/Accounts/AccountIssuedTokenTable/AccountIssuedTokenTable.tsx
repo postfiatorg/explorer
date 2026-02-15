@@ -45,7 +45,9 @@ export const AccountIssuedTokenTable = (props: Props) => {
   if (!account.tokens) return <Loader />
 
   if (!account.tokens.length) {
-    return <div className="account-asset-empty">{t('assets.no_issued_message')}</div>
+    return (
+      <div className="account-asset-empty">{t('assets.no_issued_message')}</div>
+    )
   }
 
   return (

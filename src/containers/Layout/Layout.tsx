@@ -1,21 +1,10 @@
-import { FC, useState, useCallback, createContext, useContext } from 'react'
+import { FC, useState, useCallback, useMemo } from 'react'
 import { Outlet } from 'react-router-dom'
 import { TopBar } from './TopBar/TopBar'
 import { Sidebar } from './Sidebar/Sidebar'
 import { StatusBar } from './StatusBar/StatusBar'
+import { SidebarContext } from './SidebarContext'
 import './layout.scss'
-
-interface SidebarContextValue {
-  collapsed: boolean
-  setCollapsed: (collapsed: boolean) => void
-}
-
-export const SidebarContext = createContext<SidebarContextValue>({
-  collapsed: false,
-  setCollapsed: () => {},
-})
-
-export const useSidebarContext = () => useContext(SidebarContext)
 
 const COLLAPSED_KEY = 'sidebar-collapsed'
 
@@ -48,9 +37,16 @@ export const Layout: FC = () => {
     setMobileMenuOpen(false)
   }, [])
 
+  const sidebarContextValue = useMemo(
+    () => ({ collapsed, setCollapsed }),
+    [collapsed, setCollapsed],
+  )
+
   return (
-    <SidebarContext.Provider value={{ collapsed, setCollapsed }}>
-      <div className={`layout ${collapsed ? 'sidebar-collapsed' : 'sidebar-expanded'}`}>
+    <SidebarContext.Provider value={sidebarContextValue}>
+      <div
+        className={`layout ${collapsed ? 'sidebar-collapsed' : 'sidebar-expanded'}`}
+      >
         <TopBar onMenuClick={handleMenuClick} />
         <Sidebar />
         {mobileMenuOpen && (

@@ -11,7 +11,11 @@ const TEST_ADDRESS = 'rDsbeomae4FXwgQTJp9Rs64Qg9vDiTCdBv'
 const TEST_X_ADDRESS = 'XV3oNHx95sqdCkTDCBCVsVeuBmvh2dz5fTZvfw8UCcMVsfe'
 
 describe('AccountHeader Actions', () => {
-  const createWrapper = (accountId: string, hasBridge = false, deleted = false) =>
+  const createWrapper = (
+    accountId: string,
+    hasBridge = false,
+    deleted = false,
+  ) =>
     mount(
       <QueryClientProvider client={testQueryClient}>
         <BrowserRouter future={V7_FUTURE_ROUTER_FLAGS}>

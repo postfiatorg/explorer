@@ -91,7 +91,9 @@ export const AccountMPTTable = ({ accountId }: AccountMPTTableProps) => {
   if (loading) return <Loader />
 
   if (!mpts?.length) {
-    return <div className="account-asset-empty">{t('assets.no_mpts_message')}</div>
+    return (
+      <div className="account-asset-empty">{t('assets.no_mpts_message')}</div>
+    )
   }
 
   return (

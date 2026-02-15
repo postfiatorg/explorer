@@ -70,7 +70,9 @@ export const ValidatorsTable = (props: ValidatorsTableProps) => {
         title={t('missed_validations', { count: agreement.missed })}
       >
         <div className="agreement-cell">
-          <span className={`agreement-value ${getAgreementColor(Number(agreement.score))}`}>
+          <span
+            className={`agreement-value ${getAgreementColor(Number(agreement.score))}`}
+          >
             {(Number(agreement.score) * 100).toFixed(2)}%
             {agreement.incomplete && <span title={t('incomplete')}>*</span>}
           </span>

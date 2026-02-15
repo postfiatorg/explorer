@@ -127,49 +127,58 @@ export const Validators = () => {
 
   const averageAgreement = useMemo(() => {
     const unlValidators = validators.filter((v: any) => Boolean(v.unl))
-    const withScore = unlValidators.filter((v: any) => v.agreement_30day?.score != null)
+    const withScore = unlValidators.filter(
+      (v: any) => v.agreement_30day?.score != null,
+    )
     if (withScore.length === 0) return undefined
-    const sum = withScore.reduce((acc, v: any) => acc + Number(v.agreement_30day.score), 0)
+    const sum = withScore.reduce(
+      (acc, v: any) => acc + Number(v.agreement_30day.score),
+      0,
+    )
     const avg = (sum / withScore.length) * 100
     return `${avg.toFixed(2)}%`
   }, [validators])
 
-  const VotingNetworkSettings = () => {
-    if (!feeSettings) return null
-    const items = [
-      { label: 'Base Reserve', value: feeSettings.reserve_base / DROPS_TO_XRP_FACTOR, unit: 'PFT' },
-      { label: 'Owner Reserve', value: feeSettings.reserve_inc / DROPS_TO_XRP_FACTOR, unit: 'PFT' },
-      { label: 'Base Fee', value: feeSettings.base_fee / DROPS_TO_XRP_FACTOR, unit: 'PFT' },
-    ]
-    return (
-      <div className="voting-current-settings">
-        <div className="voting-settings-header">Current Network Settings</div>
-        <div className="voting-settings-grid">
-          {items.map((item) => (
-            <div className="voting-setting-card" key={item.label}>
-              <span className="voting-setting-label">{item.label}</span>
-              <span className="voting-setting-value">
-                {item.value}
-                <span className="voting-setting-unit">{item.unit}</span>
-              </span>
-            </div>
-          ))}
-        </div>
+  const votingNetworkSettings = feeSettings ? (
+    <div className="voting-current-settings">
+      <div className="voting-settings-header">Current Network Settings</div>
+      <div className="voting-settings-grid">
+        {[
+          {
+            label: 'Base Reserve',
+            value: feeSettings.reserve_base / DROPS_TO_XRP_FACTOR,
+            unit: 'PFT',
+          },
+          {
+            label: 'Owner Reserve',
+            value: feeSettings.reserve_inc / DROPS_TO_XRP_FACTOR,
+            unit: 'PFT',
+          },
+          {
+            label: 'Base Fee',
+            value: feeSettings.base_fee / DROPS_TO_XRP_FACTOR,
+            unit: 'PFT',
+          },
+        ].map((item) => (
+          <div className="voting-setting-card" key={item.label}>
+            <span className="voting-setting-label">{item.label}</span>
+            <span className="voting-setting-value">
+              {item.value}
+              <span className="voting-setting-unit">{item.unit}</span>
+            </span>
+          </div>
+        ))}
       </div>
-    )
-  }
+    </div>
+  ) : null
 
   const Body = {
     uptime: (
-      <ValidatorsTable
-        validators={validators}
-        metrics={metrics}
-        tab="uptime"
-      />
+      <ValidatorsTable validators={validators} metrics={metrics} tab="uptime" />
     ),
     voting: (
       <>
-        <VotingNetworkSettings />
+        {votingNetworkSettings}
         <ValidatorsTable
           validators={validators}
           metrics={metrics}

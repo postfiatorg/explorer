@@ -19,14 +19,22 @@ export const Details = ({ data, metadata }: Props) => {
       {metadata?.description && (
         <div className="mpt-detail-row">
           <span className="mpt-detail-label">Description</span>
-          <span className="mpt-detail-value" title={metadata.description}>{metadata.description}</span>
+          <span className="mpt-detail-value" title={metadata.description}>
+            {metadata.description}
+          </span>
         </div>
       )}
       {metadata?.website && (
         <div className="mpt-detail-row">
           <span className="mpt-detail-label">Website</span>
           <span className="mpt-detail-value">
-            <a href={metadata.website} target="_blank" rel="noopener noreferrer">{metadata.website}</a>
+            <a
+              href={metadata.website}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {metadata.website}
+            </a>
           </span>
         </div>
       )}

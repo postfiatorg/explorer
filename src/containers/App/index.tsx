@@ -30,7 +30,6 @@ import {
   ANALYTICS_ROUTE,
 } from './routes'
 import { Dashboard } from '../Dashboard/Dashboard'
-import { LedgersPage as Ledgers } from '../Ledgers'
 import { Ledger } from '../Ledger'
 import { AccountsRouter } from '../Accounts/AccountsRouter'
 import { TransactionsList } from '../TransactionsList/TransactionsList'

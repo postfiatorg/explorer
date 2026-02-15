@@ -5,16 +5,8 @@ import { SimpleRow } from '../shared/components/Transaction/SimpleRow'
 import { RouteLink } from '../shared/routing'
 import { AmendmentData } from '../shared/vhsTypes'
 
-interface validatorUNL {
-  signing_key: string
-  domain: string
-  unl: string | false
-}
-
 interface SimpleProps {
   data: AmendmentData
-  validators: Array<validatorUNL>
-  width: number
 }
 
 export const Simple = ({ data }: SimpleProps) => {

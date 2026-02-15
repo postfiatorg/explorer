@@ -4,6 +4,7 @@ import {
   ReactNode,
   useCallback,
   useContext,
+  useMemo,
   useRef,
   useState,
 } from 'react'
@@ -71,7 +72,9 @@ export const StreamsProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const [validators, setValidatorsState] = useState<any[]>([])
   const [latestTransactions, setLatestTransactions] = useState<any[]>([])
   const [metricsHistory, setMetricsHistory] = useState<MetricsSnapshot[]>([])
-  const [currentLedgerIndex, setCurrentLedgerIndex] = useState<number | null>(null)
+  const [currentLedgerIndex, setCurrentLedgerIndex] = useState<number | null>(
+    null,
+  )
 
   const [externalValidators, setExternalValidators] = useState<
     Record<string, ValidatorResponse>
@@ -103,7 +106,9 @@ export const StreamsProvider: FC<{ children: ReactNode }> = ({ children }) => {
 
   useQuery(['fetchValidatorData'], fetchValidators, {
     refetchInterval: (returnedData) =>
-      returnedData == null ? FETCH_INTERVAL_ERROR_MILLIS : FETCH_INTERVAL_MILLIS,
+      returnedData == null
+        ? FETCH_INTERVAL_ERROR_MILLIS
+        : FETCH_INTERVAL_MILLIS,
     refetchOnMount: true,
     enabled: !!network,
   })
@@ -126,9 +131,9 @@ export const StreamsProvider: FC<{ children: ReactNode }> = ({ children }) => {
         // Prevent unbounded growth
         if (seenLedgerIndicesRef.current.size > 200) {
           const entries = Array.from(seenLedgerIndicesRef.current)
-          entries.slice(0, entries.length - 100).forEach((idx) =>
-            seenLedgerIndicesRef.current.delete(idx),
-          )
+          entries
+            .slice(0, entries.length - 100)
+            .forEach((idx) => seenLedgerIndicesRef.current.delete(idx))
         }
 
         const newTxns = latest.transactions.map((tx: any) => ({
@@ -147,7 +152,9 @@ export const StreamsProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const handleMetricsUpdate = useCallback((newMetrics: any) => {
     setMetricsState(newMetrics)
     setMetricsHistory((prev) =>
-      [...prev, { timestamp: Date.now(), ...newMetrics }].slice(-MAX_METRICS_HISTORY),
+      [...prev, { timestamp: Date.now(), ...newMetrics }].slice(
+        -MAX_METRICS_HISTORY,
+      ),
     )
   }, [])
 
@@ -161,19 +168,31 @@ export const StreamsProvider: FC<{ children: ReactNode }> = ({ children }) => {
     if (el) el.textContent = currentLedgerIndex.toLocaleString()
   }
 
+  const contextValue = useMemo(
+    () => ({
+      ledgers,
+      metrics,
+      validators,
+      latestTransactions,
+      metricsHistory,
+      currentLedgerIndex,
+      externalValidators,
+      unlCount,
+    }),
+    [
+      ledgers,
+      metrics,
+      validators,
+      latestTransactions,
+      metricsHistory,
+      currentLedgerIndex,
+      externalValidators,
+      unlCount,
+    ],
+  )
+
   return (
-    <StreamsContext.Provider
-      value={{
-        ledgers,
-        metrics,
-        validators,
-        latestTransactions,
-        metricsHistory,
-        currentLedgerIndex,
-        externalValidators,
-        unlCount,
-      }}
-    >
+    <StreamsContext.Provider value={contextValue}>
       {isOnline && (
         <Streams
           validators={externalValidators}

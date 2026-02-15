@@ -46,7 +46,6 @@ export const Amount = ({
         issuer={displayIssuer ? issuer : ''}
         currency={currency}
         link
-
         isMPT={isMPT}
       />
     </span>

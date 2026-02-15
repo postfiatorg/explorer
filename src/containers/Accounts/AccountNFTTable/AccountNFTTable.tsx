@@ -53,7 +53,9 @@ export const AccountNFTTable = ({ accountId }: AccountNFTTableProps) => {
   if (loading) return <Loader />
 
   if (!nfts?.length) {
-    return <div className="account-asset-empty">{t('assets.no_nfts_message')}</div>
+    return (
+      <div className="account-asset-empty">{t('assets.no_nfts_message')}</div>
+    )
   }
 
   return (
@@ -80,7 +82,9 @@ export const AccountNFTTable = ({ accountId }: AccountNFTTableProps) => {
           ))}
         </tbody>
       </table>
-      {hasNextPage && !loading && <LoadMoreButton onClick={() => fetchNextPage()} />}
+      {hasNextPage && !loading && (
+        <LoadMoreButton onClick={() => fetchNextPage()} />
+      )}
     </>
   )
 }

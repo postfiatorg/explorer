@@ -1,12 +1,5 @@
 import { FC } from 'react'
-import {
-  Activity,
-  Timer,
-  Layers,
-  Zap,
-  DollarSign,
-  Shield,
-} from 'lucide-react'
+import { Activity, Timer, Layers, Zap, DollarSign, Shield } from 'lucide-react'
 import { MetricCard } from './MetricCard'
 import { useStreams } from '../../shared/hooks/useStreams'
 
@@ -36,7 +29,9 @@ export const HeroStats: FC = () => {
       />
       <MetricCard
         label="Ledger Interval"
-        value={metrics?.ledger_interval ? `${metrics.ledger_interval}s` : undefined}
+        value={
+          metrics?.ledger_interval ? `${metrics.ledger_interval}s` : undefined
+        }
         icon={Timer}
         sparklineData={extractSparkline('ledger_interval')}
         sparklineColor="#19a3ff"

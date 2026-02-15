@@ -11,7 +11,6 @@ import { getAccountTransactions } from '../../../rippled'
 export interface AccountTransactionsTableProps {
   accountId: string
   currencySelected?: string
-  hasTokensColumn: boolean
 }
 
 export const AccountTransactionTable = ({

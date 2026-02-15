@@ -7,7 +7,10 @@ interface CopyableAddressProps {
   truncate?: boolean
 }
 
-export const CopyableAddress: FC<CopyableAddressProps> = ({ address, truncate = false }) => {
+export const CopyableAddress: FC<CopyableAddressProps> = ({
+  address,
+  truncate = false,
+}) => {
   const [copied, setCopied] = useState(false)
 
   const handleCopy = useCallback(() => {
@@ -17,7 +20,9 @@ export const CopyableAddress: FC<CopyableAddressProps> = ({ address, truncate = 
   }, [address])
 
   return (
-    <span className={`copyable-address ${truncate ? 'copyable-address-truncate' : ''}`}>
+    <span
+      className={`copyable-address ${truncate ? 'copyable-address-truncate' : ''}`}
+    >
       <span className="copyable-address-text" title={address}>
         {address}
       </span>

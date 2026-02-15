@@ -24,9 +24,12 @@ import SocketContext from '../shared/SocketContext'
 import { TxStatus } from '../shared/components/TxStatus'
 import { getAction, getCategory } from '../shared/components/Transaction'
 import { TransactionActionIcon } from '../shared/components/TransactionActionIcon/TransactionActionIcon'
-import { useRouteParams } from '../shared/routing'
-import { RouteLink } from '../shared/routing'
-import { SUCCESSFUL_TRANSACTION, CURRENCY_OPTIONS, XRP_BASE } from '../shared/transactionUtils'
+import { useRouteParams, RouteLink } from '../shared/routing'
+import {
+  SUCCESSFUL_TRANSACTION,
+  CURRENCY_OPTIONS,
+  XRP_BASE,
+} from '../shared/transactionUtils'
 import { getTransaction } from '../../rippled'
 import { TRANSACTION_ROUTE, LEDGER_ROUTE } from '../App/routes'
 import { useLanguage } from '../shared/hooks'
@@ -213,16 +216,12 @@ export const Transaction = () => {
           className="dashboard-panel"
           style={simpleTabEmpty ? { display: 'none' } : undefined}
         >
-          <h3 className="dashboard-panel-title">
-            {t('transaction_details')}
-          </h3>
+          <h3 className="dashboard-panel-title">{t('transaction_details')}</h3>
           <SimpleTab data={data} onEmpty={handleSimpleTabEmpty} />
         </div>
 
         <div className="tx-detail-section dashboard-panel">
-          <h3 className="dashboard-panel-title">
-            {t('execution_details')}
-          </h3>
+          <h3 className="dashboard-panel-title">{t('execution_details')}</h3>
           <DetailTab data={processed} />
         </div>
 
@@ -234,7 +233,13 @@ export const Transaction = () => {
   let body
   if (isError) {
     const message = getErrorMessage(error)
-    body = <NoMatch title={message.title} hints={message.hints} errorCode={(error as any)?.code} />
+    body = (
+      <NoMatch
+        title={message.title}
+        hints={message.hints}
+        errorCode={(error as any)?.code}
+      />
+    )
   } else if (data?.processed?.hash) {
     body = renderTransaction()
   } else if (!identifier) {

@@ -11,7 +11,9 @@ export const StatusBar: FC = () => {
   return (
     <footer className="statusbar">
       <div className="statusbar-left">
-        <span className={`statusbar-connection ${isOnline ? 'online' : 'offline'}`}>
+        <span
+          className={`statusbar-connection ${isOnline ? 'online' : 'offline'}`}
+        >
           {isOnline ? <Wifi size={14} /> : <WifiOff size={14} />}
           {isOnline ? 'Connected' : 'Disconnected'}
         </span>
@@ -22,7 +24,9 @@ export const StatusBar: FC = () => {
         <span className="statusbar-ledger">
           <Activity size={14} />
           <span className="statusbar-ledger-label">Ledger</span>
-          <span className="statusbar-ledger-value" id="statusbar-ledger-index">—</span>
+          <span className="statusbar-ledger-value" id="statusbar-ledger-index">
+            —
+          </span>
         </span>
       </div>
     </footer>

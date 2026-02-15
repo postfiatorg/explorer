@@ -30,7 +30,9 @@ const TRANSACTION_TYPES = [
   'NFTokenCancelOffer',
 ]
 
-export const TransactionFilters: FC<TransactionFiltersProps> = ({ onFilterChange }) => {
+export const TransactionFilters: FC<TransactionFiltersProps> = ({
+  onFilterChange,
+}) => {
   const [type, setType] = useState('All Types')
   const [status, setStatus] = useState<'all' | 'success' | 'fail'>('all')
 
@@ -62,7 +64,9 @@ export const TransactionFilters: FC<TransactionFiltersProps> = ({ onFilterChange
           onChange={(e) => handleTypeChange(e.target.value)}
         >
           {TRANSACTION_TYPES.map((t) => (
-            <option key={t} value={t}>{t}</option>
+            <option key={t} value={t}>
+              {t}
+            </option>
           ))}
         </select>
         <div className="tx-filter-status-group">
@@ -79,7 +83,11 @@ export const TransactionFilters: FC<TransactionFiltersProps> = ({ onFilterChange
         </div>
       </div>
       {hasActiveFilters && (
-        <button type="button" className="tx-filter-clear" onClick={clearFilters}>
+        <button
+          type="button"
+          className="tx-filter-clear"
+          onClick={clearFilters}
+        >
           <X size={14} /> Clear
         </button>
       )}

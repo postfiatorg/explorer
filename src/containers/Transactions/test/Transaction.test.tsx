@@ -31,14 +31,8 @@ describe('Transaction container', () => {
     hash = '50BB0CC6EFC4F5EF9954E654D3230D4480DC83907A843C736B28420C7F02F774',
   ) =>
     mount(
-      <QuickHarness
-        i18n={i18n}
-        initialEntries={[`/transactions/${hash}`]}
-      >
-        <Route
-          path="/transactions/:identifier?"
-          element={<Transaction />}
-        />
+      <QuickHarness i18n={i18n} initialEntries={[`/transactions/${hash}`]}>
+        <Route path="/transactions/:identifier?" element={<Transaction />} />
       </QuickHarness>,
     )
   afterEach(() => {

@@ -31,16 +31,29 @@ export const MetricCard: FC<MetricCardProps> = ({
       </div>
       <div className="metric-card-value">
         {value ?? '—'}
-        {unit && value != null && <span className="metric-card-unit">{unit}</span>}
+        {unit && value != null && (
+          <span className="metric-card-unit">{unit}</span>
+        )}
       </div>
       {chartData.length > 2 && (
         <div className="metric-card-sparkline">
           <ResponsiveContainer width="100%" height={32}>
-            <AreaChart data={chartData} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
+            <AreaChart
+              data={chartData}
+              margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
+            >
               <defs>
                 <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={sparklineColor} stopOpacity={0.3} />
-                  <stop offset="100%" stopColor={sparklineColor} stopOpacity={0} />
+                  <stop
+                    offset="0%"
+                    stopColor={sparklineColor}
+                    stopOpacity={0.3}
+                  />
+                  <stop
+                    offset="100%"
+                    stopColor={sparklineColor}
+                    stopOpacity={0}
+                  />
                 </linearGradient>
               </defs>
               <Area

@@ -46,7 +46,9 @@ export const SimpleTab: FC<{
       )}
       <div className="validator-detail-row">
         <span className="validator-detail-label">{t('rippled_version')}</span>
-        <span className="validator-detail-value">{data.server_version || 'Unknown'}</span>
+        <span className="validator-detail-value">
+          {data.server_version || 'Unknown'}
+        </span>
       </div>
       <div className="validator-detail-row">
         <span className="validator-detail-label">Master Key</span>
@@ -64,7 +66,10 @@ export const SimpleTab: FC<{
         <div className="validator-detail-row">
           <span className="validator-detail-label">{t('ledger')}</span>
           <span className="validator-detail-value validator-detail-truncate">
-            <RouteLink to={LEDGER_ROUTE} params={{ identifier: data.current_index }}>
+            <RouteLink
+              to={LEDGER_ROUTE}
+              params={{ identifier: data.current_index }}
+            >
               {data.ledger_hash || data.current_index}
             </RouteLink>
           </span>
@@ -76,7 +81,11 @@ export const SimpleTab: FC<{
             Last Ledger {t('formatted_date', { timeZone: TIME_ZONE })}
           </span>
           <span className="validator-detail-value">
-            {localizeDate(new Date(data.last_ledger_time), language, DATE_OPTIONS)}
+            {localizeDate(
+              new Date(data.last_ledger_time),
+              language,
+              DATE_OPTIONS,
+            )}
           </span>
         </div>
       )}

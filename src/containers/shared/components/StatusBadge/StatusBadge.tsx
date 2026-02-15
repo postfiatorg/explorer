@@ -1,7 +1,13 @@
 import { FC } from 'react'
 import './statusBadge.scss'
 
-type BadgeStatus = 'enabled' | 'disabled' | 'voting' | 'vetoed' | 'verified' | 'deprecated'
+type BadgeStatus =
+  | 'enabled'
+  | 'disabled'
+  | 'voting'
+  | 'vetoed'
+  | 'verified'
+  | 'deprecated'
 
 interface StatusBadgeProps {
   status: BadgeStatus
@@ -9,7 +15,5 @@ interface StatusBadgeProps {
 }
 
 export const StatusBadge: FC<StatusBadgeProps> = ({ status, label }) => (
-  <span className={`status-badge status-badge-${status}`}>
-    {label}
-  </span>
+  <span className={`status-badge status-badge-${status}`}>{label}</span>
 )

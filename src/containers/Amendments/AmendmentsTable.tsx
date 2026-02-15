@@ -20,7 +20,10 @@ interface AmendmentsTableProps {
   mode: 'enabled' | 'voting'
 }
 
-export const AmendmentsTable: FC<AmendmentsTableProps> = ({ amendments, mode }) => {
+export const AmendmentsTable: FC<AmendmentsTableProps> = ({
+  amendments,
+  mode,
+}) => {
   const { t } = useTranslation()
   const language = useLanguage()
 
@@ -54,21 +57,26 @@ export const AmendmentsTable: FC<AmendmentsTableProps> = ({ amendments, mode }) 
 
   const renderEnabledRow = (amendment: AmendmentData, index: number) => {
     const dateLocalized = amendment.date
-      ? localizeDate(new Date(amendment.date), language, DATE_OPTIONS_AMENDMENTS)
+      ? localizeDate(
+          new Date(amendment.date),
+          language,
+          DATE_OPTIONS_AMENDMENTS,
+        )
       : null
 
-    const enabledDate = dateLocalized ? (
-      amendment.tx_hash ? (
+    let enabledDate = null
+    if (dateLocalized && amendment.tx_hash) {
+      enabledDate = (
         <RouteLink
           to={TRANSACTION_ROUTE}
           params={{ identifier: amendment.tx_hash }}
         >
           {dateLocalized}
         </RouteLink>
-      ) : (
-        <span>{dateLocalized}</span>
       )
-    ) : null
+    } else if (dateLocalized) {
+      enabledDate = <span>{dateLocalized}</span>
+    }
 
     return (
       <tr key={amendment.id}>
@@ -144,7 +152,12 @@ export const AmendmentsTable: FC<AmendmentsTableProps> = ({ amendments, mode }) 
     </tr>
   )
 
-  if (!amendments) return <div className="amendments-table"><Loader /></div>
+  if (!amendments)
+    return (
+      <div className="amendments-table">
+        <Loader />
+      </div>
+    )
 
   if (mode === 'voting' && amendments.length === 0) {
     return (

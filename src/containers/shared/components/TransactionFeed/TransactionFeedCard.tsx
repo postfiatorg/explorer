@@ -19,11 +19,14 @@ interface TransactionFeedCardProps {
   compact?: boolean
 }
 
+const normalizeTimestamp = (timestamp: number | string | Date): number => {
+  if (typeof timestamp !== 'number') return new Date(timestamp).getTime()
+  return timestamp > 1e12 ? timestamp : timestamp * 1000
+}
+
 const formatTimeAgo = (timestamp: number | string | Date): string => {
   const now = Date.now()
-  const time = typeof timestamp === 'number'
-    ? (timestamp > 1e12 ? timestamp : timestamp * 1000)
-    : new Date(timestamp).getTime()
+  const time = normalizeTimestamp(timestamp)
   const diffMs = now - time
 
   if (diffMs < 0) return 'just now'
@@ -33,7 +36,10 @@ const formatTimeAgo = (timestamp: number | string | Date): string => {
   return localizeDate(new Date(time))
 }
 
-export const TransactionFeedCard: FC<TransactionFeedCardProps> = ({ tx, compact = false }) => {
+export const TransactionFeedCard: FC<TransactionFeedCardProps> = ({
+  tx,
+  compact = false,
+}) => {
   const { t } = useTranslation()
   const [expanded, setExpanded] = useState(false)
   const category = getCategory(tx.type)
@@ -42,7 +48,9 @@ export const TransactionFeedCard: FC<TransactionFeedCardProps> = ({ tx, compact 
   const txPath = buildPath(TRANSACTION_ROUTE, { identifier: tx.hash })
 
   return (
-    <div className={`tx-feed-card tx-category-border-${category} ${compact ? 'compact' : ''}`}>
+    <div
+      className={`tx-feed-card tx-category-border-${category} ${compact ? 'compact' : ''}`}
+    >
       <div className="tx-feed-card-main">
         <div className="tx-feed-card-icon">
           <TransactionActionIcon type={tx.type} withBackground />
@@ -50,7 +58,10 @@ export const TransactionFeedCard: FC<TransactionFeedCardProps> = ({ tx, compact 
         <div className="tx-feed-card-body">
           <div className="tx-feed-card-header">
             <Link to={txPath} className="tx-feed-card-type">
-              {t('transaction_type_name', { context: tx.type, defaultValue: tx.type })}
+              {t('transaction_type_name', {
+                context: tx.type,
+                defaultValue: tx.type,
+              })}
             </Link>
           </div>
           <div className="tx-feed-card-details">
@@ -67,7 +78,9 @@ export const TransactionFeedCard: FC<TransactionFeedCardProps> = ({ tx, compact 
           </span>
         )}
         <div className="tx-feed-card-status">
-          <span className={`tx-feed-card-pill ${isSuccess ? 'success' : 'fail'}`}>
+          <span
+            className={`tx-feed-card-pill ${isSuccess ? 'success' : 'fail'}`}
+          >
             {isSuccess ? t('success') : t('fail')}
           </span>
         </div>

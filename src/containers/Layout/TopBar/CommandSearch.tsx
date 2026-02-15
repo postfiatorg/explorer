@@ -58,10 +58,16 @@ const getRoute = async (
   rippledContext: XrplClient,
 ): Promise<{ type: string; path: string } | null> => {
   if (DECIMAL_REGEX.test(id)) {
-    return { type: 'ledgers', path: buildPath(LEDGER_ROUTE, { identifier: id }) }
+    return {
+      type: 'ledgers',
+      path: buildPath(LEDGER_ROUTE, { identifier: id }),
+    }
   }
   if (isValidClassicAddress(id)) {
-    return { type: 'accounts', path: buildPath(ACCOUNT_ROUTE, { id: normalizeAccount(id) }) }
+    return {
+      type: 'accounts',
+      path: buildPath(ACCOUNT_ROUTE, { id: normalizeAccount(id) }),
+    }
   }
   if (HASH256_REGEX.test(id)) {
     const type = await determineHashType(id, rippledContext)
@@ -75,7 +81,10 @@ const getRoute = async (
     return { path: buildPath(MPT_ROUTE, { id: id.toUpperCase() }), type: 'mpt' }
   }
   if (isValidXAddress(id) || isValidClassicAddress(id.split(':')[0])) {
-    return { type: 'accounts', path: buildPath(ACCOUNT_ROUTE, { id: normalizeAccount(id) }) }
+    return {
+      type: 'accounts',
+      path: buildPath(ACCOUNT_ROUTE, { id: normalizeAccount(id) }),
+    }
   }
   if (
     (CURRENCY_REGEX.test(id) || FULL_CURRENCY_REGEX.test(id)) &&
@@ -84,7 +93,9 @@ const getRoute = async (
     const components = id.split(separators)
     return {
       type: 'token',
-      path: buildPath(TOKEN_ROUTE, { token: `${components[0]}.${components[1]}` }),
+      path: buildPath(TOKEN_ROUTE, {
+        token: `${components[0]}.${components[1]}`,
+      }),
     }
   }
   if (VALIDATORS_REGEX.test(id)) {
@@ -181,14 +192,16 @@ export const CommandSearch: FC = () => {
       <kbd className="command-search-kbd">
         <span>{navigator.platform?.includes('Mac') ? '\u2318' : 'Ctrl'}</span>K
       </kbd>
-      {process.env.VITE_ENVIRONMENT === 'mainnet' && focused && value.length > 0 && (
-        <div className="command-search-results">
-          <TokenSearchResults
-            setCurrentSearchInput={setValue}
-            currentSearchValue={value}
-          />
-        </div>
-      )}
+      {process.env.VITE_ENVIRONMENT === 'mainnet' &&
+        focused &&
+        value.length > 0 && (
+          <div className="command-search-results">
+            <TokenSearchResults
+              setCurrentSearchInput={setValue}
+              currentSearchValue={value}
+            />
+          </div>
+        )}
     </div>
   )
 }

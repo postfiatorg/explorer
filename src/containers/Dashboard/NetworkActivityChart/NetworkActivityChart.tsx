@@ -68,7 +68,10 @@ export const NetworkActivityChart: FC = () => {
       <h3 className="dashboard-panel-title">Network Activity</h3>
       <div className="dashboard-chart-container">
         <ResponsiveContainer width="100%" height={240}>
-          <AreaChart data={chartData} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
+          <AreaChart
+            data={chartData}
+            margin={{ top: 8, right: 8, bottom: 0, left: -16 }}
+          >
             <defs>
               <linearGradient id="txnGradient" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#32e685" stopOpacity={0.3} />
@@ -105,9 +108,11 @@ export const NetworkActivityChart: FC = () => {
               }}
               labelStyle={{ color: '#9d9fac' }}
               itemStyle={{ color: '#32e685' }}
-              labelFormatter={(ms: number) => `Ledger #${
-                chartData.find((d) => d.time === ms)?.ledgerIndex || ''
-              }`}
+              labelFormatter={(ms: number) =>
+                `Ledger #${
+                  chartData.find((d) => d.time === ms)?.ledgerIndex || ''
+                }`
+              }
             />
             <Area
               type="monotone"

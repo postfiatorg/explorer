@@ -50,7 +50,8 @@ export const Amendments = () => {
       .catch((e) => Log.error(e))
 
   const { enabledAmendments, votingAmendments } = useMemo(() => {
-    if (!data) return { enabledAmendments: undefined, votingAmendments: undefined }
+    if (!data)
+      return { enabledAmendments: undefined, votingAmendments: undefined }
     return {
       enabledAmendments: data.filter((a: any) => !a.voted),
       votingAmendments: data.filter((a: any) => a.voted),

@@ -2,7 +2,7 @@ import { FC } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { sidebarConfig, sidebarFooterLinks, SidebarItem } from './sidebarConfig'
-import { useSidebarContext } from '../Layout'
+import { useSidebarContext } from '../SidebarContext'
 import './sidebar.scss'
 
 interface SidebarNavItemProps {
@@ -12,10 +12,16 @@ interface SidebarNavItemProps {
   onNavigate?: () => void
 }
 
-const SidebarNavItem: FC<SidebarNavItemProps> = ({ item, collapsed, pathname, onNavigate }) => {
-  const isActive = item.path === '/'
-    ? pathname === '/'
-    : item.path && pathname.startsWith(item.path)
+const SidebarNavItem: FC<SidebarNavItemProps> = ({
+  item,
+  collapsed,
+  pathname,
+  onNavigate,
+}) => {
+  const isActive =
+    item.path === '/'
+      ? pathname === '/'
+      : item.path && pathname.startsWith(item.path)
 
   const Icon = item.icon
 
@@ -60,12 +66,24 @@ export const Sidebar: FC<SidebarProps> = ({ onNavigate }) => {
       <nav className="sidebar-nav">
         <div className="sidebar-main">
           {sidebarConfig.map((item) => (
-            <SidebarNavItem key={item.label} item={item} collapsed={collapsed} pathname={pathname} onNavigate={onNavigate} />
+            <SidebarNavItem
+              key={item.label}
+              item={item}
+              collapsed={collapsed}
+              pathname={pathname}
+              onNavigate={onNavigate}
+            />
           ))}
         </div>
         <div className="sidebar-footer">
           {sidebarFooterLinks.map((item) => (
-            <SidebarNavItem key={item.label} item={item} collapsed={collapsed} pathname={pathname} onNavigate={onNavigate} />
+            <SidebarNavItem
+              key={item.label}
+              item={item}
+              collapsed={collapsed}
+              pathname={pathname}
+              onNavigate={onNavigate}
+            />
           ))}
           <button
             type="button"
@@ -73,7 +91,11 @@ export const Sidebar: FC<SidebarProps> = ({ onNavigate }) => {
             onClick={() => setCollapsed(!collapsed)}
             title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
-            {collapsed ? <PanelLeftOpen size={20} /> : <PanelLeftClose size={20} />}
+            {collapsed ? (
+              <PanelLeftOpen size={20} />
+            ) : (
+              <PanelLeftClose size={20} />
+            )}
             {!collapsed && <span className="sidebar-item-label">Collapse</span>}
           </button>
         </div>

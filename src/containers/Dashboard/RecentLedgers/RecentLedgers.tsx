@@ -22,7 +22,9 @@ export const RecentLedgers: FC = () => {
       </div>
       <div className="recent-ledgers-list">
         {recentLedgers.length === 0 && (
-          <div className="dashboard-panel-empty">Waiting for ledger data...</div>
+          <div className="dashboard-panel-empty">
+            Waiting for ledger data...
+          </div>
         )}
         {recentLedgers.map((ledger) => {
           const txnCount = ledger.txn_count || 0
@@ -34,13 +36,20 @@ export const RecentLedgers: FC = () => {
               to={buildPath(LEDGER_ROUTE, { identifier: ledger.ledger_index })}
               className="recent-ledger-item"
             >
-              <span className="recent-ledger-index">#{ledger.ledger_index?.toLocaleString()}</span>
+              <span className="recent-ledger-index">
+                #{ledger.ledger_index?.toLocaleString()}
+              </span>
               <span className="recent-ledger-bar-container">
-                <span className="recent-ledger-bar" style={{ width: `${barWidth}%` }} />
+                <span
+                  className="recent-ledger-bar"
+                  style={{ width: `${barWidth}%` }}
+                />
                 <span className="recent-ledger-txn-count">{txnCount} txn</span>
               </span>
               <span className="recent-ledger-time">
-                {ledger.close_time ? localizeDate(new Date(ledger.close_time)) : '—'}
+                {ledger.close_time
+                  ? localizeDate(new Date(ledger.close_time))
+                  : '—'}
               </span>
             </Link>
           )

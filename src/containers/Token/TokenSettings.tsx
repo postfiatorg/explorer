@@ -10,16 +10,66 @@ interface TokenSettingsProps {
   data: TokenData
 }
 
-const FLAG_MAP: Array<{ flag: string; label: string; enabledLabel: string; disabledLabel: string }> = [
-  { flag: 'lsfDefaultRipple', label: 'Rippling', enabledLabel: 'Enabled', disabledLabel: 'Disabled' },
-  { flag: 'lsfDepositAuth', label: 'Deposit Auth', enabledLabel: 'Enabled', disabledLabel: 'Disabled' },
-  { flag: 'lsfDisableMaster', label: 'Master Key', enabledLabel: 'Disabled', disabledLabel: 'Enabled' },
-  { flag: 'lsfDisallowXRP', label: 'Receiving PFT', enabledLabel: 'Disabled', disabledLabel: 'Enabled' },
-  { flag: 'lsfGlobalFreeze', label: 'Frozen', enabledLabel: 'Enabled', disabledLabel: 'Disabled' },
-  { flag: 'lsfNoFreeze', label: 'No Freeze', enabledLabel: 'Enabled', disabledLabel: 'Disabled' },
-  { flag: 'lsfRequireAuth', label: 'Require Auth', enabledLabel: 'Enabled', disabledLabel: 'Disabled' },
-  { flag: 'lsfRequireDestTag', label: 'Require Dest Tag', enabledLabel: 'Enabled', disabledLabel: 'Disabled' },
-  { flag: 'lsfAllowTrustLineClawback', label: 'Clawback', enabledLabel: 'Enabled', disabledLabel: 'Disabled' },
+const FLAG_MAP: Array<{
+  flag: string
+  label: string
+  enabledLabel: string
+  disabledLabel: string
+}> = [
+  {
+    flag: 'lsfDefaultRipple',
+    label: 'Rippling',
+    enabledLabel: 'Enabled',
+    disabledLabel: 'Disabled',
+  },
+  {
+    flag: 'lsfDepositAuth',
+    label: 'Deposit Auth',
+    enabledLabel: 'Enabled',
+    disabledLabel: 'Disabled',
+  },
+  {
+    flag: 'lsfDisableMaster',
+    label: 'Master Key',
+    enabledLabel: 'Disabled',
+    disabledLabel: 'Enabled',
+  },
+  {
+    flag: 'lsfDisallowXRP',
+    label: 'Receiving PFT',
+    enabledLabel: 'Disabled',
+    disabledLabel: 'Enabled',
+  },
+  {
+    flag: 'lsfGlobalFreeze',
+    label: 'Frozen',
+    enabledLabel: 'Enabled',
+    disabledLabel: 'Disabled',
+  },
+  {
+    flag: 'lsfNoFreeze',
+    label: 'No Freeze',
+    enabledLabel: 'Enabled',
+    disabledLabel: 'Disabled',
+  },
+  {
+    flag: 'lsfRequireAuth',
+    label: 'Require Auth',
+    enabledLabel: 'Enabled',
+    disabledLabel: 'Disabled',
+  },
+  {
+    flag: 'lsfRequireDestTag',
+    label: 'Require Dest Tag',
+    enabledLabel: 'Enabled',
+    disabledLabel: 'Disabled',
+  },
+  {
+    flag: 'lsfAllowTrustLineClawback',
+    label: 'Clawback',
+    enabledLabel: 'Enabled',
+    disabledLabel: 'Disabled',
+  },
 ]
 
 export const TokenSettings: FC<TokenSettingsProps> = ({ data }) => {
@@ -35,14 +85,19 @@ export const TokenSettings: FC<TokenSettingsProps> = ({ data }) => {
           {domain && (
             <div className="token-detail-row">
               <span className="token-detail-label">Domain</span>
-              <span className="token-detail-value"><DomainLink domain={domain} /></span>
+              <span className="token-detail-value">
+                <DomainLink domain={domain} />
+              </span>
             </div>
           )}
           {previousLedger && (
             <div className="token-detail-row">
               <span className="token-detail-label">Last Ledger</span>
               <span className="token-detail-value">
-                <RouteLink to={LEDGER_ROUTE} params={{ identifier: previousLedger }}>
+                <RouteLink
+                  to={LEDGER_ROUTE}
+                  params={{ identifier: previousLedger }}
+                >
                   {previousLedger}
                 </RouteLink>
               </span>
@@ -52,7 +107,10 @@ export const TokenSettings: FC<TokenSettingsProps> = ({ data }) => {
             <div className="token-detail-row">
               <span className="token-detail-label">Last Transaction</span>
               <span className="token-detail-value">
-                <RouteLink to={TRANSACTION_ROUTE} params={{ identifier: previousTxn }}>
+                <RouteLink
+                  to={TRANSACTION_ROUTE}
+                  params={{ identifier: previousTxn }}
+                >
                   {truncatedTxn}
                 </RouteLink>
               </span>
@@ -61,7 +119,9 @@ export const TokenSettings: FC<TokenSettingsProps> = ({ data }) => {
           {emailHash && (
             <div className="token-detail-row">
               <span className="token-detail-label">Email Hash</span>
-              <span className="token-detail-value mono">{emailHash.replace(/(.{20})..+/, '$1...')}</span>
+              <span className="token-detail-value mono">
+                {emailHash.replace(/(.{20})..+/, '$1...')}
+              </span>
             </div>
           )}
         </div>

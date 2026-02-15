@@ -79,13 +79,17 @@ export const Nodes = () => {
 
   const countryCount = useMemo(() => {
     if (!data?.locations) return 0
-    const countries = new Set(data.locations.map((n: any) => n.country).filter(Boolean))
+    const countries = new Set(
+      data.locations.map((n: any) => n.country).filter(Boolean),
+    )
     return countries.size
   }, [data?.locations])
 
   const uniqueVersions = useMemo(() => {
     if (!data?.nodes) return 0
-    const versions = new Set(data.nodes.map((n: any) => n.version).filter(Boolean))
+    const versions = new Set(
+      data.nodes.map((n: any) => n.version).filter(Boolean),
+    )
     return versions.size
   }, [data?.nodes])
 
@@ -99,9 +103,21 @@ export const Nodes = () => {
       <div className="network-page-title">{t('nodes')}</div>
 
       <div className="network-stats">
-        <MetricCard label="Total Nodes" value={data?.nodes?.length} icon={Server} />
-        <MetricCard label="Countries" value={countryCount || undefined} icon={Globe} />
-        <MetricCard label="Versions" value={uniqueVersions || undefined} icon={GitBranch} />
+        <MetricCard
+          label="Total Nodes"
+          value={data?.nodes?.length}
+          icon={Server}
+        />
+        <MetricCard
+          label="Countries"
+          value={countryCount || undefined}
+          icon={Globe}
+        />
+        <MetricCard
+          label="Versions"
+          value={uniqueVersions || undefined}
+          icon={GitBranch}
+        />
         <MetricCard label="Unmapped" value={data?.unmapped} icon={MapPinOff} />
       </div>
 

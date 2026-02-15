@@ -6,11 +6,15 @@ import { CopyableAddress } from '../../shared/components/CopyableAddress/Copyabl
 import { MetricCard } from '../../shared/components/MetricCard/MetricCard'
 import './styles.scss'
 import SocketContext from '../../shared/SocketContext'
-import { BAD_REQUEST, HASH192_REGEX, isValidJsonString } from '../../shared/utils'
+import {
+  BAD_REQUEST,
+  HASH192_REGEX,
+  isValidJsonString,
+  localizeNumber,
+} from '../../shared/utils'
 import { Account } from '../../shared/components/Account'
 import { useAnalytics } from '../../shared/analytics'
 import { useLanguage } from '../../shared/hooks'
-import { localizeNumber } from '../../shared/utils'
 import { getMPTIssuance } from '../../../rippled/lib/rippled'
 import { formatMPTIssuanceInfo } from '../../../rippled/lib/utils'
 import { MPTIssuanceFormattedInfo } from '../../shared/Interfaces'
