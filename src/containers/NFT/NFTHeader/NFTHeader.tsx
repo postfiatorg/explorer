@@ -1,9 +1,7 @@
 import { useEffect, useContext, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from 'react-query'
-import { Percent } from 'lucide-react'
 import { CopyableAddress } from '../../shared/components/CopyableAddress/CopyableAddress'
-import { MetricCard } from '../../shared/components/MetricCard/MetricCard'
 import './styles.scss'
 import SocketContext from '../../shared/SocketContext'
 import { getAccountInfo } from '../../../rippled/lib/rippled'
@@ -93,10 +91,6 @@ export const NFTHeader = ({ tokenId, setError }: Props) => {
         )}
       </div>
 
-      <div className="nft-stats">
-        <MetricCard label="Transfer Fee" value={feeDisplay} icon={Percent} />
-      </div>
-
       <div className="nft-details-columns">
         <div className="nft-details-panel dashboard-panel">
           <h3 className="dashboard-panel-title">{t('details')}</h3>
@@ -104,6 +98,7 @@ export const NFTHeader = ({ tokenId, setError }: Props) => {
             domain={accountData?.domain}
             taxon={parsed.taxon}
             serial={parsed.serial}
+            transferFee={feeDisplay}
           />
         </div>
         <div className="nft-settings-panel dashboard-panel">

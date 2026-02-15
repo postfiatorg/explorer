@@ -4,9 +4,10 @@ interface Props {
   domain?: string
   taxon: number
   serial: number
+  transferFee: string
 }
 
-export const Details = ({ domain, taxon, serial }: Props) => (
+export const Details = ({ domain, taxon, serial, transferFee }: Props) => (
   <div className="nft-details-list">
     {domain && (
       <div className="nft-detail-row">
@@ -21,6 +22,10 @@ export const Details = ({ domain, taxon, serial }: Props) => (
     <div className="nft-detail-row">
       <span className="nft-detail-label">Serial</span>
       <span className="nft-detail-value">{serial}</span>
+    </div>
+    <div className="nft-detail-row">
+      <span className="nft-detail-label">Transfer Fee</span>
+      <span className="nft-detail-value">{transferFee}</span>
     </div>
   </div>
 )
