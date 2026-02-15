@@ -2,6 +2,7 @@ import './styles.scss'
 import { Tabs } from '../../shared/components/Tabs'
 import { getBuyNFToffers, getSellNFToffers } from '../../../rippled/lib/rippled'
 import { Offers } from './Offers'
+import { Transactions } from './Transactions'
 import { NFT_ROUTE } from '../../App/routes'
 import { buildPath, useRouteParams } from '../../shared/routing'
 
@@ -10,10 +11,10 @@ interface Props {
 }
 
 export const NFTTabs = (props: Props) => {
-  const { id = '', tab = 'buy-offers' } = useRouteParams(NFT_ROUTE)
+  const { id = '', tab = 'transactions' } = useRouteParams(NFT_ROUTE)
   const { tokenId } = props
 
-  const tabs = ['buy-offers', 'sell-offers']
+  const tabs = ['transactions', 'buy-offers', 'sell-offers']
   const mainPath = buildPath(NFT_ROUTE, { id })
 
   const renderContent = () => {
@@ -27,7 +28,7 @@ export const NFTTabs = (props: Props) => {
             offerType="SellOffers"
           />
         )
-      default:
+      case 'buy-offers':
         return (
           <Offers
             key="BuyOffers"
@@ -36,6 +37,8 @@ export const NFTTabs = (props: Props) => {
             offerType="BuyOffers"
           />
         )
+      default:
+        return <Transactions tokenId={tokenId} />
     }
   }
 
