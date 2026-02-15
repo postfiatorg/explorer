@@ -2,13 +2,13 @@ import { useContext, useMemo, useState } from 'react'
 import axios from 'axios'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from 'react-query'
-import { Shield, ShieldCheck, CheckCircle, GitBranch } from 'lucide-react'
 import Streams from '../shared/components/Streams'
 import { SEOHelmet } from '../shared/components/SEOHelmet'
 import { ValidatorsTable } from './ValidatorsTable'
 import { MetricCard } from '../shared/components/MetricCard/MetricCard'
 import Log from '../shared/log'
 import {
+  DROPS_TO_XRP_FACTOR,
   FETCH_INTERVAL_MILLIS,
   FETCH_INTERVAL_ERROR_MILLIS,
   FETCH_INTERVAL_FEE_SETTINGS_MILLIS,
@@ -126,16 +126,38 @@ export const Validators = () => {
   const validators = Object.values(vList)
 
   const averageAgreement = useMemo(() => {
-    const withScore = validators.filter((v: any) => v.agreement_30day?.score != null)
+    const unlValidators = validators.filter((v: any) => Boolean(v.unl))
+    const withScore = unlValidators.filter((v: any) => v.agreement_30day?.score != null)
     if (withScore.length === 0) return undefined
     const sum = withScore.reduce((acc, v: any) => acc + Number(v.agreement_30day.score), 0)
-    return (sum / withScore.length).toFixed(5)
+    const avg = (sum / withScore.length) * 100
+    return `${avg.toFixed(2)}%`
   }, [validators])
 
-  const uniqueVersions = useMemo(() => {
-    const versions = new Set(validators.map((v: any) => v.server_version).filter(Boolean))
-    return versions.size
-  }, [validators])
+  const VotingNetworkSettings = () => {
+    if (!feeSettings) return null
+    const items = [
+      { label: 'Base Reserve', value: feeSettings.reserve_base / DROPS_TO_XRP_FACTOR, unit: 'PFT' },
+      { label: 'Owner Reserve', value: feeSettings.reserve_inc / DROPS_TO_XRP_FACTOR, unit: 'PFT' },
+      { label: 'Base Fee', value: feeSettings.base_fee / DROPS_TO_XRP_FACTOR, unit: 'PFT' },
+    ]
+    return (
+      <div className="voting-current-settings">
+        <div className="voting-settings-header">Current Network Settings</div>
+        <div className="voting-settings-grid">
+          {items.map((item) => (
+            <div className="voting-setting-card" key={item.label}>
+              <span className="voting-setting-label">{item.label}</span>
+              <span className="voting-setting-value">
+                {item.value}
+                <span className="voting-setting-unit">{item.unit}</span>
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
 
   const Body = {
     uptime: (
@@ -146,12 +168,15 @@ export const Validators = () => {
       />
     ),
     voting: (
-      <ValidatorsTable
-        validators={validators}
-        metrics={metrics}
-        tab="voting"
-        feeSettings={feeSettings}
-      />
+      <>
+        <VotingNetworkSettings />
+        <ValidatorsTable
+          validators={validators}
+          metrics={metrics}
+          tab="voting"
+          feeSettings={feeSettings}
+        />
+      </>
     ),
   }[tab]
 
@@ -173,10 +198,9 @@ export const Validators = () => {
       )}
 
       <div className="network-stats">
-        <MetricCard label="Validators" value={validatorCount || undefined} icon={Shield} />
-        <MetricCard label="UNL Count" value={unlCount || undefined} icon={ShieldCheck} />
-        <MetricCard label="Avg 30D Agreement" value={averageAgreement} icon={CheckCircle} />
-        <MetricCard label="Versions" value={uniqueVersions || undefined} icon={GitBranch} />
+        <MetricCard label="Validators" value={validatorCount || undefined} />
+        <MetricCard label="UNL Count" value={unlCount || undefined} />
+        <MetricCard label="UNL 30D Agreement" value={averageAgreement} />
       </div>
 
       {

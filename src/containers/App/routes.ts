@@ -63,8 +63,10 @@ export const VALIDATOR_ROUTE: RouteDefinition<{
   path: `/validators/:identifier/:tab?`,
 }
 
-export const AMENDMENTS_ROUTE: RouteDefinition = {
-  path: '/amendments',
+export const AMENDMENTS_ROUTE: RouteDefinition<{
+  tab?: 'enabled' | 'in-voting'
+}> = {
+  path: '/amendments/:tab?',
 }
 
 export const AMENDMENT_ROUTE: RouteDefinition<{
