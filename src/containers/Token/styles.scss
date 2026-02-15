@@ -1,4 +1,5 @@
 @use '../shared/css/variables' as *;
+@use '../shared/css/detail-page';
 
 .token-page {
   display: flex;
@@ -15,17 +16,12 @@
 
 // Hero
 .token-hero {
-  padding: 24px;
-}
-
-.token-hero-top {
-  margin-bottom: 16px;
-}
-
-.token-hero-identity {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+  .token-hero-identity {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
 }
 
 .token-hero-avatar {
@@ -36,12 +32,12 @@
 }
 
 .token-hero-name span {
-  font-size: 32px;
+  font-size: 28px;
   @include bold;
   @include gradient-title;
 
   @include for-size(tablet-landscape-up) {
-    font-size: 38px;
+    font-size: 34px;
   }
 }
 
@@ -49,21 +45,6 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding-top: 16px;
-  border-top: 1px solid $black-80;
-}
-
-.token-hero-meta-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 14px;
-}
-
-.token-hero-meta-label {
-  color: $black-40;
-  min-width: 60px;
-  @include medium;
 }
 
 // Stats

@@ -14,7 +14,9 @@ import {
   FETCH_INTERVAL_VHS_MILLIS,
   NOT_FOUND,
   SERVER_ERROR,
+  localizeDate,
 } from '../shared/utils'
+import { useLanguage } from '../shared/hooks'
 import { Simple } from './Simple'
 import { AmendmentData } from '../shared/vhsTypes'
 import Log from '../shared/log'
@@ -24,11 +26,22 @@ import NoMatch from '../NoMatch'
 import { useAnalytics } from '../shared/analytics'
 import { Loader } from '../shared/components/Loader'
 
+const DATE_OPTIONS_OVERVIEW = {
+  year: 'numeric',
+  month: 'numeric',
+  day: 'numeric',
+  hour: 'numeric',
+  minute: 'numeric',
+  hour12: true,
+  timeZone: 'UTC',
+}
+
 export const Amendment = () => {
   const network = useContext(NetworkContext)
   const { identifier = '' } = useRouteParams(AMENDMENT_ROUTE)
   const { width } = useWindowSize()
   const { t } = useTranslation()
+  const language = useLanguage()
   const { trackException } = useAnalytics()
 
   const ERROR_MESSAGES = {
@@ -116,6 +129,60 @@ export const Amendment = () => {
     return 'Not Enabled'
   }
 
+  const voting = data?.voted !== undefined
+
+  function renderOverviewGrid() {
+    if (!data || !(validators instanceof Array)) return null
+
+    if (voting && data.voted) {
+      const yeasAll = data.voted.validators.length
+      const naysAll = validators.length - yeasAll
+      return (
+        <div className="detail-overview-grid">
+          <div className="detail-overview-item">
+            <span className="detail-overview-label">{`${t('yeas')} (${t('all')})`}</span>
+            <span className="detail-overview-value">{yeasAll}</span>
+          </div>
+          <div className="detail-overview-item">
+            <span className="detail-overview-label">{`${t('nays')} (${t('all')})`}</span>
+            <span className="detail-overview-value">{naysAll}</span>
+          </div>
+          {data.threshold && (
+            <div className="detail-overview-item">
+              <span className="detail-overview-label">{t('threshold')}</span>
+              <span className="detail-overview-value">{data.threshold}</span>
+            </div>
+          )}
+          {data.consensus && (
+            <div className="detail-overview-item">
+              <span className="detail-overview-label">{t('consensus')}</span>
+              <span className="detail-overview-value">{data.consensus}</span>
+            </div>
+          )}
+        </div>
+      )
+    }
+
+    return (
+      <div className="detail-overview-grid">
+        {data.rippled_version && (
+          <div className="detail-overview-item">
+            <span className="detail-overview-label">{t('introduced_in')}</span>
+            <span className="detail-overview-value">v{data.rippled_version}</span>
+          </div>
+        )}
+        {data.date && (
+          <div className="detail-overview-item detail-overview-item-wide">
+            <span className="detail-overview-label">{t('enabled')}</span>
+            <span className="detail-overview-value">
+              {localizeDate(new Date(data.date), language, DATE_OPTIONS_OVERVIEW)} UTC
+            </span>
+          </div>
+        )}
+      </div>
+    )
+  }
+
   let body
   const shortId = identifier.substring(0, 12)
 
@@ -125,18 +192,20 @@ export const Amendment = () => {
   } else if (data?.id && validators instanceof Array) {
     body = (
       <>
-        <div className="amendment-hero dashboard-panel">
-          <div className="amendment-hero-title">
+        <div className="amendment-hero detail-summary dashboard-panel">
+          <div className="detail-summary-label">Amendment</div>
+          <div className="detail-summary-title">
             {data.name || shortId}
           </div>
           <div className="amendment-hero-badges">
             <StatusBadge status={getStatus()} label={getStatusLabel()} />
           </div>
-          <div className="amendment-hero-id">
-            <span className="amendment-hero-id-label">Amendment ID</span>
+          <div className="detail-summary-hash-row">
+            <span className="detail-summary-hash-label">Amendment ID:</span>
             <CopyableAddress address={data.id} truncate />
           </div>
         </div>
+        {renderOverviewGrid()}
         <div className="amendment-content dashboard-panel">
           {data && validators && (
             <Simple data={data} validators={validators} width={width} />

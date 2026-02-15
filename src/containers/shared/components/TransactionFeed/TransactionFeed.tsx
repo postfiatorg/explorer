@@ -41,7 +41,7 @@ export const TransactionFeed: FC<TransactionFeedProps> = ({
         ))}
       </div>
       {loading && <Loader />}
-      {hasAdditionalResults && onLoadMore && <LoadMoreButton onClick={onLoadMore} />}
+      {!loading && hasAdditionalResults && onLoadMore && <LoadMoreButton onClick={onLoadMore} />}
     </div>
   )
 }

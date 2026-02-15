@@ -247,14 +247,21 @@
 
 .load-more-btn {
   display: block;
-  border-color: $green-70;
-  margin: 10px auto;
-  color: $green;
-  outline: inherit;
-  @include bold;
+  width: 100%;
+  padding: 12px;
+  margin: 0;
+  border: none;
+  border-top: 1px solid $black-80;
+  border-radius: 0;
+  background: transparent;
+  color: $black-30;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background-color $transition-fast, color $transition-fast;
+  @include medium;
 
   &:hover {
-    border-color: $green;
-    box-shadow: $glow-green;
+    background: $black-80;
+    color: $white;
   }
 }

@@ -1,35 +1,15 @@
 @use '../../shared/css/variables' as *;
-
-.account-header {
-  padding: 20px 24px;
-}
-
-.account-header-inner {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.account-header-top {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.account-header-label {
-  color: $black-40;
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  @include semibold;
-}
+@use '../../shared/css/detail-page';
 
 .account-header-address {
   overflow: hidden;
+  margin-bottom: 4px;
 
   .copyable-address-text {
     font-size: 16px;
     color: $white;
+    @include bold;
+    @include gradient-title;
 
     @include for-size(tablet-landscape-up) {
       font-size: 20px;
@@ -39,4 +19,24 @@
       font-size: 24px;
     }
   }
+}
+
+.account-header-domain {
+  margin-top: 4px;
+  font-size: 14px;
+
+  a {
+    color: $green-30;
+    text-decoration: none;
+
+    &:hover {
+      color: $green;
+    }
+  }
+}
+
+.account-header-badges {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
 }

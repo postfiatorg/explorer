@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next'
 import { useQuery } from 'react-query'
 import { Loader } from '../../shared/components/Loader'
 import { CopyableAddress } from '../../shared/components/CopyableAddress/CopyableAddress'
-import { StatusBadge } from '../../shared/components/StatusBadge/StatusBadge'
 import './styles.scss'
 import SocketContext from '../../shared/SocketContext'
 import { BAD_REQUEST, HASH192_REGEX } from '../../shared/utils'
@@ -52,17 +51,36 @@ export const MPTHeader = (props: Props) => {
 
   return (
     <>
-      <div className="mpt-hero dashboard-panel">
-        <div className="mpt-hero-top">
-          <StatusBadge status="verified" label="MPT" />
-        </div>
+      <div className="mpt-hero detail-summary dashboard-panel">
+        <div className="detail-summary-label">MPT Issuance</div>
         <div className="mpt-hero-id">
           <CopyableAddress address={tokenId} truncate />
         </div>
         {data.issuer && (
-          <div className="mpt-hero-issuer">
-            <span className="mpt-hero-label">{t('issuer_address')}</span>
+          <div className="detail-summary-hash-row">
+            <span className="detail-summary-hash-label">Issuer:</span>
             <Account account={data.issuer} />
+          </div>
+        )}
+      </div>
+
+      <div className="detail-overview-grid">
+        {data.maxAmt && (
+          <div className="detail-overview-item">
+            <span className="detail-overview-label">{t('max_amount')}</span>
+            <span className="detail-overview-value">{data.maxAmt}</span>
+          </div>
+        )}
+        {data.outstandingAmt && (
+          <div className="detail-overview-item">
+            <span className="detail-overview-label">{t('outstanding_amount')}</span>
+            <span className="detail-overview-value">{data.outstandingAmt}</span>
+          </div>
+        )}
+        {data.assetScale && (
+          <div className="detail-overview-item">
+            <span className="detail-overview-label">{t('asset_scale')}</span>
+            <span className="detail-overview-value">{data.assetScale}</span>
           </div>
         )}
       </div>

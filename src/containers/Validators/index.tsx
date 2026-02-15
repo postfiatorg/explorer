@@ -24,7 +24,7 @@ import { SimpleTab } from './SimpleTab'
 import { HistoryTab } from './HistoryTab'
 import './validator.scss'
 import SocketContext from '../shared/SocketContext'
-import { ValidatorReport, ValidatorSupplemented } from '../shared/vhsTypes'
+import { ValidatorReport, ValidatorScore, ValidatorSupplemented } from '../shared/vhsTypes'
 import NetworkContext from '../shared/NetworkContext'
 import { VALIDATOR_ROUTE } from '../App/routes'
 import { buildPath, useRouteParams } from '../shared/routing'
@@ -181,6 +181,11 @@ export const Validator = () => {
     )
   }
 
+  function formatScore(score: ValidatorScore | null) {
+    if (!score) return null
+    return Number.parseFloat(score.score).toFixed(5)
+  }
+
   function renderHero() {
     const domain = data?.domain
     const masterKey = data?.master_key
@@ -188,8 +193,9 @@ export const Validator = () => {
     const isUnl = Boolean(data?.unl)
 
     return (
-      <div className="validator-hero dashboard-panel">
-        <div className="validator-hero-title">
+      <div className="validator-hero detail-summary dashboard-panel">
+        <div className="detail-summary-label">Validator</div>
+        <div className="detail-summary-title">
           {domain || (masterKey ? `${masterKey.substring(0, 12)}...` : 'Unknown Validator')}
         </div>
         <div className="validator-hero-badges">
@@ -197,14 +203,14 @@ export const Validator = () => {
           {data?.domain_verified && <StatusBadge status="verified" label="Domain Verified" />}
         </div>
         {masterKey && (
-          <div className="validator-hero-key">
-            <span className="validator-hero-key-label">Master Key</span>
+          <div className="detail-summary-hash-row">
+            <span className="detail-summary-hash-label">Master Key:</span>
             <CopyableAddress address={masterKey} truncate />
           </div>
         )}
         {signingKey && signingKey !== masterKey && (
-          <div className="validator-hero-key">
-            <span className="validator-hero-key-label">Signing Key</span>
+          <div className="detail-summary-hash-row">
+            <span className="detail-summary-hash-label">Signing Key:</span>
             <CopyableAddress address={signingKey} truncate />
           </div>
         )}
@@ -212,10 +218,37 @@ export const Validator = () => {
     )
   }
 
+  function renderOverviewGrid() {
+    if (!data) return null
+    const scores = [
+      { label: 'Agreement (1H)', score: data.agreement_1h },
+      { label: 'Agreement (24H)', score: data.agreement_24h },
+      { label: 'Agreement (30D)', score: data.agreement_30day },
+    ]
+    const hasScores = scores.some((s) => s.score != null)
+    if (!hasScores) return null
+
+    return (
+      <div className="detail-overview-grid">
+        {scores.map((s) =>
+          s.score ? (
+            <div className="detail-overview-item" key={s.label}>
+              <span className="detail-overview-label">{s.label}</span>
+              <span className="detail-overview-value">
+                {formatScore(s.score)}
+                {s.score.incomplete && '*'}
+              </span>
+            </div>
+          ) : null,
+        )}
+      </div>
+    )
+  }
+
   function renderTabs() {
-    const tabs = ['details', 'history', 'voting', 'exclusions']
+    const tabsList = ['details', 'history', 'voting', 'exclusions']
     const mainPath = buildPath(VALIDATOR_ROUTE, { identifier })
-    return <Tabs tabs={tabs} selected={tab} path={mainPath} />
+    return <Tabs tabs={tabsList} selected={tab} path={mainPath} />
   }
 
   function renderValidator() {
@@ -246,6 +279,7 @@ export const Validator = () => {
       <>
         {renderPageTitle()}
         {renderHero()}
+        {renderOverviewGrid()}
         {renderTabs()}
         <div className="validator-tab-body dashboard-panel">{body}</div>
       </>

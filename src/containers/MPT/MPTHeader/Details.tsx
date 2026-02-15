@@ -11,14 +11,7 @@ interface Props {
 }
 
 export const Details = ({ data }: Props) => {
-  const {
-    assetScale,
-    maxAmt,
-    outstandingAmt,
-    transferFee,
-    sequence,
-    metadata,
-  } = data
+  const { transferFee, sequence, metadata } = data
   const { t } = useTranslation()
   const language = useLanguage()
   const formattedFee =
@@ -30,16 +23,6 @@ export const Details = ({ data }: Props) => {
   return (
     <table className="token-table">
       <tbody>
-        {assetScale && (
-          <TokenTableRow label={t('asset_scale')} value={assetScale} />
-        )}
-        {maxAmt && <TokenTableRow label={t('max_amount')} value={maxAmt} />}
-        {outstandingAmt && (
-          <TokenTableRow
-            label={t('outstanding_amount')}
-            value={outstandingAmt}
-          />
-        )}
         <TokenTableRow label={t('transfer_fee')} value={formattedFee ?? '0%'} />
         <TokenTableRow label={t('sequence_number_short')} value={sequence} />
         {metadata && (

@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next'
 import { useQuery } from 'react-query'
 import { Loader } from '../../shared/components/Loader'
 import { CopyableAddress } from '../../shared/components/CopyableAddress/CopyableAddress'
-import { StatusBadge } from '../../shared/components/StatusBadge/StatusBadge'
 import './styles.scss'
 import SocketContext from '../../shared/SocketContext'
 import { getNFTInfo, getAccountInfo } from '../../../rippled/lib/rippled'
@@ -91,16 +90,14 @@ export const NFTHeader = (props: Props) => {
 
   return (
     <>
-      <div className="nft-hero dashboard-panel">
-        <div className="nft-hero-top">
-          <StatusBadge status="verified" label="NFT" />
-        </div>
+      <div className="nft-hero detail-summary dashboard-panel">
+        <div className="detail-summary-label">NFT</div>
         <div className="nft-hero-id">
           <CopyableAddress address={tokenId} truncate />
         </div>
         {data.issuer && (
-          <div className="nft-hero-issuer">
-            <span className="nft-hero-label">{t('issuer_address')}</span>
+          <div className="detail-summary-hash-row">
+            <span className="detail-summary-hash-label">Issuer:</span>
             <Account account={data.issuer} />
           </div>
         )}
