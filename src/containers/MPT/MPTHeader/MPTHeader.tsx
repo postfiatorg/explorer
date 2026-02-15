@@ -88,15 +88,11 @@ export const MPTHeader = (props: Props) => {
       <div className="mpt-details-columns">
         <div className="mpt-details-panel dashboard-panel">
           <h3 className="dashboard-panel-title">{t('details')}</h3>
-          <div className="mpt-details-content">
-            <Details data={data} />
-          </div>
+          <Details data={data} />
         </div>
         <div className="mpt-settings-panel dashboard-panel">
           <h3 className="dashboard-panel-title">{t('settings')}</h3>
-          <div className="mpt-details-content">
-            <Settings flags={data.flags!} />
-          </div>
+          <Settings flags={data.flags!} />
         </div>
       </div>
     </>

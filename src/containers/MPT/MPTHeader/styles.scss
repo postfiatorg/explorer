@@ -1,6 +1,5 @@
 @use '../../shared/css/variables' as *;
 @use '../../shared/css/detail-page';
-@use '../../shared/css/table';
 
 .mpt-hero-id {
   margin-bottom: 16px;
@@ -21,6 +20,7 @@
   }
 }
 
+// Details + Settings columns
 .mpt-details-columns {
   display: flex;
   gap: 16px;
@@ -35,32 +35,69 @@
   flex: 1;
   min-width: 0;
   padding-bottom: 16px;
-}
 
-.mpt-details-content {
-  padding: 0 16px;
-}
-
-.mpt-settings-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.mpt-setting-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 0;
-  border-bottom: 1px solid $black-80;
-
-  &:last-child {
-    border-bottom: none;
+  .dashboard-panel-title {
+    padding-bottom: 16px;
   }
 }
 
-.mpt-setting-label {
+// Details rows
+.mpt-details-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 16px;
+}
+
+.mpt-detail-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+
+  &.mpt-detail-row-metadata {
+    align-items: flex-start;
+  }
+}
+
+.mpt-detail-label {
   color: $black-40;
+  min-width: 140px;
+  flex-shrink: 0;
+  @include medium;
+}
+
+.mpt-detail-value {
+  color: $white;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  // Allow metadata JSON to wrap
+  .json-view {
+    white-space: normal;
+    word-break: break-word;
+  }
+}
+
+// Settings flags
+.mpt-flags-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 16px;
+}
+
+.mpt-flag-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.mpt-flag-label {
+  color: $black-30;
   font-size: 14px;
   @include medium;
 }

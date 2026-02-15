@@ -1,9 +1,6 @@
-import { useTranslation } from 'react-i18next'
-import './styles.scss'
 import { useLanguage } from '../../shared/hooks'
 import { isValidJsonString, localizeNumber } from '../../shared/utils'
 import { MPTIssuanceFormattedInfo } from '../../shared/Interfaces'
-import { TokenTableRow } from '../../shared/components/TokenTableRow'
 import { JsonView } from '../../shared/components/JsonView'
 
 interface Props {
@@ -12,7 +9,6 @@ interface Props {
 
 export const Details = ({ data }: Props) => {
   const { transferFee, sequence, metadata } = data
-  const { t } = useTranslation()
   const language = useLanguage()
   const formattedFee =
     transferFee &&
@@ -21,23 +17,27 @@ export const Details = ({ data }: Props) => {
     })}%`
 
   return (
-    <table className="token-table">
-      <tbody>
-        <TokenTableRow label={t('transfer_fee')} value={formattedFee ?? '0%'} />
-        <TokenTableRow label={t('sequence_number_short')} value={sequence} />
-        {metadata && (
-          <TokenTableRow
-            label={t('metadata')}
-            value={
-              isValidJsonString(metadata) ? (
-                <JsonView data={JSON.parse(metadata)} />
-              ) : (
-                metadata
-              )
-            }
-          />
-        )}
-      </tbody>
-    </table>
+    <div className="mpt-details-list">
+      <div className="mpt-detail-row">
+        <span className="mpt-detail-label">Transfer Fee</span>
+        <span className="mpt-detail-value">{formattedFee ?? '0%'}</span>
+      </div>
+      <div className="mpt-detail-row">
+        <span className="mpt-detail-label">Sequence</span>
+        <span className="mpt-detail-value">{sequence}</span>
+      </div>
+      {metadata && (
+        <div className="mpt-detail-row mpt-detail-row-metadata">
+          <span className="mpt-detail-label">Metadata</span>
+          <span className="mpt-detail-value">
+            {isValidJsonString(metadata) ? (
+              <JsonView data={JSON.parse(metadata)} />
+            ) : (
+              metadata
+            )}
+          </span>
+        </div>
+      )}
+    </div>
   )
 }
