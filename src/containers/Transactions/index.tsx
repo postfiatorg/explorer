@@ -234,7 +234,7 @@ export const Transaction = () => {
   let body
   if (isError) {
     const message = getErrorMessage(error)
-    body = <NoMatch title={message.title} hints={message.hints} />
+    body = <NoMatch title={message.title} hints={message.hints} errorCode={(error as any)?.code} />
   } else if (data?.processed?.hash) {
     body = renderTransaction()
   } else if (!identifier) {

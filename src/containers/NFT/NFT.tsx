@@ -61,7 +61,7 @@ export const NFT = () => {
     const message = getErrorMessage(error)
     return (
       <div className="token-page">
-        <NoMatch title={message.title} hints={message.hints} />
+        <NoMatch title={message.title} hints={message.hints} errorCode={error ?? undefined} />
       </div>
     )
   }

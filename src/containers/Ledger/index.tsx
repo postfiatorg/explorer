@@ -110,7 +110,7 @@ export const Ledger = () => {
   const renderError = () => {
     if (!error) return null
     const message = getErrorMessage(error)
-    return <NoMatch title={message.title} hints={message.hints} />
+    return <NoMatch title={message.title} hints={message.hints} errorCode={(error as any)?.code} />
   }
 
   return (

@@ -188,7 +188,7 @@ export const Amendment = () => {
 
   if (error) {
     const message = getErrorMessage(error)
-    body = <NoMatch title={message.title} hints={message.hints} />
+    body = <NoMatch title={message.title} hints={message.hints} errorCode={(error as any)?.code} />
   } else if (data?.id && validators instanceof Array) {
     body = (
       <>

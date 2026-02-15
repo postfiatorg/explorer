@@ -87,7 +87,7 @@ export const Token = () => {
     const message = getErrorMessage(tokenDataError)
     return (
       <Page token={token} issuer={accountId}>
-        <NoMatch title={message.title} hints={message.hints} />
+        <NoMatch title={message.title} hints={message.hints} errorCode={(tokenDataError as any)?.code} />
       </Page>
     )
   }

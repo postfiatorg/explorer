@@ -11,6 +11,7 @@ export interface NoMatchProps {
   title?: string
   hints?: string[]
   isError?: boolean
+  errorCode?: number
   warning?: string
 }
 
@@ -18,6 +19,7 @@ const NoMatch = ({
   title = 'not_found_default_title',
   hints = ['not_found_check_url'],
   isError = true,
+  errorCode,
   warning = undefined,
 }: NoMatchProps) => {
   const { track } = useAnalytics()
@@ -39,7 +41,7 @@ const NoMatch = ({
     <div className="no-match">
       <Helmet title={t(title as any)} />
       <div className="no-match-container">
-        {isError && <div className="no-match-code">404</div>}
+        {isError && <div className="no-match-code">{errorCode ?? 404}</div>}
         <div className="no-match-title">{t(title as any, values)}</div>
         <div className="no-match-hints">
           {hints.map((hint) => (

@@ -292,7 +292,7 @@ export const Validator = () => {
 
   if (error) {
     const message = getErrorMessage(error)
-    body = <NoMatch title={message.title} hints={message.hints} />
+    body = <NoMatch title={message.title} hints={message.hints} errorCode={(error as any)?.code} />
   } else if (data?.master_key || data?.signing_key) {
     body = renderValidator()
   } else if (!isLoading) {
