@@ -52,9 +52,6 @@ export const TransactionFeedCard: FC<TransactionFeedCardProps> = ({ tx, compact 
             <Link to={txPath} className="tx-feed-card-type">
               {t('transaction_type_name', { context: tx.type, defaultValue: tx.type })}
             </Link>
-            <span className="tx-feed-card-time">
-              {tx.close_time ? formatTimeAgo(tx.close_time) : '—'}
-            </span>
           </div>
           <div className="tx-feed-card-details">
             {tx.account && (
@@ -64,6 +61,11 @@ export const TransactionFeedCard: FC<TransactionFeedCardProps> = ({ tx, compact 
             )}
           </div>
         </div>
+        {tx.close_time && (
+          <span className="tx-feed-card-time">
+            {formatTimeAgo(tx.close_time)}
+          </span>
+        )}
         <div className="tx-feed-card-status">
           <span className={`tx-feed-card-pill ${isSuccess ? 'success' : 'fail'}`}>
             {isSuccess ? t('success') : t('fail')}

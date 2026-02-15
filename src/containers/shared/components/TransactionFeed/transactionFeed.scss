@@ -80,8 +80,6 @@
 .tx-feed-card-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
 }
 
 .tx-feed-card-type {
@@ -126,7 +124,10 @@
 }
 
 .tx-feed-card-status {
+  display: flex;
   flex-shrink: 0;
+  justify-content: center;
+  width: 80px;
 }
 
 .tx-feed-card-pill {
@@ -134,6 +135,7 @@
   padding: 2px 10px;
   border-radius: 100px;
   font-size: 11px;
+  text-align: center;
   text-transform: uppercase;
   @include semibold;
 

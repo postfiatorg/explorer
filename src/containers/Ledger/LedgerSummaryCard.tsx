@@ -2,7 +2,7 @@ import { FC } from 'react'
 import { useTranslation } from 'react-i18next'
 import { CopyableAddress } from '../shared/components/CopyableAddress/CopyableAddress'
 import { useLanguage } from '../shared/hooks'
-import { localizeNumber, formatPrice, localizeDate } from '../shared/utils'
+import { localizeNumber, localizeDate } from '../shared/utils'
 
 const TIME_ZONE = 'UTC'
 const DATE_OPTIONS = {
@@ -26,42 +26,52 @@ export const LedgerSummaryCard: FC<LedgerSummaryCardProps> = ({ data }) => {
   const date = new Date(data.close_time)
 
   return (
-    <div className="ledger-summary dashboard-panel">
-      <div className="ledger-summary-title">
-        {t('ledger')} #{data.ledger_index}
+    <>
+      <div className="ledger-summary dashboard-panel">
+        <div className="ledger-summary-label">{t('ledger')}</div>
+        <div className="ledger-summary-title">
+          #{localizeNumber(data.ledger_index, language)}
+        </div>
+        <div className="ledger-summary-hashes">
+          <div className="ledger-summary-hash-row">
+            <span className="ledger-summary-hash-label">{t('hash')}:</span>
+            <CopyableAddress address={data.ledger_hash} truncate />
+          </div>
+          {data.parent_hash && (
+            <div className="ledger-summary-hash-row">
+              <span className="ledger-summary-hash-label">Parent Hash:</span>
+              <CopyableAddress address={data.parent_hash} truncate />
+            </div>
+          )}
+        </div>
       </div>
-      <div className="ledger-summary-grid">
-        <div className="ledger-summary-item">
-          <span className="ledger-summary-label">{t('total_transactions')}</span>
-          <span className="ledger-summary-value">
+
+      <div className="ledger-overview-grid">
+        <div className="ledger-overview-item">
+          <span className="ledger-overview-label">
+            {t('total_transactions')}
+          </span>
+          <span className="ledger-overview-value">
             {localizeNumber(data.transactions.length, language)}
           </span>
         </div>
-        <div className="ledger-summary-item">
-          <span className="ledger-summary-label">{t('total_fees')}</span>
-          <span className="ledger-summary-value">
-            {formatPrice(data.total_fees, { lang: language, currency: 'PFT' })}
+        <div className="ledger-overview-item">
+          <span className="ledger-overview-label">{t('total_fees')}</span>
+          <span className="ledger-overview-value">
+            {localizeNumber(data.total_fees, language, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 8,
+            })}{' '}
+            PFT
           </span>
         </div>
-        <div className="ledger-summary-item">
-          <span className="ledger-summary-label">Close Time</span>
-          <span className="ledger-summary-value">
+        <div className="ledger-overview-item ledger-overview-item-date">
+          <span className="ledger-overview-label">Close Time</span>
+          <span className="ledger-overview-value">
             {localizeDate(date, language, DATE_OPTIONS)} {TIME_ZONE}
           </span>
         </div>
       </div>
-      <div className="ledger-summary-hashes">
-        <div className="ledger-summary-hash-row">
-          <span className="ledger-summary-label">{t('hash')}</span>
-          <CopyableAddress address={data.ledger_hash} truncate />
-        </div>
-        {data.parent_hash && (
-          <div className="ledger-summary-hash-row">
-            <span className="ledger-summary-label">Parent Hash</span>
-            <CopyableAddress address={data.parent_hash} truncate />
-          </div>
-        )}
-      </div>
-    </div>
+    </>
   )
 }

@@ -41,8 +41,13 @@
   }
 }
 
+// General info panel
 .ledger-summary {
   padding: 24px;
+
+  > .ledger-summary-label {
+    margin-bottom: 4px;
+  }
 }
 
 .ledger-summary-title {
@@ -57,19 +62,6 @@
   }
 }
 
-.ledger-summary-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.ledger-summary-item {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
 .ledger-summary-label {
   color: $black-40;
   font-size: 12px;
@@ -78,31 +70,72 @@
   @include medium;
 }
 
-.ledger-summary-value {
-  color: $white;
-  font-size: 16px;
-  font-variant-numeric: tabular-nums;
-  @include semibold;
-}
-
 .ledger-summary-hashes {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding-top: 16px;
-  border-top: 1px solid $black-80;
 }
 
 .ledger-summary-hash-row {
   display: flex;
   align-items: center;
-  gap: 12px;
-  min-width: 0;
+  gap: 4px;
+  margin-top: 8px;
+  overflow: hidden;
+}
 
-  .ledger-summary-label {
-    flex-shrink: 0;
-    min-width: 90px;
+.ledger-summary-hash-label {
+  color: $black-50;
+  font-size: 12px;
+  font-family: 'Inter', 'Work Sans', system-ui, sans-serif;
+  flex-shrink: 0;
+  @include semibold;
+}
+
+// Overview cards row
+.ledger-overview-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.ledger-overview-item {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 100px;
+  padding: 14px 12px;
+  border: 1px solid $black-80;
+  border-radius: $border-radius;
+  background: $black-90;
+  text-align: center;
+
+  &.ledger-overview-item-date {
+    flex: 1.55 1 0;
   }
+}
+
+.ledger-overview-label {
+  color: $black-40;
+  font-size: 10px;
+  line-height: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  @include medium;
+}
+
+.ledger-overview-value {
+  overflow: hidden;
+  color: $white;
+  font-size: 14px;
+  line-height: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  @include medium;
 }
 
 .ledger-feed-scroll {

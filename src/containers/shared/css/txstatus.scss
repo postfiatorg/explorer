@@ -4,6 +4,7 @@
   display: inline-flex;
   max-width: 100%;
   align-items: center;
+  gap: 6px;
 
   svg {
     width: auto;
@@ -20,19 +21,10 @@
 
     display: inline-block;
     text-transform: capitalize;
-
-    &::before {
-      content: '\00a0';
-    }
-  }
-
-  .status-message {
-    + .status-code::before {
-      content: '\00a0-\00a0';
-    }
   }
 
   .status-code {
+    margin-left: 6px;
     color: inherit;
   }
 

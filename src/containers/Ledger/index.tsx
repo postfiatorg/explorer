@@ -8,7 +8,8 @@ import { Loader } from '../shared/components/Loader'
 import { TransactionFeed } from '../shared/components/TransactionFeed/TransactionFeed'
 import SocketContext from '../shared/SocketContext'
 import { useAnalytics } from '../shared/analytics'
-import { NOT_FOUND, BAD_REQUEST, DECIMAL_REGEX, HASH256_REGEX } from '../shared/utils'
+import { NOT_FOUND, BAD_REQUEST, DECIMAL_REGEX, HASH256_REGEX, localizeNumber } from '../shared/utils'
+import { useLanguage } from '../shared/hooks'
 import { LedgerSummaryCard } from './LedgerSummaryCard'
 
 import './ledger.scss'
@@ -37,6 +38,7 @@ export const Ledger = () => {
   const rippledSocket = useContext(SocketContext)
   const { identifier = '' } = useRouteParams(LEDGER_ROUTE)
   const { t } = useTranslation()
+  const language = useLanguage()
   const { trackException, trackScreenLoaded } = useAnalytics()
 
   const {
@@ -73,12 +75,12 @@ export const Ledger = () => {
         <RouteLink to={LEDGER_ROUTE} params={{ identifier: previousIndex }}>
           <span className="ledger-nav-btn">
             <ChevronLeft size={14} />
-            {previousIndex}
+            {localizeNumber(previousIndex, language)}
           </span>
         </RouteLink>
         <RouteLink to={LEDGER_ROUTE} params={{ identifier: nextIndex }}>
           <span className="ledger-nav-btn">
-            {nextIndex}
+            {localizeNumber(nextIndex, language)}
             <ChevronRight size={14} />
           </span>
         </RouteLink>
