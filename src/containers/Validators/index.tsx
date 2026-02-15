@@ -2,10 +2,6 @@ import { useContext, useEffect } from 'react'
 import axios from 'axios'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from 'react-query'
-import { useWindowSize } from 'usehooks-ts'
-import { deriveAddress } from 'xrpl'
-import { decodeNodePublic } from 'ripple-address-codec'
-import { bytesToHex } from '@xrplf/isomorphic/utils'
 import { SEOHelmet } from '../shared/components/SEOHelmet'
 import NoMatch from '../NoMatch'
 import { Loader } from '../shared/components/Loader'
@@ -24,28 +20,14 @@ import { SimpleTab } from './SimpleTab'
 import { HistoryTab } from './HistoryTab'
 import './validator.scss'
 import SocketContext from '../shared/SocketContext'
-import { ValidatorReport, ValidatorScore, ValidatorSupplemented } from '../shared/vhsTypes'
+import { ValidatorReport, ValidatorSupplemented } from '../shared/vhsTypes'
 import NetworkContext from '../shared/NetworkContext'
 import { VALIDATOR_ROUTE } from '../App/routes'
 import { buildPath, useRouteParams } from '../shared/routing'
 import { VotingTab } from './VotingTab'
-import { ExclusionsTab } from './ExclusionsTab'
 import logger from '../../rippled/lib/logger'
 
 const log = logger({ name: 'validator' })
-
-function validatorPublicKeyToAddress(
-  validatorPublicKey: string,
-): string | null {
-  try {
-    if (!validatorPublicKey.startsWith('n')) return validatorPublicKey
-    const publicKeyBytes = decodeNodePublic(validatorPublicKey)
-    const publicKeyHex = bytesToHex(publicKeyBytes)
-    return deriveAddress(publicKeyHex)
-  } catch {
-    return null
-  }
-}
 
 const ERROR_MESSAGES = {
   [NOT_FOUND]: {
@@ -65,7 +47,6 @@ export const Validator = () => {
   const rippledSocket = useContext(SocketContext)
   const network = useContext(NetworkContext)
   const { identifier = '', tab = 'details' } = useRouteParams(VALIDATOR_ROUTE)
-  const { width } = useWindowSize()
   const { trackException, trackScreenLoaded } = useAnalytics()
   const { t } = useTranslation()
 
@@ -77,10 +58,13 @@ export const Validator = () => {
     ['fetchValidatorData', identifier],
     async () => fetchValidatorData(),
     {
-      refetchInterval: (returnedData, _) =>
-        returnedData == null
-          ? FETCH_INTERVAL_ERROR_MILLIS
-          : FETCH_INTERVAL_VHS_MILLIS,
+      refetchInterval: (returnedData, query) =>
+        query.state.error === NOT_FOUND
+          ? false
+          : returnedData == null
+            ? FETCH_INTERVAL_ERROR_MILLIS
+            : FETCH_INTERVAL_VHS_MILLIS,
+      retry: (_count, err) => err !== NOT_FOUND,
       refetchOnMount: true,
       enabled: !!network,
     },
@@ -95,16 +79,6 @@ export const Validator = () => {
     },
   )
 
-  const { data: exclusionData, isFetching: exclusionIsLoading } = useQuery<any>(
-    ['fetchExclusionData'],
-    async () => fetchExclusionData(),
-    {
-      refetchInterval: FETCH_INTERVAL_VHS_MILLIS,
-      refetchOnMount: true,
-      enabled: !!network && !!rippledSocket,
-    },
-  )
-
   useEffect(() => {
     trackScreenLoaded({ validator: identifier })
   }, [identifier, tab, trackScreenLoaded])
@@ -112,26 +86,10 @@ export const Validator = () => {
   function fetchValidatorReport(): Promise<ValidatorReport[]> {
     return axios
       .get(`${process.env.VITE_DATA_URL}/validator/${identifier}/reports`)
-      .then((resp) => resp.data.reports)
+      .then((resp) => resp.data.reports ?? [])
       .then((vhsReports: ValidatorReport[]) =>
         vhsReports.sort((a, b) => (a.date > b.date ? -1 : 1)),
       )
-  }
-
-  function fetchExclusionData() {
-    return rippledSocket
-      .send({ command: 'exclusion_info' })
-      .then((resp) => {
-        if (resp.error) {
-          log.error(`Error fetching exclusion data: ${resp.error_message || resp.error}`)
-          return null
-        }
-        return resp
-      })
-      .catch((exclusionError) => {
-        log.error(`Error fetching exclusion data: ${exclusionError.message}`)
-        return null
-      })
   }
 
   function fetchValidatorData() {
@@ -181,9 +139,10 @@ export const Validator = () => {
     )
   }
 
-  function formatScore(score: ValidatorScore | null) {
-    if (!score) return null
-    return Number.parseFloat(score.score).toFixed(5)
+  function getAgreementColor(score: number): string {
+    if (score >= 0.99) return 'green'
+    if (score >= 0.95) return 'yellow'
+    return 'orange'
   }
 
   function renderHero() {
@@ -227,67 +186,72 @@ export const Validator = () => {
     ]
     const hasScores = scores.some((s) => s.score != null)
     if (!hasScores) return null
+    const hasIncomplete = scores.some((s) => s.score?.incomplete)
 
     return (
       <div className="detail-overview-grid">
-        {scores.map((s) =>
-          s.score ? (
+        {scores.map((s) => {
+          if (!s.score) return null
+          const value = Number(s.score.score)
+          const color = getAgreementColor(value)
+          return (
             <div className="detail-overview-item" key={s.label}>
               <span className="detail-overview-label">{s.label}</span>
-              <span className="detail-overview-value">
-                {formatScore(s.score)}
+              <span className={`detail-overview-value agreement-value ${color}`}>
+                {(value * 100).toFixed(2)}%
                 {s.score.incomplete && '*'}
               </span>
+              <div className="agreement-bar-track">
+                <div
+                  className={`agreement-bar-fill ${color}`}
+                  style={{ width: `${value * 100}%` }}
+                />
+              </div>
             </div>
-          ) : null,
+          )
+        })}
+        {hasIncomplete && (
+          <span className="detail-overview-footnote">
+            * Incomplete scoring period
+          </span>
         )}
       </div>
     )
   }
 
   function renderTabs() {
-    const tabsList = ['details', 'history', 'voting', 'exclusions']
+    const tabsList = ['details', 'history', 'voting']
     const mainPath = buildPath(VALIDATOR_ROUTE, { identifier })
     return <Tabs tabs={tabsList} selected={tab} path={mainPath} />
   }
 
   function renderValidator() {
-    let body
-    switch (tab) {
-      case 'history':
-        body = <HistoryTab reports={reports ?? []} />
-        break
-      case 'voting':
-        body = data && <VotingTab validatorData={data} network={network} />
-        break
-      case 'exclusions': {
-        const validatorAddress = validatorPublicKeyToAddress(identifier)
-        body = (
-          <ExclusionsTab
-            validatorId={validatorAddress || identifier}
-            exclusionData={exclusionData}
-            isLoading={exclusionIsLoading}
-          />
-        )
-        break
-      }
-      default:
-        body = data && <SimpleTab data={data} width={width} />
-        break
-    }
     return (
       <>
         {renderPageTitle()}
         {renderHero()}
         {renderOverviewGrid()}
         {renderTabs()}
-        <div className="validator-tab-body dashboard-panel">{body}</div>
+        {tab === 'history' && (
+          <div className="validator-tab-body dashboard-panel">
+            <HistoryTab reports={reports ?? []} />
+          </div>
+        )}
+        {tab === 'voting' && data && (
+          <div className="validator-tab-body dashboard-panel">
+            <VotingTab validatorData={data} network={network} />
+          </div>
+        )}
+        {tab === 'details' && data && (
+          <div className="validator-tab-body dashboard-panel">
+            <SimpleTab data={data} />
+          </div>
+        )}
       </>
     )
   }
 
-  const isLoading =
-    dataIsLoading || reportIsLoading || (tab === 'exclusions' && exclusionIsLoading)
+  const isLoading = dataIsLoading || reportIsLoading
   let body
 
   if (error) {

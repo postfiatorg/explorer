@@ -58,7 +58,7 @@ export const TRANSACTION_ROUTE: RouteDefinition<{
 
 export const VALIDATOR_ROUTE: RouteDefinition<{
   identifier: string
-  tab?: 'details' | 'history' | 'voting' | 'exclusions'
+  tab?: 'details' | 'history' | 'voting'
 }> = {
   path: `/validators/:identifier/:tab?`,
 }
