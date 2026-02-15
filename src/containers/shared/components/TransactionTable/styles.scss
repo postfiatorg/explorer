@@ -37,8 +37,8 @@
 
   .col-type {
     flex: 2;
-
     @include semibold;
+
     @include for-size(desktop-up) {
       width: 230px;
     }
@@ -77,25 +77,34 @@
       @include medium;
     }
 
-    @include for-size(tablet-landscape-up) {
+    @include for-size(desktop-up) {
       display: inline-block;
     }
   }
 
   .col-date {
-    flex: 3;
-    justify-content: right;
-    @include medium;
+    display: none;
+
+    @include for-size(tablet-portrait-up) {
+      display: flex;
+      flex: 3;
+      justify-content: right;
+      @include medium;
+    }
 
     @include for-size(desktop-up) {
-      width: 185px; // We know the width because dates can only be so big
+      width: 185px;
       flex: none;
     }
   }
 
   .details {
     min-height: 30px;
-    padding: 32px;
+    padding: 16px;
+
+    @include for-size(tablet-portrait-up) {
+      padding: 32px;
+    }
     background: rgba(var(--black-70-rgb), 0.5);
     color: $black-40;
     font-size: 10px;
@@ -217,11 +226,15 @@
   }
 
   .transaction-li.transaction-li-header {
-    display: flex;
+    display: none;
     padding: 0 16px 18px;
     font-size: 10px;
     gap: 0 12px;
     text-transform: uppercase;
+
+    @include for-size(tablet-portrait-up) {
+      display: flex;
+    }
 
     @include for-size(tablet-landscape-up) {
       padding: 12px 32px;

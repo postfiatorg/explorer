@@ -106,9 +106,15 @@
 
 .tx-feed-card-details {
   margin-top: 2px;
+  overflow: hidden;
 }
 
 .tx-feed-card-account {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
   .account {
     font-size: 12px;
     color: $black-40;
@@ -127,7 +133,11 @@
   display: flex;
   flex-shrink: 0;
   justify-content: center;
-  width: 80px;
+  width: 64px;
+
+  @include for-size(tablet-portrait-up) {
+    width: 80px;
+  }
 }
 
 .tx-feed-card-pill {

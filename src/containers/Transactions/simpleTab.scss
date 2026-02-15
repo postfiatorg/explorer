@@ -5,7 +5,7 @@ $subdued-color: $black-40;
 .simple-body-tx {
   .rows {
     width: 100%;
-    padding: 0 16px;
+    padding: 0 12px;
     border-right: none;
     margin-bottom: 0;
 
@@ -25,7 +25,11 @@ $subdued-color: $black-40;
     }
 
     .row {
-      padding: 10px 0 10px 8px;
+      padding: 10px 0 10px 4px;
+
+      @include for-size(tablet-portrait-up) {
+        padding: 10px 0 10px 8px;
+      }
 
       &:last-child {
         border-bottom: none;

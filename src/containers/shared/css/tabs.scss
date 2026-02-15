@@ -3,10 +3,21 @@
 .tabs {
   position: relative;
   display: flex;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
   border-bottom: 1px solid $black-70;
   margin: 8px auto 40px;
-  font-size: 14px;
+  font-size: 13px;
   gap: 4px;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  @include for-size(tablet-portrait-up) {
+    font-size: 14px;
+  }
 
   a {
     color: inherit;
@@ -15,8 +26,13 @@
   .tab {
     position: relative;
     display: inline-block;
-    padding: 12px 24px;
+    padding: 10px 14px;
+    white-space: nowrap;
     border: none;
+
+    @include for-size(tablet-portrait-up) {
+      padding: 12px 24px;
+    }
     color: $black-40;
     cursor: pointer;
     text-align: center;

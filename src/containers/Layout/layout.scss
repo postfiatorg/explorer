@@ -20,8 +20,16 @@
   justify-content: flex-start;
   margin-top: var(--topbar-height);
   margin-bottom: var(--statusbar-height);
-  padding: 24px;
+  padding: 12px;
   min-height: calc(100vh - var(--topbar-height) - var(--statusbar-height));
+
+  @include for-size(tablet-portrait-up) {
+    padding: 16px;
+  }
+
+  @include for-size(tablet-landscape-up) {
+    padding: 24px;
+  }
 
   @media (min-width: $tablet-landscape-upper-boundary) {
     margin-left: var(--sidebar-width);

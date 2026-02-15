@@ -9,9 +9,10 @@ interface SidebarNavItemProps {
   item: SidebarItem
   collapsed: boolean
   pathname: string
+  onNavigate?: () => void
 }
 
-const SidebarNavItem: FC<SidebarNavItemProps> = ({ item, collapsed, pathname }) => {
+const SidebarNavItem: FC<SidebarNavItemProps> = ({ item, collapsed, pathname, onNavigate }) => {
   const isActive = item.path === '/'
     ? pathname === '/'
     : item.path && pathname.startsWith(item.path)
@@ -38,6 +39,7 @@ const SidebarNavItem: FC<SidebarNavItemProps> = ({ item, collapsed, pathname }) 
       to={item.path || '/'}
       className={`sidebar-item ${isActive ? 'active' : ''}`}
       title={collapsed ? item.label : undefined}
+      onClick={onNavigate}
     >
       <Icon size={20} />
       {!collapsed && <span className="sidebar-item-label">{item.label}</span>}
@@ -45,7 +47,11 @@ const SidebarNavItem: FC<SidebarNavItemProps> = ({ item, collapsed, pathname }) 
   )
 }
 
-export const Sidebar: FC = () => {
+interface SidebarProps {
+  onNavigate?: () => void
+}
+
+export const Sidebar: FC<SidebarProps> = ({ onNavigate }) => {
   const { collapsed, setCollapsed } = useSidebarContext()
   const { pathname } = useLocation()
 
@@ -54,12 +60,12 @@ export const Sidebar: FC = () => {
       <nav className="sidebar-nav">
         <div className="sidebar-main">
           {sidebarConfig.map((item) => (
-            <SidebarNavItem key={item.label} item={item} collapsed={collapsed} pathname={pathname} />
+            <SidebarNavItem key={item.label} item={item} collapsed={collapsed} pathname={pathname} onNavigate={onNavigate} />
           ))}
         </div>
         <div className="sidebar-footer">
           {sidebarFooterLinks.map((item) => (
-            <SidebarNavItem key={item.label} item={item} collapsed={collapsed} pathname={pathname} />
+            <SidebarNavItem key={item.label} item={item} collapsed={collapsed} pathname={pathname} onNavigate={onNavigate} />
           ))}
           <button
             type="button"

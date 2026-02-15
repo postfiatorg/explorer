@@ -50,7 +50,7 @@
 // Stats
 .token-stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 12px;
 }
 
@@ -91,9 +91,13 @@
 
 .token-detail-label {
   color: $black-40;
-  min-width: 140px;
+  min-width: 100px;
   flex-shrink: 0;
   @include medium;
+
+  @include for-size(tablet-portrait-up) {
+    min-width: 140px;
+  }
 }
 
 .token-detail-value {

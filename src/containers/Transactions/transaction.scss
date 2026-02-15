@@ -100,24 +100,32 @@
 
 .tx-overview-item {
   display: flex;
-  flex: 1 1 0;
+  flex: 1 1 100%;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  min-width: 100px;
   padding: 14px 12px;
   border: 1px solid $black-80;
   border-radius: $border-radius;
   background: $black-90;
   text-align: center;
 
+  @include for-size(tablet-portrait-up) {
+    flex: 1 1 0;
+    min-width: 100px;
+  }
+
   &.tx-overview-item-date {
-    flex: 1.55 1 0;
+    @include for-size(tablet-portrait-up) {
+      flex: 1.55 1 0;
+    }
   }
 
   &.tx-overview-item-account {
-    flex: 1.85 1 0;
+    @include for-size(tablet-portrait-up) {
+      flex: 1.85 1 0;
+    }
   }
 }
 
@@ -132,12 +140,18 @@
 
 .tx-overview-value {
   overflow: hidden;
+  max-width: 100%;
   color: $white;
   font-size: 14px;
   line-height: 18px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  word-break: break-word;
   @include medium;
+
+  @include for-size(tablet-portrait-up) {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    word-break: normal;
+  }
 
   a {
     color: $green;

@@ -31,11 +31,18 @@
 
 .metric-card-value {
   color: $white;
-  font-size: 22px;
+  font-size: 18px;
   font-variant-numeric: tabular-nums;
   line-height: 1.2;
-  white-space: nowrap;
+  word-break: break-word;
+  text-align: center;
   @include bold;
+
+  @include for-size(tablet-portrait-up) {
+    font-size: 22px;
+    white-space: nowrap;
+    word-break: normal;
+  }
 }
 
 .metric-card-unit {

@@ -21,13 +21,14 @@
 
 .amendments-stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 12px;
 }
 
 .amendments-table {
   position: relative;
-  overflow: auto;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 
   table {
     .incoming {
@@ -85,9 +86,12 @@
     }
 
     .version {
+      display: none;
       max-width: 70px;
       overflow-wrap: break-word;
+
       @include for-size(tablet-portrait-up) {
+        display: table-cell;
         max-width: 100px;
       }
     }
@@ -140,11 +144,19 @@
       }
     }
 
+    .consensus {
+      display: none;
+
+      @include for-size(tablet-landscape-up) {
+        display: table-cell;
+      }
+    }
+
     .consensus-cell {
       display: flex;
       flex-direction: column;
       gap: 3px;
-      min-width: 70px;
+      min-width: 56px;
     }
 
     .consensus-value {

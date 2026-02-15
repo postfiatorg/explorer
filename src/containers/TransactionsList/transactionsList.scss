@@ -33,24 +33,33 @@
 .tx-filters {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 12px 16px;
+  gap: 8px;
+  padding: 10px 12px;
   border: 1px solid $black-80;
   border-radius: 8px;
   background: $black-90;
   flex-wrap: wrap;
+
+  @include for-size(tablet-portrait-up) {
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 16px;
+  }
 }
 
 .tx-filters-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   color: $black-50;
+
+  @include for-size(tablet-portrait-up) {
+    gap: 12px;
+  }
 }
 
 .tx-filter-select {
-  padding: 6px 12px;
+  padding: 6px 10px;
   border: 1px solid $black-70;
   border-radius: 6px;
   background: $black-80;
@@ -58,6 +67,10 @@
   font-size: 13px;
   cursor: pointer;
   @include medium;
+
+  @include for-size(tablet-portrait-up) {
+    padding: 6px 12px;
+  }
 
   &:focus {
     border-color: $green-70;
@@ -73,13 +86,18 @@
 }
 
 .tx-filter-status-btn {
-  padding: 6px 14px;
+  padding: 6px 10px;
   border: none;
   background: transparent;
   color: $black-40;
-  font-size: 13px;
+  font-size: 12px;
   cursor: pointer;
   @include medium;
+
+  @include for-size(tablet-portrait-up) {
+    padding: 6px 14px;
+    font-size: 13px;
+  }
 
   &:not(:last-child) {
     border-right: 1px solid $black-70;

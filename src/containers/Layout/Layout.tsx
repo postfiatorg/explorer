@@ -44,6 +44,10 @@ export const Layout: FC = () => {
     setMobileMenuOpen((prev) => !prev)
   }, [])
 
+  const closeMobileMenu = useCallback(() => {
+    setMobileMenuOpen(false)
+  }, [])
+
   return (
     <SidebarContext.Provider value={{ collapsed, setCollapsed }}>
       <div className={`layout ${collapsed ? 'sidebar-collapsed' : 'sidebar-expanded'}`}>
@@ -53,11 +57,11 @@ export const Layout: FC = () => {
           <>
             <div
               className="sidebar-overlay"
-              onClick={() => setMobileMenuOpen(false)}
+              onClick={closeMobileMenu}
               role="presentation"
             />
-            <aside className={`sidebar-mobile ${mobileMenuOpen ? 'open' : ''}`}>
-              <Sidebar />
+            <aside className="sidebar-mobile">
+              <Sidebar onNavigate={closeMobileMenu} />
             </aside>
           </>
         )}

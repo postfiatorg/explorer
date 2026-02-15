@@ -49,9 +49,13 @@
 
 .account-detail-label {
   color: $black-40;
-  min-width: 120px;
+  min-width: 100px;
   flex-shrink: 0;
   @include medium;
+
+  @include for-size(tablet-portrait-up) {
+    min-width: 120px;
+  }
 }
 
 .account-detail-value {
@@ -100,9 +104,16 @@
 }
 
 .account-asset-table {
+  display: block;
   width: 100%;
+  overflow-x: auto;
   border-collapse: collapse;
   font-size: 13px;
+
+  @include for-size(tablet-portrait-up) {
+    display: table;
+    overflow-x: visible;
+  }
 
   thead th {
     color: $black-40;
@@ -143,14 +154,28 @@
     }
 
     &.token-id-cell {
-      width: 1%;
+      max-width: 180px;
+      overflow: hidden;
+      text-overflow: ellipsis;
       white-space: nowrap;
+
+      @include for-size(tablet-portrait-up) {
+        max-width: 280px;
+      }
+
+      @include for-size(tablet-landscape-up) {
+        max-width: none;
+      }
     }
 
     &.issuer-cell {
       color: $black-30;
       font-size: 12px;
-      max-width: 200px;
+      max-width: 120px;
+
+      @include for-size(tablet-portrait-up) {
+        max-width: 200px;
+      }
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;

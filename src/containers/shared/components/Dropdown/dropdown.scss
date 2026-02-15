@@ -25,6 +25,7 @@
   display: none;
   overflow: hidden;
   min-width: max(100%, 160px);
+  max-width: calc(100vw - 24px);
   padding: 8px;
   border: 1px solid $black-70;
   border-radius: $border-radius;

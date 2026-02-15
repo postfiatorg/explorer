@@ -7,13 +7,19 @@
   right: 0;
   left: 0;
   display: flex;
+  overflow: hidden;
   height: var(--topbar-height);
   align-items: center;
-  gap: 16px;
-  padding: 0 16px;
+  gap: 12px;
+  padding: 0 12px;
   border-bottom: 1px solid $black-80;
   backdrop-filter: blur(12px);
   background: rgba(var(--black-100-rgb), 0.85);
+
+  @include for-size(tablet-portrait-up) {
+    gap: 16px;
+    padding: 0 16px;
+  }
 }
 
 .topbar-left {
@@ -60,6 +66,10 @@
   &::after {
     display: none !important;
   }
+
+  @media (max-width: $phone-upper-boundary) {
+    display: none;
+  }
 }
 
 .topbar-logo-img {
@@ -78,11 +88,15 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-shrink: 0;
+  min-width: 0;
 
   .dropdown-toggle {
     padding: 6px 10px;
     font-size: 13px;
+  }
+
+  @include for-size(tablet-portrait-up) {
+    flex-shrink: 0;
   }
 
   @media (max-width: $phone-upper-boundary) {
