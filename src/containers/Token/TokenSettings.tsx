@@ -71,12 +71,13 @@ export const TokenSettings: FC<TokenSettingsProps> = ({ data }) => {
         <div className="token-flags-grid">
           {FLAG_MAP.map(({ flag, label, enabledLabel, disabledLabel }) => {
             const isSet = flags?.includes(flag)
+            const displayLabel = isSet ? enabledLabel : disabledLabel
             return (
               <div className="token-flag-item" key={flag}>
                 <span className="token-flag-label">{label}</span>
                 <StatusBadge
-                  status={isSet ? 'enabled' : 'disabled'}
-                  label={isSet ? enabledLabel : disabledLabel}
+                  status={displayLabel === 'Enabled' ? 'enabled' : 'disabled'}
+                  label={displayLabel}
                 />
               </div>
             )
