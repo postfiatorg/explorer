@@ -1,16 +1,21 @@
-import { useEffect, useContext } from 'react'
+import { useEffect, useContext, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from 'react-query'
+import { Tag, Percent } from 'lucide-react'
 import { Loader } from '../../shared/components/Loader'
 import { CopyableAddress } from '../../shared/components/CopyableAddress/CopyableAddress'
+import { MetricCard } from '../../shared/components/MetricCard/MetricCard'
 import './styles.scss'
 import SocketContext from '../../shared/SocketContext'
-import { BAD_REQUEST, HASH192_REGEX } from '../../shared/utils'
+import { BAD_REQUEST, HASH192_REGEX, isValidJsonString } from '../../shared/utils'
 import { Account } from '../../shared/components/Account'
 import { useAnalytics } from '../../shared/analytics'
+import { useLanguage } from '../../shared/hooks'
+import { localizeNumber } from '../../shared/utils'
 import { getMPTIssuance } from '../../../rippled/lib/rippled'
 import { formatMPTIssuanceInfo } from '../../../rippled/lib/utils'
 import { MPTIssuanceFormattedInfo } from '../../shared/Interfaces'
+import { CollapsibleJsonPanel } from '../../Transactions/CollapsibleJsonPanel'
 import { Details } from './Details'
 import { Settings } from './Settings'
 
@@ -21,6 +26,7 @@ interface Props {
 
 export const MPTHeader = (props: Props) => {
   const { t } = useTranslation()
+  const language = useLanguage()
   const { tokenId, setError } = props
   const rippledSocket = useContext(SocketContext)
   const { trackException } = useAnalytics()
@@ -45,6 +51,15 @@ export const MPTHeader = (props: Props) => {
     }
   }, [setError, tokenId])
 
+  const parsedMetadata = useMemo(() => {
+    if (!data?.metadata || !isValidJsonString(data.metadata)) return undefined
+    return JSON.parse(data.metadata)
+  }, [data?.metadata])
+
+  const feeDisplay = data?.transferFee
+    ? `${localizeNumber((data.transferFee / 1000).toPrecision(5), language, { minimumFractionDigits: 3 })}%`
+    : '0%'
+
   if (loading) return <Loader />
 
   if (!data) return null
@@ -64,37 +79,30 @@ export const MPTHeader = (props: Props) => {
         )}
       </div>
 
-      <div className="detail-overview-grid">
-        {data.maxAmt && (
-          <div className="detail-overview-item">
-            <span className="detail-overview-label">{t('max_amount')}</span>
-            <span className="detail-overview-value">{data.maxAmt}</span>
-          </div>
+      <div className="mpt-stats">
+        {parsedMetadata?.name && (
+          <MetricCard label="Name" value={parsedMetadata.name} icon={Tag} />
         )}
-        {data.outstandingAmt && (
-          <div className="detail-overview-item">
-            <span className="detail-overview-label">{t('outstanding_amount')}</span>
-            <span className="detail-overview-value">{data.outstandingAmt}</span>
-          </div>
-        )}
-        {data.assetScale && (
-          <div className="detail-overview-item">
-            <span className="detail-overview-label">{t('asset_scale')}</span>
-            <span className="detail-overview-value">{data.assetScale}</span>
-          </div>
-        )}
+        <MetricCard label="Transfer Fee" value={feeDisplay} icon={Percent} />
       </div>
 
       <div className="mpt-details-columns">
         <div className="mpt-details-panel dashboard-panel">
           <h3 className="dashboard-panel-title">{t('details')}</h3>
-          <Details data={data} />
+          <Details data={data} metadata={parsedMetadata} />
         </div>
         <div className="mpt-settings-panel dashboard-panel">
           <h3 className="dashboard-panel-title">{t('settings')}</h3>
           <Settings flags={data.flags!} />
         </div>
       </div>
+
+      {data.metadata && isValidJsonString(data.metadata) && (
+        <CollapsibleJsonPanel
+          data={JSON.parse(data.metadata)}
+          title="Metadata"
+        />
+      )}
     </>
   )
 }

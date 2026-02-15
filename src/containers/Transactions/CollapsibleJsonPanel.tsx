@@ -5,13 +5,15 @@ import { JsonView } from '../shared/components/JsonView'
 interface CollapsibleJsonPanelProps {
   data: any
   title?: string
+  defaultOpen?: boolean
 }
 
 export const CollapsibleJsonPanel: FC<CollapsibleJsonPanelProps> = ({
   data,
   title = 'Raw JSON',
+  defaultOpen = false,
 }) => {
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(defaultOpen)
   const [copied, setCopied] = useState(false)
 
   const handleCopy = useCallback(

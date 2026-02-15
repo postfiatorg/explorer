@@ -20,6 +20,13 @@
   }
 }
 
+// Stats
+.mpt-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 12px;
+}
+
 // Details + Settings columns
 .mpt-details-columns {
   display: flex;
@@ -54,10 +61,6 @@
   align-items: center;
   gap: 12px;
   font-size: 14px;
-
-  &.mpt-detail-row-metadata {
-    align-items: flex-start;
-  }
 }
 
 .mpt-detail-label {
@@ -74,10 +77,13 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 
-  // Allow metadata JSON to wrap
-  .json-view {
-    white-space: normal;
-    word-break: break-word;
+  a {
+    color: $green-30;
+    text-decoration: none;
+
+    &:hover {
+      color: $green;
+    }
   }
 }
 
