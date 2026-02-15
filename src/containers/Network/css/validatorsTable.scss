@@ -29,8 +29,36 @@
       color: $orange-50;
     }
 
-    .missed {
-      color: $orange-50;
+    .agreement-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      min-width: 56px;
+    }
+
+    .agreement-value {
+      font-size: 13px;
+      @include medium;
+
+      &.green { color: $green-50; }
+      &.yellow { color: $yellow-50; }
+      &.orange { color: $orange-50; }
+    }
+
+    .agreement-bar-track {
+      height: 4px;
+      border-radius: 2px;
+      background: $black-80;
+    }
+
+    .agreement-bar-fill {
+      height: 100%;
+      border-radius: 2px;
+      transition: width $transition-default;
+
+      &.green { background: $green-50; }
+      &.yellow { background: $yellow-50; }
+      &.orange { background: $orange-50; }
     }
 
     .domain {
@@ -51,8 +79,6 @@
       min-width: 55px;
       @include bold;
 
-      // When a validation comes in we update the color to use the ledgers hash. Until that occurs the table's default
-      // text color is used.
       a {
         color: inherit;
       }
@@ -154,5 +180,63 @@
         display: table-cell;
       }
     }
+  }
+}
+
+.voting-current-settings {
+  margin-bottom: 16px;
+
+  .voting-settings-header {
+    color: $black-40;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+    @include medium;
+  }
+
+  .voting-settings-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+
+    @include for-size(phone-only) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .voting-setting-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 14px 16px;
+    border: 1px solid $black-80;
+    border-radius: 12px;
+    background: $black-90;
+  }
+
+  .voting-setting-label {
+    color: $black-40;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    @include medium;
+  }
+
+  .voting-setting-value {
+    color: $white;
+    font-size: 20px;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.2;
+    white-space: nowrap;
+    @include bold;
+  }
+
+  .voting-setting-unit {
+    margin-left: 4px;
+    color: $black-40;
+    font-size: 13px;
+    @include medium;
   }
 }

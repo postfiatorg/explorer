@@ -12,117 +12,117 @@ $min-width: 375px;
 
 $border-radius: 8px;
 
-// Colors
-$black-0: #fff;
-$black-10: #f2f2f6;
-$black-20: #dddee4;
-$black-30: #bdbfc8;
-$black-40: #9d9fac;
-$black-50: #7e808d;
-$black-60: #41434f;
-$black-70: #30323e;
-$black-80: #1e2029;
-$black-90: #0f1018;
-$black-100: #06060e;
-$black: $black-100;
+// Colors — mapped to CSS custom properties for theming
+$black-0: var(--black-0);
+$black-10: var(--black-10);
+$black-20: var(--black-20);
+$black-30: var(--black-30);
+$black-40: var(--black-40);
+$black-50: var(--black-50);
+$black-60: var(--black-60);
+$black-70: var(--black-70);
+$black-80: var(--black-80);
+$black-90: var(--black-90);
+$black-100: var(--black-100);
+$black: var(--black-100);
 
-$green-10: #d6fae7;
-$green-20: #adf5ce;
-$green-30: #84f0b6;
-$green-40: #5beb9d;
-$green-50: #32e685;
-$green-60: #2dcf78;
-$green-70: #28b86a;
-$green-80: #1e8a50;
-$green-90: #145c35;
-$green-100: #0a2e1b;
-$green: $green-50;
+$green-10: var(--green-10);
+$green-20: var(--green-20);
+$green-30: var(--green-30);
+$green-40: var(--green-40);
+$green-50: var(--green-50);
+$green-60: var(--green-60);
+$green-70: var(--green-70);
+$green-80: var(--green-80);
+$green-90: var(--green-90);
+$green-100: var(--green-100);
+$green: var(--green-50);
 
-$blue-10: #e5f5ff;
-$blue-20: #b2e0ff;
-$blue-30: #80ccff;
-$blue-40: #4bb7ff;
-$blue-50: #19a3ff;
-$blue-60: #008ae5;
-$blue-70: #006bb2;
-$blue-80: #004d80;
-$blue-90: #002e4c;
-$blue: $blue-50;
+$blue-10: var(--blue-10);
+$blue-20: var(--blue-20);
+$blue-30: var(--blue-30);
+$blue-40: var(--blue-40);
+$blue-50: var(--blue-50);
+$blue-60: var(--blue-60);
+$blue-70: var(--blue-70);
+$blue-80: var(--blue-80);
+$blue-90: var(--blue-90);
+$blue: var(--blue-50);
 
-$blue-purple-10: #f0e5ff;
-$blue-purple-20: #d2b2ff;
-$blue-purple-30: #b480ff;
-$blue-purple-40: #9a52ff;
-$blue-purple-50: #7919ff;
-$blue-purple-60: #5f00e5;
-$blue-purple-70: #4a00b2;
-$blue-purple-80: #350080;
-$blue-purple-90: #20004c;
-$blue-purple: $blue-purple-40;
+$blue-purple-10: var(--blue-purple-10);
+$blue-purple-20: var(--blue-purple-20);
+$blue-purple-30: var(--blue-purple-30);
+$blue-purple-40: var(--blue-purple-40);
+$blue-purple-50: var(--blue-purple-50);
+$blue-purple-60: var(--blue-purple-60);
+$blue-purple-70: var(--blue-purple-70);
+$blue-purple-80: var(--blue-purple-80);
+$blue-purple-90: var(--blue-purple-90);
+$blue-purple: var(--blue-purple-40);
 
-$red-purple-10: #fbe5ff;
-$red-purple-20: #f2b2ff;
-$red-purple-30: #ea80ff;
-$red-purple-40: #e24cff;
-$red-purple-50: #d919ff;
-$red-purple-60: #c000e5;
-$red-purple-70: #9500b2;
-$red-purple-80: #6b0080;
-$red-purple-90: #40004c;
-$red-purple: $red-purple-50;
+$red-purple-10: var(--red-purple-10);
+$red-purple-20: var(--red-purple-20);
+$red-purple-30: var(--red-purple-30);
+$red-purple-40: var(--red-purple-40);
+$red-purple-50: var(--red-purple-50);
+$red-purple-60: var(--red-purple-60);
+$red-purple-70: var(--red-purple-70);
+$red-purple-80: var(--red-purple-80);
+$red-purple-90: var(--red-purple-90);
+$red-purple: var(--red-purple-50);
 
-$magenta-10: #ffe5f2;
-$magenta-20: #ffb2d8;
-$magenta-30: #ff80bf;
-$magenta-40: #ff4ba4;
-$magenta-50: #ff198b;
-$magenta-60: #e50071;
-$magenta-70: #b20058;
-$magenta-80: #80003f;
-$magenta-90: #4c0026;
-$magenta: $magenta-50;
+$magenta-10: var(--magenta-10);
+$magenta-20: var(--magenta-20);
+$magenta-30: var(--magenta-30);
+$magenta-40: var(--magenta-40);
+$magenta-50: var(--magenta-50);
+$magenta-60: var(--magenta-60);
+$magenta-70: var(--magenta-70);
+$magenta-80: var(--magenta-80);
+$magenta-90: var(--magenta-90);
+$magenta: var(--magenta-50);
 
-$orange-10: #ffeee5;
-$orange-20: #ffccb2;
-$orange-30: #ffaa80;
-$orange-40: #ff884b;
-$orange-50: #ff6719;
-$orange-60: #e54d00;
-$orange-70: #b23c00;
-$orange-80: #802b00;
-$orange-90: #4c1a00;
-$orange: $orange-50;
+$orange-10: var(--orange-10);
+$orange-20: var(--orange-20);
+$orange-30: var(--orange-30);
+$orange-40: var(--orange-40);
+$orange-50: var(--orange-50);
+$orange-60: var(--orange-60);
+$orange-70: var(--orange-70);
+$orange-80: var(--orange-80);
+$orange-90: var(--orange-90);
+$orange: var(--orange-50);
 
-$yellow-10: #feffe5;
-$yellow-20: #fdffb2;
-$yellow-30: #fcff80;
-$yellow-40: #fbff4c;
-$yellow-50: #faff19;
-$yellow-60: #e0e500;
-$yellow-70: #aeb200;
-$yellow-80: #7d8000;
-$yellow-90: #4b4c00;
-$yellow: $yellow-50;
+$yellow-10: var(--yellow-10);
+$yellow-20: var(--yellow-20);
+$yellow-30: var(--yellow-30);
+$yellow-40: var(--yellow-40);
+$yellow-50: var(--yellow-50);
+$yellow-60: var(--yellow-60);
+$yellow-70: var(--yellow-70);
+$yellow-80: var(--yellow-80);
+$yellow-90: var(--yellow-90);
+$yellow: var(--yellow-50);
 
-$red: #ff668b;
-$red-dark: #940443;
+$red: var(--red);
+$red-dark: var(--red-dark);
 $shadows: #23292f;
-$white: #fff;
+$white: var(--white);
 $white-transparent: rgb(255 255 255 / 75%);
 
 // Networks
-$testnet: $orange;
-$devnet: $blue-purple-30;
-$xahau-mainnet: $green-40;
-$xahau-testnet: $magenta-30;
-$custom: $yellow-50;
+$testnet: var(--orange-50);
+$devnet: var(--blue-purple-30);
+$xahau-mainnet: var(--green-40);
+$xahau-testnet: var(--magenta-30);
+$custom: var(--yellow-50);
 
 // Feature Sets
-$amm: $blue;
-$nft: $blue-purple;
-$mpt: $blue;
+$amm: var(--blue-50);
+$nft: var(--blue-purple-40);
+$mpt: var(--blue-50);
 
-// Currency colors
+// Currency colors — static hex, not themed
 $CURRENCY_DEFAULT: #aedbf7;
 $XRP_KRW: #0f72e5;
 $XRP_USD: #2bcb96;
@@ -203,13 +203,9 @@ $XRP_OTHERS: #f52a79;
   }
 }
 
-// Gradient page title
+// Page title
 @mixin gradient-title {
-  background: linear-gradient(135deg, $white 30%, $green-30);
-  /* stylelint-disable-next-line property-no-vendor-prefix -- needed for Safari */
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: $white;
 }
 
 // Glow effects

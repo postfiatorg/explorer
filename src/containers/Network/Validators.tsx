@@ -1,18 +1,18 @@
-import { useContext, useState } from 'react'
+import { useContext, useMemo, useState } from 'react'
 import axios from 'axios'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from 'react-query'
 import Streams from '../shared/components/Streams'
 import { SEOHelmet } from '../shared/components/SEOHelmet'
 import { ValidatorsTable } from './ValidatorsTable'
+import { MetricCard } from '../shared/components/MetricCard/MetricCard'
 import Log from '../shared/log'
 import {
-  localizeNumber,
+  DROPS_TO_XRP_FACTOR,
   FETCH_INTERVAL_MILLIS,
   FETCH_INTERVAL_ERROR_MILLIS,
   FETCH_INTERVAL_FEE_SETTINGS_MILLIS,
 } from '../shared/utils'
-import { useLanguage } from '../shared/hooks'
 import { Hexagons } from './Hexagons'
 import {
   FeeSettings,
@@ -29,7 +29,6 @@ import SocketContext from '../shared/SocketContext'
 import { getServerState } from '../../rippled/lib/rippled'
 
 export const Validators = () => {
-  const language = useLanguage()
   const { t } = useTranslation()
   const [vList, setVList] = useState<Record<string, StreamValidator>>({})
   const [validations, setValidations] = useState([])
@@ -69,9 +68,6 @@ export const Validators = () => {
     keys.forEach((d: string) => {
       const newData: StreamValidator = validators[d] || live[d]
       if (newData.ledger_index == null && live[d] && live[d].ledger_index) {
-        // VHS uses `current_index` instead of `ledger_index`
-        // If `ledger_index` isn't defined, then we're still using the VHS data,
-        // instead of the Streams data
         newData.ledger_index = live[d].ledger_index
         newData.ledger_hash = live[d].ledger_hash
       }
@@ -94,7 +90,6 @@ export const Validators = () => {
 
   function fetchData() {
     const url = `${process.env.VITE_DATA_URL}/validators/${network}`
-
     return axios
       .get(url)
       .then((resp) => resp.data.validators)
@@ -103,10 +98,9 @@ export const Validators = () => {
         validators.forEach((v: ValidatorResponse) => {
           newValidatorList[v.signing_key] = v
         })
-
         setVList(() => mergeLatest(newValidatorList, vList))
         setUnlCount(validators.filter((d: any) => Boolean(d.unl)).length)
-        return true // indicating success in getting the data
+        return true
       })
       .catch((e) => Log.error(e))
   }
@@ -129,27 +123,81 @@ export const Validators = () => {
   }
 
   const validatorCount = Object.keys(vList).length
+  const validators = Object.values(vList)
+
+  const averageAgreement = useMemo(() => {
+    const unlValidators = validators.filter((v: any) => Boolean(v.unl))
+    const withScore = unlValidators.filter(
+      (v: any) => v.agreement_30day?.score != null,
+    )
+    if (withScore.length === 0) return undefined
+    const sum = withScore.reduce(
+      (acc, v: any) => acc + Number(v.agreement_30day.score),
+      0,
+    )
+    const avg = (sum / withScore.length) * 100
+    return `${avg.toFixed(2)}%`
+  }, [validators])
+
+  const votingNetworkSettings = feeSettings ? (
+    <div className="voting-current-settings">
+      <div className="voting-settings-header">Current Network Settings</div>
+      <div className="voting-settings-grid">
+        {[
+          {
+            label: 'Base Reserve',
+            value: feeSettings.reserve_base / DROPS_TO_XRP_FACTOR,
+            unit: 'PFT',
+          },
+          {
+            label: 'Owner Reserve',
+            value: feeSettings.reserve_inc / DROPS_TO_XRP_FACTOR,
+            unit: 'PFT',
+          },
+          {
+            label: 'Base Fee',
+            value: feeSettings.base_fee / DROPS_TO_XRP_FACTOR,
+            unit: 'PFT',
+          },
+        ].map((item) => (
+          <div className="voting-setting-card" key={item.label}>
+            <span className="voting-setting-label">{item.label}</span>
+            <span className="voting-setting-value">
+              {item.value}
+              <span className="voting-setting-unit">{item.unit}</span>
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  ) : null
 
   const Body = {
     uptime: (
-      <ValidatorsTable
-        validators={Object.values(vList)}
-        metrics={metrics}
-        tab="uptime"
-      />
+      <ValidatorsTable validators={validators} metrics={metrics} tab="uptime" />
     ),
     voting: (
-      <ValidatorsTable
-        validators={Object.values(vList)}
-        metrics={metrics}
-        tab="voting"
-        feeSettings={feeSettings}
-      />
+      <>
+        {votingNetworkSettings}
+        <ValidatorsTable
+          validators={validators}
+          metrics={metrics}
+          tab="voting"
+          feeSettings={feeSettings}
+        />
+      </>
     ),
   }[tab]
+
   return (
     <div className="network-page">
-      <div className="type">{t('validators')}</div>
+      <SEOHelmet
+        title={t('validators')}
+        description={t('meta.validators.description')}
+        path="/network/validators"
+      />
+      <div className="network-page-title">{t('validators')}</div>
+
       {network && (
         <Streams
           validators={vList}
@@ -157,31 +205,22 @@ export const Validators = () => {
           updateMetrics={setMetrics}
         />
       )}
+
+      <div className="network-stats">
+        <MetricCard label="Validators" value={validatorCount || undefined} />
+        <MetricCard label="UNL Count" value={unlCount || undefined} />
+        <MetricCard label="UNL 30D Agreement" value={averageAgreement} />
+      </div>
+
       {
         // @ts-ignore - Work around for complex type assignment issues
         <TooltipProvider>
           <Hexagons data={validations} list={vList} />
         </TooltipProvider>
       }
-      <div className="stat">
-        <span>{t('validators_found')}: </span>
-        <span>
-          {localizeNumber(validatorCount, language)}
-          {unlCount !== 0 && (
-            <i>
-              {' '}
-              ({t('unl')}: {unlCount})
-            </i>
-          )}
-        </span>
-      </div>
+
       <div className="wrap">
         <ValidatorsTabs selected={tab} />
-        <SEOHelmet
-          title={t('validators')}
-          description={t('meta.validators.description')}
-          path="/network/validators"
-        />
         {Body}
       </div>
     </div>

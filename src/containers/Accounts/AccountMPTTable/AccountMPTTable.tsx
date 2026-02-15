@@ -4,7 +4,6 @@ import { useInfiniteQuery, useQuery } from 'react-query'
 import { Loader } from '../../shared/components/Loader'
 import SocketContext from '../../shared/SocketContext'
 import { useAnalytics } from '../../shared/analytics'
-import { EmptyMessageTableRow } from '../../shared/EmptyMessageTableRow'
 import { getAccountMPTs, getMPTIssuance } from '../../../rippled/lib/rippled'
 import { Account } from '../../shared/components/Account'
 import { LoadMoreButton } from '../../shared/LoadMoreButton'
@@ -47,7 +46,7 @@ export const AccountMPTRow = ({ mpt }: any) => {
       <td>
         <MPTokenLink tokenID={mpt.mptIssuanceID} />
       </td>
-      <td>
+      <td className="issuer-cell">
         <Account account={mpt.mptIssuer} />
       </td>
       <td className="right">
@@ -85,41 +84,35 @@ export const AccountMPTTable = ({ accountId }: AccountMPTTableProps) => {
   )
   const { t } = useTranslation()
 
-  function renderNoResults() {
-    return (
-      <EmptyMessageTableRow colSpan={3}>
-        {t('assets.no_mpts_message')}
-      </EmptyMessageTableRow>
-    )
-  }
-
-  const renderLoadMoreButton = () =>
-    hasNextPage && <LoadMoreButton onClick={() => fetchNextPage()} />
-
   const mpts = pages?.pages
     .flatMap((page: any) => page.account_objects)
     .map((mpt) => formatMPTokenInfo(mpt))
 
+  if (loading) return <Loader />
+
+  if (!mpts?.length) {
+    return (
+      <div className="account-asset-empty">{t('assets.no_mpts_message')}</div>
+    )
+  }
+
   return (
-    <div className="section nodes-table">
-      <table className="basic">
+    <>
+      <table className="account-asset-table">
         <thead>
           <tr>
-            <th> {t('mpt_issuance_id')}</th>
-            <th> {t('issuer')}</th>
-            <th className="right">{t('amount')}</th>
+            <th>Issuance ID</th>
+            <th>Issuer</th>
+            <th className="right">Amount</th>
           </tr>
         </thead>
         <tbody>
-          {!loading &&
-            (mpts?.length
-              ? mpts.map((mpt) => (
-                  <AccountMPTRow key={mpt.mptIssuanceID} mpt={mpt} />
-                ))
-              : renderNoResults())}
+          {mpts.map((mpt) => (
+            <AccountMPTRow key={mpt.mptIssuanceID} mpt={mpt} />
+          ))}
         </tbody>
       </table>
-      {loading ? <Loader /> : renderLoadMoreButton()}
-    </div>
+      {hasNextPage && <LoadMoreButton onClick={() => fetchNextPage()} />}
+    </>
   )
 }

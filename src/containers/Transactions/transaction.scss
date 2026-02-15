@@ -1,63 +1,264 @@
 @use '../shared/css/variables' as *;
 
 .transaction {
-  position: relative;
-  max-width: 912px;
-  min-height: 600px;
-
-  @include for-size(tablet-landscape-up) {
-    width: 584px;
-    margin: 0 auto;
-  }
-
-  @include for-size(desktop-up) {
-    width: 820px;
-  }
-
-  @include for-size(big-desktop-up) {
-    width: 912px;
-  }
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  min-height: 400px;
 
   .loader {
-    position: absolute;
     z-index: 1;
-    top: 0px;
+  }
+}
+
+// Summary card with category-colored top border
+.tx-summary {
+  padding: 24px;
+
+  &.tx-border-PAYMENT { border-top: 3px solid var(--green-50); }
+  &.tx-border-DEX { border-top: 3px solid var(--blue-50); }
+  &.tx-border-ACCOUNT { border-top: 3px solid var(--magenta-50); }
+  &.tx-border-NFT { border-top: 3px solid var(--blue-purple-50); }
+  &.tx-border-XCHAIN { border-top: 3px solid var(--yellow-50); }
+  &.tx-border-MPT { border-top: 3px solid var(--blue-50); }
+  &.tx-border-PSEUDO { border-top: 3px solid var(--black-50); }
+  &.tx-border-OTHER { border-top: 3px solid var(--black-50); }
+}
+
+.tx-summary-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+
+  .tx-action-icon-circle {
+    width: 40px !important;
+    height: 40px !important;
+  }
+}
+
+.tx-summary-type {
+  font-size: 32px;
+  @include bold;
+  @include gradient-title;
+
+  @include for-size(tablet-landscape-up) {
+    font-size: 38px;
+  }
+}
+
+.tx-summary .tx-status {
+  display: inline-flex;
+  margin-bottom: 12px;
+
+  .status-icon {
+    display: none;
   }
 
-  .summary {
-    padding: 16px 16px 87px;
-    border: $border-subtle;
-    border-radius: $border-radius;
-    background: linear-gradient(180deg, $black-80, $black-90);
+  .status-message {
+    padding: 2px 12px;
+    border-radius: 100px;
+  }
+}
 
-    .type {
-      display: inline-block;
-      margin-bottom: 24px;
-      font-size: 42px;
-      @include bold;
-      @include gradient-title;
+.tx-summary-hash {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+
+.tx-summary-hash-label {
+  color: $black-50;
+  font-size: 12px;
+  font-family: 'Inter', 'Work Sans', system-ui, sans-serif;
+  flex-shrink: 0;
+  @include semibold;
+}
+
+// Section titles
+.transaction .dashboard-panel-title {
+  padding: 16px 16px 8px;
+  margin: 0;
+  font-size: 20px;
+  border-bottom: 1px solid $black-70;
+  @include bold;
+  @include gradient-title;
+}
+
+// Overview — horizontal cards that fill the row
+.tx-overview-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.tx-overview-item {
+  display: flex;
+  flex: 1 1 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px 12px;
+  border: 1px solid $black-80;
+  border-radius: $border-radius;
+  background: $black-90;
+  text-align: center;
+
+  @include for-size(tablet-portrait-up) {
+    flex: 1 1 0;
+    min-width: 100px;
+  }
+
+  &.tx-overview-item-date {
+    @include for-size(tablet-portrait-up) {
+      flex: 1.55 1 0;
     }
+  }
 
-    .txid {
+  &.tx-overview-item-account {
+    @include for-size(tablet-portrait-up) {
+      flex: 1.85 1 0;
+    }
+  }
+}
+
+.tx-overview-label {
+  color: $black-40;
+  font-size: 10px;
+  line-height: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  @include medium;
+}
+
+.tx-overview-value {
+  overflow: hidden;
+  max-width: 100%;
+  color: $white;
+  font-size: 14px;
+  line-height: 18px;
+  word-break: break-word;
+  @include medium;
+
+  @include for-size(tablet-portrait-up) {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    word-break: normal;
+  }
+
+  a {
+    color: $green;
+    text-decoration: none;
+
+    &:hover {
+      color: $green-30;
+    }
+  }
+
+  .account {
+    font-size: 12px;
+    color: $green;
+  }
+}
+
+// Detail section — align content with the panel title
+.tx-detail-section {
+  .detail-body {
+    padding: 0 16px 16px;
+    margin-top: 8px;
+
+    .detail-section {
+      padding: 5px 0;
+
       .title {
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: $white;
         @include semibold;
       }
-
-      display: flex;
-      overflow: hidden;
-      margin-top: 8px;
-      color: $black-40;
-      font-size: 12px;
-      letter-spacing: 0px;
-      line-height: 20px;
-      text-overflow: ellipsis;
-      text-transform: uppercase;
-      white-space: nowrap;
-      @include medium;
     }
+  }
+}
 
-    .tx-status {
-      margin-left: 15px;
-    }
+// JSON panel
+.json-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 16px;
+  border: none;
+  background: none;
+  color: $white;
+  cursor: pointer;
+  text-align: left;
+
+  &:hover {
+    background: $black-80;
+  }
+}
+
+.json-panel-title {
+  flex: 1;
+  font-size: 16px;
+  @include semibold;
+}
+
+.json-panel-chevron {
+  color: $black-40;
+  transition: transform $transition-fast;
+
+  &.open {
+    transform: rotate(180deg);
+  }
+}
+
+.json-panel-body {
+  position: relative;
+  overflow-x: auto;
+
+  .json-view {
+    padding: 16px;
+    border: none;
+    border-top: 1px solid $black-80;
+    border-radius: 0;
+    margin-bottom: 0;
+    background: $black-100;
+    font-family: 'SF Mono', 'Fira Code', 'Fira Mono', 'Roboto Mono', 'Consolas', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+}
+
+.json-panel-copy {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border: 1px solid $black-60;
+  border-radius: 6px;
+  background: $black-80;
+  color: $black-30;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all $transition-fast;
+  @include medium;
+
+  &:hover {
+    border-color: $black-50;
+    background: $black-70;
+    color: $white;
   }
 }

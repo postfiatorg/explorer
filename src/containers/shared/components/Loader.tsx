@@ -1,13 +1,9 @@
 import { FC } from 'react'
-import { useTranslation } from 'react-i18next'
-import LoaderPath from '../images/xrp-loader.png'
+import PftIcon from '../images/pft-loader.svg'
 import '../css/loader.scss'
 
-export const Loader: FC<{ className?: string }> = ({ className }) => {
-  const { t } = useTranslation()
-  return (
-    <div className={`loader ${className}`}>
-      <img src={LoaderPath} alt={t('loading')} />
-    </div>
-  )
-}
+export const Loader: FC<{ className?: string }> = ({ className }) => (
+  <div className={`loader ${className}`}>
+    <PftIcon className="loader-icon" aria-label="Loading" />
+  </div>
+)

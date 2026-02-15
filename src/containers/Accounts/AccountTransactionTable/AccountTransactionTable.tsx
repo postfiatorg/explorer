@@ -2,7 +2,7 @@ import { useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useInfiniteQuery } from 'react-query'
 
-import { TransactionTable } from '../../shared/components/TransactionTable/TransactionTable'
+import { TransactionFeed } from '../../shared/components/TransactionFeed/TransactionFeed'
 import { useAnalytics } from '../../shared/analytics'
 import SocketContext from '../../shared/SocketContext'
 
@@ -11,12 +11,10 @@ import { getAccountTransactions } from '../../../rippled'
 export interface AccountTransactionsTableProps {
   accountId: string
   currencySelected?: string
-  hasTokensColumn: boolean
 }
 
 export const AccountTransactionTable = ({
   accountId,
-  hasTokensColumn,
   currencySelected = 'XRP',
 }: AccountTransactionsTableProps) => {
   const { t } = useTranslation()
@@ -75,11 +73,11 @@ export const AccountTransactionTable = ({
   const emptyMessage = tryLoading
     ? 'get_account_transactions_try'
     : error?.message
+
   return (
-    <TransactionTable
+    <TransactionFeed
       transactions={transactions}
       loading={loading}
-      hasTokensColumn={hasTokensColumn}
       emptyMessage={emptyMessage && t(emptyMessage as any)}
       onLoadMore={() => fetchNextPage()}
       hasAdditionalResults={hasNextPage}

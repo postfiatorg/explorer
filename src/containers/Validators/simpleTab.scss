@@ -1,19 +1,76 @@
 @use '../shared/css/variables' as *;
 
-.simple-body-validator {
-  .row {
-    .unl {
-      img {
-        height: 16px;
-        padding-top: 2px;
-      }
+.validator-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.validator-detail-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid $black-80;
+  font-size: 13px;
+  min-width: 0;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.validator-detail-label {
+  color: $black-40;
+  min-width: 100px;
+  flex-shrink: 0;
+  text-transform: capitalize;
+  @include medium;
+
+  @include for-size(tablet-portrait-up) {
+    min-width: 140px;
+  }
+}
+
+.validator-detail-value {
+  color: $white;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  @include medium;
+
+  a {
+    color: $green-30;
+    text-decoration: none;
+
+    &:hover {
+      color: $green;
     }
 
-    &.domain-verified {
-      svg {
-        height: 16px;
-        color: $green;
-      }
+    &::after {
+      display: none !important;
     }
+  }
+}
+
+.validator-detail-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.validator-detail-verified {
+  svg {
+    height: 16px;
+    color: $green;
+  }
+}
+
+.validator-detail-unl {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  img {
+    height: 16px;
   }
 }

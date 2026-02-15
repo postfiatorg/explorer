@@ -18,10 +18,13 @@ export const Simple = (props: TransactionSimpleProps<PaymentInstructions>) => {
   }
 
   const renderPayment = () => {
-    const { max, destination, sourceTag, partial } = data.instructions
+    const { sender, max, destination, sourceTag, partial } = data.instructions
 
     return (
       <>
+        <SimpleRow label={t('sender')} data-testid="sender">
+          <Account account={sender} />
+        </SimpleRow>
         {max && (
           <SimpleRow label={t('using_at_most')} data-testid="max">
             <Amount value={max} />

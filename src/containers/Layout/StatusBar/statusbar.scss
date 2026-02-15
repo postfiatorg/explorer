@@ -1,0 +1,74 @@
+@use '../../shared/css/variables' as *;
+
+.statusbar {
+  position: fixed;
+  z-index: 20;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  height: var(--statusbar-height);
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  border-top: 1px solid $black-80;
+  background: $black-100;
+  font-size: 12px;
+}
+
+.statusbar-left,
+.statusbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.statusbar-connection {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: $black-50;
+
+  &.online {
+    color: $green;
+
+    svg {
+      filter: drop-shadow(0 0 4px rgba(var(--green-50-rgb), 0.5));
+    }
+  }
+
+  &.offline {
+    color: $orange;
+  }
+}
+
+.statusbar-divider {
+  width: 1px;
+  height: 14px;
+  background: $black-70;
+}
+
+.statusbar-network {
+  color: $black-40;
+  text-transform: capitalize;
+  @include medium;
+}
+
+.statusbar-ledger {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: $black-40;
+}
+
+.statusbar-ledger-label {
+  @media (max-width: $tablet-portrait-upper-boundary) {
+    display: none;
+  }
+}
+
+.statusbar-ledger-value {
+  color: $white;
+  font-variant-numeric: tabular-nums;
+  @include medium;
+}

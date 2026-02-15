@@ -46,7 +46,7 @@
       transition: background-color $transition-fast;
 
       &:hover {
-        background-color: rgba($black-70, 0.5);
+        background-color: rgba(var(--black-70-rgb), 0.5);
       }
 
       &:last-child {

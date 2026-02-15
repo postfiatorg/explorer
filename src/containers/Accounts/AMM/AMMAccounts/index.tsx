@@ -31,7 +31,11 @@ function renderError(error: any) {
   const message = getErrorMessage(error.code)
   return (
     <div className="accounts-page">
-      <NoMatch title={message.title} hints={message.hints} />
+      <NoMatch
+        title={message.title}
+        hints={message.hints}
+        errorCode={error.code}
+      />
     </div>
   )
 }

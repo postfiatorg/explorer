@@ -57,14 +57,32 @@ export const ValidatorsTable = (props: ValidatorsTableProps) => {
 
   const renderDomain = (domain) => domain && <DomainLink domain={domain} />
 
+  const getAgreementColor = (score: number): string => {
+    if (score >= 0.99) return 'green'
+    if (score >= 0.95) return 'yellow'
+    return 'orange'
+  }
+
   const renderAgreement = (className, agreement) =>
     agreement ? (
       <td
-        className={`${className} score ${agreement.score < 1 ? 'missed' : ''}`}
+        className={`${className} score`}
         title={t('missed_validations', { count: agreement.missed })}
       >
-        {Number.parseFloat(agreement.score).toFixed(5)}
-        {agreement.incomplete && <span title={t('incomplete')}>*</span>}
+        <div className="agreement-cell">
+          <span
+            className={`agreement-value ${getAgreementColor(Number(agreement.score))}`}
+          >
+            {(Number(agreement.score) * 100).toFixed(2)}%
+            {agreement.incomplete && <span title={t('incomplete')}>*</span>}
+          </span>
+          <div className="agreement-bar-track">
+            <div
+              className={`agreement-bar-fill ${getAgreementColor(Number(agreement.score))}`}
+              style={{ width: `${Number(agreement.score) * 100}%` }}
+            />
+          </div>
+        </div>
       </td>
     ) : (
       <td className={`${className} score`} />

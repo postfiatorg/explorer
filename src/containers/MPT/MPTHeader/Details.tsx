@@ -1,60 +1,61 @@
-import { useTranslation } from 'react-i18next'
-import './styles.scss'
-import { useLanguage } from '../../shared/hooks'
-import { isValidJsonString, localizeNumber } from '../../shared/utils'
 import { MPTIssuanceFormattedInfo } from '../../shared/Interfaces'
-import { TokenTableRow } from '../../shared/components/TokenTableRow'
-import { JsonView } from '../../shared/components/JsonView'
 
 interface Props {
   data: MPTIssuanceFormattedInfo
+  metadata?: Record<string, any>
 }
 
-export const Details = ({ data }: Props) => {
-  const {
-    assetScale,
-    maxAmt,
-    outstandingAmt,
-    transferFee,
-    sequence,
-    metadata,
-  } = data
-  const { t } = useTranslation()
-  const language = useLanguage()
-  const formattedFee =
-    transferFee &&
-    `${localizeNumber((transferFee / 1000).toPrecision(5), language, {
-      minimumFractionDigits: 3,
-    })}%`
+export const Details = ({ data, metadata }: Props) => {
+  const { maxAmt, outstandingAmt, assetScale } = data
 
   return (
-    <table className="token-table">
-      <tbody>
-        {assetScale && (
-          <TokenTableRow label={t('asset_scale')} value={assetScale} />
-        )}
-        {maxAmt && <TokenTableRow label={t('max_amount')} value={maxAmt} />}
-        {outstandingAmt && (
-          <TokenTableRow
-            label={t('outstanding_amount')}
-            value={outstandingAmt}
-          />
-        )}
-        <TokenTableRow label={t('transfer_fee')} value={formattedFee ?? '0%'} />
-        <TokenTableRow label={t('sequence_number_short')} value={sequence} />
-        {metadata && (
-          <TokenTableRow
-            label={t('metadata')}
-            value={
-              isValidJsonString(metadata) ? (
-                <JsonView data={JSON.parse(metadata)} />
-              ) : (
-                metadata
-              )
-            }
-          />
-        )}
-      </tbody>
-    </table>
+    <div className="mpt-details-list">
+      {metadata?.symbol && (
+        <div className="mpt-detail-row">
+          <span className="mpt-detail-label">Symbol</span>
+          <span className="mpt-detail-value">{metadata.symbol}</span>
+        </div>
+      )}
+      {metadata?.description && (
+        <div className="mpt-detail-row">
+          <span className="mpt-detail-label">Description</span>
+          <span className="mpt-detail-value" title={metadata.description}>
+            {metadata.description}
+          </span>
+        </div>
+      )}
+      {metadata?.website && (
+        <div className="mpt-detail-row">
+          <span className="mpt-detail-label">Website</span>
+          <span className="mpt-detail-value">
+            <a
+              href={metadata.website}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {metadata.website}
+            </a>
+          </span>
+        </div>
+      )}
+      {maxAmt && (
+        <div className="mpt-detail-row">
+          <span className="mpt-detail-label">Max Amount</span>
+          <span className="mpt-detail-value">{maxAmt}</span>
+        </div>
+      )}
+      {outstandingAmt && (
+        <div className="mpt-detail-row">
+          <span className="mpt-detail-label">Issued Amount</span>
+          <span className="mpt-detail-value">{outstandingAmt}</span>
+        </div>
+      )}
+      {assetScale != null && (
+        <div className="mpt-detail-row">
+          <span className="mpt-detail-label">Decimals</span>
+          <span className="mpt-detail-value">{assetScale}</span>
+        </div>
+      )}
+    </div>
   )
 }

@@ -1,0 +1,70 @@
+@use '../../shared/css/variables' as *;
+
+.command-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  max-width: 480px;
+  gap: 8px;
+  padding: 0 12px;
+  border: 1px solid $black-70;
+  border-radius: 8px;
+  background: $black-90;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+
+  &.focused {
+    border-color: $green-70;
+    box-shadow: $glow-green-subtle;
+  }
+
+  &:hover:not(.focused) {
+    border-color: $black-60;
+  }
+}
+
+.command-search-icon {
+  flex-shrink: 0;
+  color: $black-50;
+}
+
+.command-search-input {
+  flex: 1;
+  padding: 8px 0;
+  border: none;
+  background: transparent;
+  color: $white;
+  font-size: 14px;
+  outline: none;
+
+  &::placeholder {
+    color: $black-50;
+  }
+}
+
+.command-search-kbd {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 6px;
+  border: 1px solid $black-70;
+  border-radius: 4px;
+  color: $black-50;
+  font-family: inherit;
+  font-size: 11px;
+  line-height: 1;
+  white-space: nowrap;
+
+  @media (max-width: $tablet-portrait-upper-boundary) {
+    display: none;
+  }
+}
+
+.command-search-results {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  left: 0;
+  z-index: 100;
+  margin-top: 4px;
+}

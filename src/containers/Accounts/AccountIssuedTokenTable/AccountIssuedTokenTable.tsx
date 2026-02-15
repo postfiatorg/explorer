@@ -1,10 +1,10 @@
 import { useTranslation } from 'react-i18next'
 import Currency from '../../shared/components/Currency'
-import { Amount } from '../../shared/components/Amount'
 import { Loader } from '../../shared/components/Loader'
-import { EmptyMessageTableRow } from '../../shared/EmptyMessageTableRow'
 import { RouteLink } from '../../shared/routing'
 import { TOKEN_ROUTE } from '../../App/routes'
+import { localizeNumber } from '../../shared/utils'
+import { useLanguage } from '../../shared/hooks'
 
 interface Props {
   account: any
@@ -13,26 +13,18 @@ interface Props {
 export const AccountIssuedTokenTable = (props: Props) => {
   const { account } = props
   const { t } = useTranslation()
-
-  function renderNoResults() {
-    return (
-      <EmptyMessageTableRow colSpan={3}>
-        {t('assets.no_issued_message')}
-      </EmptyMessageTableRow>
-    )
-  }
+  const language = useLanguage()
 
   function renderRow(token: any) {
     const tokenName = `${token.currency}.${token.issuer}`
 
     return (
       <tr key={tokenName}>
-        <td>
+        <td className="currency-cell">
           <Currency currency={token.currency} />
         </td>
-        <td>
+        <td className="issuer-cell">
           <RouteLink
-            className="token-issuer"
             title={tokenName}
             to={TOKEN_ROUTE}
             params={{ token: `${token.currency}.${token.issuer}` }}
@@ -41,30 +33,33 @@ export const AccountIssuedTokenTable = (props: Props) => {
           </RouteLink>
         </td>
         <td className="right">
-          <Amount value={token} displayIssuer={false} />
+          {localizeNumber(token.amount, language, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 6,
+          })}
         </td>
       </tr>
     )
   }
 
+  if (!account.tokens) return <Loader />
+
+  if (!account.tokens.length) {
+    return (
+      <div className="account-asset-empty">{t('assets.no_issued_message')}</div>
+    )
+  }
+
   return (
-    <div className="nodes-table">
-      <table className="basic">
-        <thead>
-          <tr>
-            <th>{t('currency_code')}</th>
-            <th>{t('issuer')}</th>
-            <th className="right">{t('amount')}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {account.tokens &&
-            (account?.tokens?.length
-              ? account?.tokens.map(renderRow)
-              : renderNoResults())}
-        </tbody>
-      </table>
-      {!account.tokens && <Loader />}
-    </div>
+    <table className="account-asset-table">
+      <thead>
+        <tr>
+          <th>Currency</th>
+          <th>Issuer</th>
+          <th className="right">Amount</th>
+        </tr>
+      </thead>
+      <tbody>{account.tokens.map(renderRow)}</tbody>
+    </table>
   )
 }

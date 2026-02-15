@@ -1,252 +1,154 @@
 @use '../shared/css/variables' as *;
 
 .ledger-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 1200px;
   margin: 0 auto;
-
-  @include for-size(tablet-landscape-up) {
-    width: 600px;
-  }
-  @include for-size(desktop-up) {
-    width: 772px;
-  }
-  @include for-size(big-desktop-up) {
-    width: 864px;
-  }
+  width: 100%;
 
   .loader {
     z-index: 1;
   }
+}
 
-  .ledger-nav {
-    padding: 8px 4px;
-    margin-top: 40px;
-    margin-bottom: 60px;
-    color: $black-40;
-    font-size: 12px;
-    letter-spacing: 0px;
-    line-height: 15px;
+.ledger-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 
-    svg {
-      position: relative;
-      height: 8px;
-      color: $black-40;
-    }
+.ledger-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  border: 1px solid $black-70;
+  border-radius: 100px;
+  color: $black-30;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  transition: border-color $transition-fast, background-color $transition-fast,
+    box-shadow $transition-fast, color $transition-fast;
+  @include medium;
 
-    .previous {
-      padding: 6px 16px;
-      border: 1px solid $black-40;
-      border-radius: 100px;
-      float: left;
+  &:hover {
+    border-color: $green-70;
+    background: $black-80;
+    box-shadow: $glow-green-subtle;
+    color: $green;
+  }
+}
 
-      svg {
-        margin-right: 16px;
-      }
+// General info panel
+.ledger-summary {
+  padding: 24px;
 
-      &:focus,
-      &:hover {
-        border-color: $green-70;
-        background-color: $black-70;
-        box-shadow: $glow-green-subtle;
-        color: $green;
-      }
-    }
+  > .ledger-summary-label {
+    margin-bottom: 4px;
+  }
+}
 
-    .next {
-      padding: 6px 16px;
-      border: 1px solid $black-40;
-      border-radius: 100px;
-      float: right;
+.ledger-summary-title {
+  font-size: 28px;
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 20px;
+  @include bold;
+  @include gradient-title;
 
-      svg {
-        margin-left: 16px;
-      }
+  @include for-size(tablet-landscape-up) {
+    font-size: 34px;
+  }
+}
 
-      &:focus,
-      &:hover {
-        border-color: $green-70;
-        background-color: $black-70;
-        box-shadow: $glow-green-subtle;
-        color: $green;
-      }
-    }
+.ledger-summary-label {
+  color: $black-40;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  @include medium;
+}
+
+.ledger-summary-hashes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ledger-summary-hash-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+
+.ledger-summary-hash-label {
+  color: $black-50;
+  font-size: 12px;
+  font-family: 'Inter', 'Work Sans', system-ui, sans-serif;
+  flex-shrink: 0;
+  @include semibold;
+}
+
+// Overview cards row
+.ledger-overview-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.ledger-overview-item {
+  display: flex;
+  flex: 1 1 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px 12px;
+  border: 1px solid $black-80;
+  border-radius: $border-radius;
+  background: $black-90;
+  text-align: center;
+
+  @include for-size(tablet-portrait-up) {
+    flex: 1 1 0;
+    min-width: 100px;
   }
 
-  .ledger-header {
-    margin: 0px auto;
-
-    .ledger-info {
-      overflow: hidden;
-      padding: 10px 8px;
-      border: $border-subtle;
-      border-radius: $border-radius;
-      background: linear-gradient(180deg, $black-80, $black-90);
-
-      @include for-size(desktop-up) {
-        padding: 10px 16px;
-      }
-
-      .closed-date,
-      .ledger-hash {
-        overflow: hidden;
-        padding-top: 48px;
-        margin: auto;
-        color: $black-30;
-        font-size: 12px;
-        line-height: 18px;
-        text-align: center;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-
-      .closed-date {
-        color: $black-30;
-        font-size: 10px;
-
-        @include for-size(desktop-up) {
-          float: right;
-        }
-      }
-
-      .ledger-hash {
-        @include for-size(desktop-up) {
-          float: left;
-        }
-
-        @include for-size(big-desktop-up) {
-          font-size: 12px;
-        }
-      }
-
-      .summary {
-        display: block;
-        overflow: hidden;
-
-        .title {
-          color: $black-40;
-          font-size: 10px;
-          letter-spacing: 0px;
-          line-height: 18px;
-          text-transform: uppercase;
-          @include medium;
-
-          @include for-size(desktop-up) {
-            font-size: 10px;
-            line-height: 20px;
-          }
-        }
-
-        .value {
-          color: $white;
-          @include bold;
-        }
-
-        .ledger-cols {
-          display: table;
-          width: 100%;
-          margin-bottom: 20px;
-          text-align: right;
-
-          .ledger-col {
-            display: table-cell;
-
-            &:first-child {
-              text-align: left;
-            }
-
-            @include for-size(desktop-up) {
-              width: auto;
-              margin-right: 0px;
-              margin-left: 40px;
-            }
-            @include for-size(big-desktop-up) {
-              margin-right: 0px;
-              margin-left: 40px;
-            }
-
-            .value {
-              margin-top: -4px;
-              font-size: 18px;
-              line-height: 28px;
-
-              @include for-size(desktop-up) {
-                margin-top: -8px;
-                font-size: 18px;
-                line-height: 36px;
-              }
-            }
-
-            &.ledger-index .value {
-              margin-top: 4px;
-              font-size: 42px;
-            }
-          }
-        }
-      }
+  &.ledger-overview-item-date {
+    @include for-size(tablet-portrait-up) {
+      flex: 1.55 1 0;
     }
   }
+}
 
-  .transaction-table {
-    padding: 30px 0;
+.ledger-overview-label {
+  color: $black-40;
+  font-size: 10px;
+  line-height: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  @include medium;
+}
 
-    .col-type,
-    .col-fee,
-    .col-sequence {
-      flex: none;
-    }
+.ledger-overview-value {
+  overflow: hidden;
+  color: $white;
+  font-size: 14px;
+  line-height: 18px;
+  font-variant-numeric: tabular-nums;
+  word-break: break-word;
+  @include medium;
 
-    .col-type {
-      width: 175px;
-
-      @include for-size(big-desktop-up) {
-        width: 210px;
-      }
-    }
-
-    .col-account {
-      display: block;
-      text-align: right; // on mobile it is the last column
-
-      @include for-size(tablet-portrait-up) {
-        text-align: left;
-      }
-    }
-
-    .col-sequence {
-      display: none;
-
-      @include for-size(tablet-landscape-up) {
-        display: inline-block;
-        width: 85px;
-      }
-
-      @include for-size(desktop-up) {
-        width: 100px;
-      }
-    }
-
-    .col-fee {
-      display: none;
-      text-align: right;
-
-      @include for-size(tablet-portrait-up) {
-        display: inline-block;
-        width: 100px;
-      }
-    }
-
-    .upper {
-      .col-account {
-        font-size: 10px;
-
-        @include for-size(tablet-portrait-up) {
-          font-size: 12px;
-        }
-      }
-
-      .col-sequence,
-      .col-fee {
-        color: $black-40;
-      }
-    }
+  @include for-size(tablet-portrait-up) {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    word-break: normal;
   }
+}
+
+.ledger-feed-scroll {
+  padding: 0 12px 12px;
 }

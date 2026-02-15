@@ -1,0 +1,107 @@
+@use 'variables' as *;
+
+// Summary panel
+.detail-summary {
+  padding: 24px;
+}
+
+.detail-summary-label {
+  color: $black-40;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+  @include medium;
+}
+
+.detail-summary-title {
+  font-size: 28px;
+  line-height: 34px;
+  margin-bottom: 20px;
+  @include bold;
+  @include gradient-title;
+
+  @include for-size(tablet-landscape-up) {
+    font-size: 34px;
+    line-height: 40px;
+  }
+}
+
+.detail-summary-hash-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+
+.detail-summary-hash-label {
+  color: $black-50;
+  font-size: 12px;
+  font-family: 'Inter', 'Work Sans', system-ui, sans-serif;
+  flex-shrink: 0;
+  @include semibold;
+}
+
+// Overview cards row
+.detail-overview-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.detail-overview-item {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 100px;
+  padding: 14px 12px;
+  border: 1px solid $black-80;
+  border-radius: $border-radius;
+  background: $black-90;
+  text-align: center;
+
+  &.detail-overview-item-wide {
+    flex: 1.55 1 0;
+  }
+}
+
+.detail-overview-label {
+  color: $black-40;
+  font-size: 10px;
+  line-height: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  @include medium;
+}
+
+.detail-overview-value {
+  overflow: hidden;
+  color: $white;
+  font-size: 14px;
+  line-height: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  @include medium;
+
+  a {
+    color: $green-30;
+    text-decoration: none;
+
+    &:hover {
+      color: $green;
+    }
+  }
+}
+
+.detail-overview-footnote {
+  width: 100%;
+  color: $black-50;
+  font-size: 11px;
+  font-style: italic;
+  text-align: right;
+}

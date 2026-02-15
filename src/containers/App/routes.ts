@@ -32,10 +32,6 @@ export const UPGRADE_STATUS_ROUTE: RouteDefinition = {
   path: '/network/upgrade-status',
 }
 
-export const EXCLUSIONS_ROUTE: RouteDefinition = {
-  path: '/network/exclusions',
-}
-
 export const NFT_ROUTE: RouteDefinition<{
   id: string
   tab?: 'transactions' | 'buy-offers' | 'sell-offers'
@@ -49,22 +45,28 @@ export const TOKEN_ROUTE: RouteDefinition<{
   path: `/token/:token`,
 }
 
+export const TRANSACTIONS_LIST_ROUTE: RouteDefinition = {
+  path: '/transactions',
+}
+
 export const TRANSACTION_ROUTE: RouteDefinition<{
   identifier: string
   tab?: 'simple' | 'detailed' | 'raw'
 }> = {
-  path: `/transactions/:identifier?/:tab?`,
+  path: `/transactions/:identifier/:tab?`,
 }
 
 export const VALIDATOR_ROUTE: RouteDefinition<{
   identifier: string
-  tab?: 'details' | 'history' | 'voting' | 'exclusions'
+  tab?: 'details' | 'history' | 'voting'
 }> = {
   path: `/validators/:identifier/:tab?`,
 }
 
-export const AMENDMENTS_ROUTE: RouteDefinition = {
-  path: '/amendments',
+export const AMENDMENTS_ROUTE: RouteDefinition<{
+  tab?: 'enabled' | 'in-voting'
+}> = {
+  path: '/amendments/:tab?',
 }
 
 export const AMENDMENT_ROUTE: RouteDefinition<{
@@ -77,4 +79,8 @@ export const MPT_ROUTE: RouteDefinition<{
   id: string
 }> = {
   path: '/mpt/:id',
+}
+
+export const ANALYTICS_ROUTE: RouteDefinition = {
+  path: '/analytics',
 }

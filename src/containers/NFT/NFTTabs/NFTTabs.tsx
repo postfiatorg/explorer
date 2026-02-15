@@ -14,13 +14,10 @@ export const NFTTabs = (props: Props) => {
   const { id = '', tab = 'transactions' } = useRouteParams(NFT_ROUTE)
   const { tokenId } = props
 
-  function renderTabs() {
-    const tabs = ['transactions', 'buy-offers', 'sell-offers']
-    const mainPath = buildPath(NFT_ROUTE, { id })
-    return <Tabs tabs={tabs} selected={tab} path={mainPath} />
-  }
+  const tabs = ['transactions', 'buy-offers', 'sell-offers']
+  const mainPath = buildPath(NFT_ROUTE, { id })
 
-  function renderTransactions() {
+  const renderContent = () => {
     switch (tab) {
       case 'sell-offers':
         return (
@@ -46,9 +43,9 @@ export const NFTTabs = (props: Props) => {
   }
 
   return (
-    <div className="nft-tabs section">
-      {renderTabs()}
-      <div className="tab-body">{renderTransactions()}</div>
+    <div className="nft-tabs">
+      <Tabs tabs={tabs} selected={tab} path={mainPath} />
+      <div className="tab-body">{renderContent()}</div>
     </div>
   )
 }

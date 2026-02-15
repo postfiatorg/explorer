@@ -4,13 +4,11 @@ import { formatAmount } from '../../../../../rippled/lib/txSummary/formatAmount'
 import { findNode } from '../../../transactionUtils'
 
 export const parser = (tx: PaymentChannelCreate, meta: any) => {
-  const st = tx.SourceTag ? `:${tx.SourceTag}` : ''
-  const dt = tx.DestinationTag ? `:${tx.DestinationTag}` : ''
   const node = findNode(meta, 'CreatedNode', 'PayChannel')
   return {
     amount: formatAmount(tx.Amount),
-    source: `${tx.Account}${st}`,
-    destination: `${tx.Destination}${dt}`,
+    source: tx.Account,
+    destination: tx.Destination,
     pubkey: tx.PublicKey,
     delay: tx.SettleDelay,
     cancelAfter: tx.CancelAfter ? convertRippleDate(tx.CancelAfter) : undefined,

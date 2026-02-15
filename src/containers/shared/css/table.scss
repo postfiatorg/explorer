@@ -1,7 +1,13 @@
 @use 'variables' as *;
 
 table.basic {
-  overflow: hidden;
+  display: block;
+  overflow-x: auto;
+
+  @include for-size(tablet-portrait-up) {
+    display: table;
+    overflow-x: visible;
+  }
   width: 100%;
   border-top: none;
   margin: auto;
@@ -16,7 +22,7 @@ table.basic {
     transition: background-color $transition-fast;
 
     &:hover {
-      background-color: rgba($black-80, 0.5);
+      background-color: rgba(var(--black-80-rgb), 0.5);
     }
   }
 
@@ -68,18 +74,26 @@ table.token-table {
   font-size: 14px;
 
   .col1 {
-    width: 180px;
+    width: auto;
     padding-bottom: 8px;
     color: $black-40;
     text-transform: uppercase;
     @include semibold;
+
+    @include for-size(tablet-portrait-up) {
+      width: 180px;
+    }
   }
 
   .col2 {
     display: inline-block;
-    width: 230px;
+    width: auto;
     padding-bottom: 8px;
     color: $white;
     overflow-wrap: break-word;
+
+    @include for-size(tablet-portrait-up) {
+      width: 230px;
+    }
   }
 }

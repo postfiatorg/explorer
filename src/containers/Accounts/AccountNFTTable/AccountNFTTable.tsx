@@ -1,15 +1,23 @@
 import { useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useInfiniteQuery } from 'react-query'
-
 import { Loader } from '../../shared/components/Loader'
 import SocketContext from '../../shared/SocketContext'
 import { useAnalytics } from '../../shared/analytics'
-import { EmptyMessageTableRow } from '../../shared/EmptyMessageTableRow'
 import { getAccountNFTs } from '../../../rippled/lib/rippled'
 import { Account } from '../../shared/components/Account'
 import { LoadMoreButton } from '../../shared/LoadMoreButton'
 import { NFTokenLink } from '../../shared/components/NFTokenLink'
+
+const TRANSFER_FEE_DIVISOR = 1000
+
+function extractTransferFee(nftokenId: string): string {
+  const feeHex = nftokenId.substring(8, 12)
+  const feeRaw = parseInt(feeHex, 16)
+  if (feeRaw === 0) return '0%'
+  const pct = feeRaw / TRANSFER_FEE_DIVISOR
+  return `${pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2)}%`
+}
 
 export interface AccountNFTTableProps {
   accountId: string
@@ -40,45 +48,43 @@ export const AccountNFTTable = ({ accountId }: AccountNFTTableProps) => {
   )
   const { t } = useTranslation()
 
-  function renderNoResults() {
+  const nfts = pages?.pages.flatMap((page: any) => page.account_nfts)
+
+  if (loading) return <Loader />
+
+  if (!nfts?.length) {
     return (
-      <EmptyMessageTableRow colSpan={3}>
-        {t('assets.no_nfts_message')}
-      </EmptyMessageTableRow>
+      <div className="account-asset-empty">{t('assets.no_nfts_message')}</div>
     )
   }
 
-  const renderRow = (nft: any) => (
-    <tr key={nft.NFTokenID}>
-      <td>
-        <NFTokenLink tokenID={nft.NFTokenID} />
-      </td>
-      <td>
-        <Account account={nft.Issuer} />
-      </td>
-      <td>{nft.NFTokenTaxon}</td>
-    </tr>
-  )
-
-  const renderLoadMoreButton = () =>
-    hasNextPage && <LoadMoreButton onClick={() => fetchNextPage()} />
-
-  const nfts = pages?.pages.flatMap((page: any) => page.account_nfts)
   return (
-    <div className="section nfts-table">
-      <table className="basic">
+    <>
+      <table className="account-asset-table">
         <thead>
           <tr>
-            <th className="col-token-id">{t('token_id')}</th>
-            <th className="col-issuer">{t('issuer')}</th>
-            <th className="col-taxon">{t('taxon')}</th>
+            <th>Token ID</th>
+            <th>Issuer</th>
+            <th className="right">Transfer Fee</th>
           </tr>
         </thead>
         <tbody>
-          {!loading && (nfts?.length ? nfts.map(renderRow) : renderNoResults())}
+          {nfts.map((nft: any) => (
+            <tr key={nft.NFTokenID}>
+              <td className="token-id-cell">
+                <NFTokenLink tokenID={nft.NFTokenID} />
+              </td>
+              <td className="issuer-cell">
+                <Account account={nft.Issuer} />
+              </td>
+              <td className="right">{extractTransferFee(nft.NFTokenID)}</td>
+            </tr>
+          ))}
         </tbody>
       </table>
-      {loading ? <Loader /> : renderLoadMoreButton()}
-    </div>
+      {hasNextPage && !loading && (
+        <LoadMoreButton onClick={() => fetchNextPage()} />
+      )}
+    </>
   )
 }

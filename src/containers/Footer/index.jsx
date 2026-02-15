@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 
-import Logo from '../shared/images/XRPLedger.svg'
+import Logo from '../shared/images/PFTLedger.svg'
 import './footer.scss'
 
 const Footer = () => {

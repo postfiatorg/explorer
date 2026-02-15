@@ -18,22 +18,21 @@ export const parser = (tx: any, meta: any): PaymentInstructions => {
   const amount = failedPartial
     ? formatFailedPartialAmount(tx.Amount)
     : formatAmount(partial ? meta.delivered_amount : tx.Amount)
-  const dt = tx.DestinationTag !== undefined ? `:${tx.DestinationTag}` : ''
-  const destination = `${tx.Destination}${dt}`
-
   if (tx.Account === tx.Destination) {
     return {
+      sender: tx.Account,
       amount,
       convert: max,
-      destination,
+      destination: tx.Destination,
       partial,
     }
   }
 
   return {
+    sender: tx.Account,
     amount,
     max,
-    destination: `${tx.Destination}${dt}`,
+    destination: tx.Destination,
     sourceTag: tx.SourceTag,
     partial,
   }

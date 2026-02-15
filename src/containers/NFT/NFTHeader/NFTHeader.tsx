@@ -1,31 +1,48 @@
-import { useEffect, useContext, useState } from 'react'
+import { useEffect, useContext, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from 'react-query'
-import { Loader } from '../../shared/components/Loader'
+import { CopyableAddress } from '../../shared/components/CopyableAddress/CopyableAddress'
 import './styles.scss'
 import SocketContext from '../../shared/SocketContext'
-import { Tooltip, TooltipInstance } from '../../shared/components/Tooltip'
-import { getNFTInfo, getAccountInfo } from '../../../rippled/lib/rippled'
-import { formatNFTInfo, formatAccountInfo } from '../../../rippled/lib/utils'
-import { localizeDate, BAD_REQUEST, HASH256_REGEX } from '../../shared/utils'
+import { getAccountInfo } from '../../../rippled/lib/rippled'
+import { formatAccountInfo } from '../../../rippled/lib/utils'
+import { BAD_REQUEST, HASH256_REGEX, localizeNumber } from '../../shared/utils'
 import { Details } from './Details'
 import { Settings } from './Settings'
 import { Account } from '../../shared/components/Account'
-import { getOldestNFTTransaction } from '../../../rippled/NFTTransactions'
-import { useAnalytics } from '../../shared/analytics'
 import { useLanguage } from '../../shared/hooks'
-import { NFTFormattedInfo, AccountFormattedInfo } from '../../shared/Interfaces'
+import { parseIssuerFromNFTokenID } from '../../../rippled/NFTTransactions'
+import { AccountFormattedInfo } from '../../shared/Interfaces'
 
-const TIME_ZONE = 'UTC'
-const DATE_OPTIONS = {
-  hour: 'numeric',
-  minute: 'numeric',
-  second: 'numeric',
-  year: 'numeric',
-  month: 'numeric',
-  day: 'numeric',
-  hour12: true,
-  timeZone: TIME_ZONE,
+const NFT_FLAG_BURNABLE = 0x0001
+const NFT_FLAG_ONLY_XRP = 0x0002
+const NFT_FLAG_TRANSFERABLE = 0x0008
+
+const TAXON_SCRAMBLE_A = 384160001
+const TAXON_SCRAMBLE_B = 2459
+
+function parseNFTokenID(tokenId: string) {
+  const flagsInt = parseInt(tokenId.substring(0, 4), 16)
+  const transferFeeRaw = parseInt(tokenId.substring(4, 8), 16)
+  const issuer = parseIssuerFromNFTokenID(tokenId)
+  const scrambledTaxon = parseInt(tokenId.substring(48, 56), 16) >>> 0
+  const sequence = parseInt(tokenId.substring(56, 64), 16) >>> 0
+  const unscramble =
+    ((TAXON_SCRAMBLE_A * sequence + TAXON_SCRAMBLE_B) & 0xffffffff) >>> 0
+  const taxon = (scrambledTaxon ^ unscramble) >>> 0
+
+  const flags: string[] = []
+  if (flagsInt & NFT_FLAG_BURNABLE) flags.push('lsfBurnable')
+  if (flagsInt & NFT_FLAG_ONLY_XRP) flags.push('lsfOnlyXRP')
+  if (flagsInt & NFT_FLAG_TRANSFERABLE) flags.push('lsfTransferable')
+
+  return {
+    flags,
+    transferFee: transferFeeRaw,
+    issuer,
+    taxon,
+    serial: sequence,
+  }
 }
 
 interface Props {
@@ -33,27 +50,10 @@ interface Props {
   setError: (error: number | null) => void
 }
 
-export const NFTHeader = (props: Props) => {
+export const NFTHeader = ({ tokenId, setError }: Props) => {
   const { t } = useTranslation()
   const language = useLanguage()
-  const { tokenId, setError } = props
   const rippledSocket = useContext(SocketContext)
-  const { trackException } = useAnalytics()
-  const [tooltip, setTooltip] = useState<TooltipInstance | undefined>(undefined)
-
-  const { data, isFetching: loading } = useQuery<NFTFormattedInfo>(
-    ['getNFTInfo', tokenId],
-    async () => {
-      const info = await getNFTInfo(rippledSocket, tokenId)
-      return formatNFTInfo(info)
-    },
-    {
-      onError: (e: any) => {
-        trackException(`NFT ${tokenId} --- ${JSON.stringify(e)}`)
-        setError(e.code)
-      },
-    },
-  )
 
   useEffect(() => {
     if (!HASH256_REGEX.test(tokenId)) {
@@ -61,105 +61,51 @@ export const NFTHeader = (props: Props) => {
     }
   }, [setError, tokenId])
 
-  // fetch the oldest NFT transaction to get its minted data
-  const { data: firstTransaction } = useQuery(
-    ['getFirstTransaction', tokenId],
-    () => getOldestNFTTransaction(rippledSocket, tokenId),
-    {
-      enabled: !!data,
-    },
-  )
+  const parsed = useMemo(() => parseNFTokenID(tokenId), [tokenId])
 
-  // fetch account from issuer to get the domain
   const { data: accountData } = useQuery<AccountFormattedInfo>(
-    ['getAccountInfo'],
+    ['getAccountInfo', parsed.issuer],
     async () => {
-      const info = await getAccountInfo(rippledSocket, data?.issuer)
+      const info = await getAccountInfo(rippledSocket, parsed.issuer)
       return formatAccountInfo(info, {})
     },
-    { enabled: !!data },
+    { enabled: !!parsed.issuer },
   )
 
-  const mintedDate =
-    firstTransaction?.transaction?.type === 'NFTokenMint'
-      ? `${localizeDate(
-          new Date(firstTransaction.transaction.date),
-          language,
-          DATE_OPTIONS,
-        )} ${TIME_ZONE}`
-      : undefined
-
-  const showTooltip = (event: any, d: any) => {
-    setTooltip({
-      data: d,
-      mode: 'nftId',
-      x: event.currentTarget.offsetLeft,
-      y: event.currentTarget.offsetTop,
-    })
-  }
-
-  const hideTooltip = () => {
-    setTooltip(undefined)
-  }
-
-  const renderHeaderContent = () => {
-    const { issuer } = data!
-    return (
-      <div className="section nft-header-container">
-        <div className="nft-info-container">
-          <div className="values">
-            <div className="title">{t('issuer_address')}</div>
-            <div className="value">
-              <div className="nft-issuer">
-                <Account account={issuer!} />
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="nft-bottom-container">
-          <div className="details">
-            <h2>{t('details')}</h2>
-            <Details
-              data={{
-                ...data,
-                domain: accountData?.domain,
-                minted: mintedDate,
-              }}
-            />
-          </div>
-          <div className="settings">
-            <h2 className="title">{t('settings')}</h2>
-            <Settings flags={data!.flags!} />
-          </div>
-        </div>
-      </div>
-    )
-  }
+  const feeDisplay = parsed.transferFee
+    ? `${localizeNumber((parsed.transferFee / 1000).toPrecision(5), language, { minimumFractionDigits: 3 })}%`
+    : '0%'
 
   return (
-    <div className="nft-token-header">
-      <div className="section">
-        {!loading && (
-          <div className="nft-box-header">
-            <div className="token-title">
-              NFT ID
-              <div className="badge">NFT</div>
-            </div>
-            <div
-              className="title-content"
-              onMouseOver={(e) => showTooltip(e, { tokenId })}
-              onFocus={() => {}}
-              onMouseLeave={hideTooltip}
-            >
-              {tokenId}
-            </div>
+    <>
+      <div className="nft-hero detail-summary dashboard-panel">
+        <div className="detail-summary-label">NFT</div>
+        <div className="nft-hero-id">
+          <CopyableAddress address={tokenId} truncate />
+        </div>
+        {parsed.issuer && (
+          <div className="detail-summary-hash-row">
+            <span className="detail-summary-hash-label">Issuer:</span>
+            <Account account={parsed.issuer} />
           </div>
         )}
       </div>
-      <div className="box-content">
-        {loading ? <Loader /> : renderHeaderContent()}
+
+      <div className="nft-details-columns">
+        <div className="nft-details-panel dashboard-panel">
+          <h3 className="dashboard-panel-title">{t('details')}</h3>
+          <Details
+            domain={accountData?.domain}
+            taxon={parsed.taxon}
+            serial={parsed.serial}
+            transferFee={feeDisplay}
+          />
+        </div>
+        <div className="nft-settings-panel dashboard-panel">
+          <h3 className="dashboard-panel-title">{t('settings')}</h3>
+          <Settings flags={parsed.flags} />
+        </div>
       </div>
-      <Tooltip tooltip={tooltip} />
-    </div>
+    </>
   )
 }

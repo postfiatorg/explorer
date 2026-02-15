@@ -1,16 +1,24 @@
-import { useEffect, useContext, useState } from 'react'
+import { useEffect, useContext, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from 'react-query'
 import { Loader } from '../../shared/components/Loader'
+import { CopyableAddress } from '../../shared/components/CopyableAddress/CopyableAddress'
+import { MetricCard } from '../../shared/components/MetricCard/MetricCard'
 import './styles.scss'
 import SocketContext from '../../shared/SocketContext'
-import { Tooltip, TooltipInstance } from '../../shared/components/Tooltip'
-import { BAD_REQUEST, HASH192_REGEX } from '../../shared/utils'
+import {
+  BAD_REQUEST,
+  HASH192_REGEX,
+  isValidJsonString,
+  localizeNumber,
+} from '../../shared/utils'
 import { Account } from '../../shared/components/Account'
 import { useAnalytics } from '../../shared/analytics'
+import { useLanguage } from '../../shared/hooks'
 import { getMPTIssuance } from '../../../rippled/lib/rippled'
 import { formatMPTIssuanceInfo } from '../../../rippled/lib/utils'
 import { MPTIssuanceFormattedInfo } from '../../shared/Interfaces'
+import { CollapsibleJsonPanel } from '../../Transactions/CollapsibleJsonPanel'
 import { Details } from './Details'
 import { Settings } from './Settings'
 
@@ -21,10 +29,10 @@ interface Props {
 
 export const MPTHeader = (props: Props) => {
   const { t } = useTranslation()
+  const language = useLanguage()
   const { tokenId, setError } = props
   const rippledSocket = useContext(SocketContext)
   const { trackException } = useAnalytics()
-  const [tooltip, setTooltip] = useState<TooltipInstance | undefined>(undefined)
 
   const { data, isFetching: loading } = useQuery<MPTIssuanceFormattedInfo>(
     ['getMPTIssuance', tokenId],
@@ -46,72 +54,58 @@ export const MPTHeader = (props: Props) => {
     }
   }, [setError, tokenId])
 
-  const showTooltip = (event: any, d: any) => {
-    setTooltip({
-      data: d,
-      mode: 'mptId',
-      x: event.currentTarget.offsetLeft,
-      y: event.currentTarget.offsetTop,
-    })
-  }
+  const parsedMetadata = useMemo(() => {
+    if (!data?.metadata || !isValidJsonString(data.metadata)) return undefined
+    return JSON.parse(data.metadata)
+  }, [data?.metadata])
 
-  const hideTooltip = () => {
-    setTooltip(undefined)
-  }
+  const feeDisplay = data?.transferFee
+    ? `${localizeNumber((data.transferFee / 1000).toPrecision(5), language, { minimumFractionDigits: 3 })}%`
+    : '0%'
 
-  const renderHeaderContent = () => {
-    const { issuer } = data!
+  if (loading) return <Loader />
 
-    return (
-      <div className="section mpt-header-container">
-        <div className="mpt-info-container">
-          <div className="values">
-            <div className="title">{t('issuer_address')}</div>
-            <div className="value">
-              <div className="mpt-issuer">
-                <Account account={issuer!} />
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="mpt-bottom-container">
-          <div className="details">
-            <h2>{t('details')}</h2>
-            <Details data={data!} />
-          </div>
-          <div className="settings">
-            <h2 className="title">{t('settings')}</h2>
-            <Settings flags={data!.flags!} />
-          </div>
-        </div>
-      </div>
-    )
-  }
+  if (!data) return null
 
   return (
-    <div className="mpt-token-header">
-      <div className="section">
-        {!loading && (
-          <div className="mpt-box-header">
-            <div className="token-title">
-              MPT Issuance ID
-              <div className="badge">mpt</div>
-            </div>
-            <div
-              className="title-content"
-              onMouseOver={(e) => showTooltip(e, { tokenId })}
-              onFocus={() => {}}
-              onMouseLeave={hideTooltip}
-            >
-              {tokenId}
-            </div>
+    <>
+      <div className="mpt-hero detail-summary dashboard-panel">
+        <div className="detail-summary-label">MPT Issuance</div>
+        <div className="mpt-hero-id">
+          <CopyableAddress address={tokenId} truncate />
+        </div>
+        {data.issuer && (
+          <div className="detail-summary-hash-row">
+            <span className="detail-summary-hash-label">Issuer:</span>
+            <Account account={data.issuer} />
           </div>
         )}
       </div>
-      <div className="box-content">
-        {loading ? <Loader /> : renderHeaderContent()}
+
+      <div className="mpt-stats">
+        {parsedMetadata?.name && (
+          <MetricCard label="Name" value={parsedMetadata.name} />
+        )}
+        <MetricCard label="Transfer Fee" value={feeDisplay} />
       </div>
-      <Tooltip tooltip={tooltip} />
-    </div>
+
+      <div className="mpt-details-columns">
+        <div className="mpt-details-panel dashboard-panel">
+          <h3 className="dashboard-panel-title">{t('details')}</h3>
+          <Details data={data} metadata={parsedMetadata} />
+        </div>
+        <div className="mpt-settings-panel dashboard-panel">
+          <h3 className="dashboard-panel-title">{t('settings')}</h3>
+          <Settings flags={data.flags!} />
+        </div>
+      </div>
+
+      {data.metadata && isValidJsonString(data.metadata) && (
+        <CollapsibleJsonPanel
+          data={JSON.parse(data.metadata)}
+          title="Metadata"
+        />
+      )}
+    </>
   )
 }

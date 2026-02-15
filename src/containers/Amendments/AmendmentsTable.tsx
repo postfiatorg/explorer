@@ -15,59 +15,17 @@ const DATE_OPTIONS_AMENDMENTS = {
   timeZone: 'UTC',
 }
 
-const DEFAULT_EMPTY_VALUE = '--'
-
-export const AmendmentsTable: FC<{
+interface AmendmentsTableProps {
   amendments: AmendmentData[] | undefined
-}> = ({ amendments }) => {
+  mode: 'enabled' | 'voting'
+}
+
+export const AmendmentsTable: FC<AmendmentsTableProps> = ({
+  amendments,
+  mode,
+}) => {
   const { t } = useTranslation()
   const language = useLanguage()
-
-  const renderEnabled = (enabled: boolean) =>
-    enabled ? (
-      <span className="badge yes">{t('yes')}</span>
-    ) : (
-      <span className="badge no">{t('no')}</span>
-    )
-
-  const renderOnTx = (amendment) => {
-    if (amendment.voted) {
-      if (amendment.eta) {
-        const etaLocalized = localizeDate(
-          new Date(amendment.eta),
-          language,
-          DATE_OPTIONS_AMENDMENTS,
-        )
-        return (
-          <div className="eta">
-            <div className="eta-label">{t('eta')}</div>
-            <div>{etaLocalized}</div>
-          </div>
-        )
-      }
-      return <span className="voting">{t('voting')}</span>
-    }
-
-    if (amendment.date) {
-      const dateLocalized = localizeDate(
-        new Date(amendment.date),
-        language,
-        DATE_OPTIONS_AMENDMENTS,
-      )
-      return amendment.tx_hash ? (
-        <RouteLink
-          to={TRANSACTION_ROUTE}
-          params={{ identifier: amendment.tx_hash }}
-        >
-          {dateLocalized}
-        </RouteLink>
-      ) : (
-        <span>{dateLocalized}</span>
-      )
-    }
-
-    return DEFAULT_EMPTY_VALUE
-  }
 
   const renderName = (name: string, id: string, deprecated: boolean) =>
     deprecated ? (
@@ -87,66 +45,163 @@ export const AmendmentsTable: FC<{
       </span>
     )
 
-  const getVoter = (voted: Voter | undefined) => {
-    if (!voted) return DEFAULT_EMPTY_VALUE
+  const renderVersion = (version: string | undefined) =>
+    version ? (
+      <Link
+        to={`https://github.com/postfiatorg/pftld/releases/tag/${version}`}
+        target="_blank"
+      >
+        {version}
+      </Link>
+    ) : null
+
+  const renderEnabledRow = (amendment: AmendmentData, index: number) => {
+    const dateLocalized = amendment.date
+      ? localizeDate(
+          new Date(amendment.date),
+          language,
+          DATE_OPTIONS_AMENDMENTS,
+        )
+      : null
+
+    let enabledDate = null
+    if (dateLocalized && amendment.tx_hash) {
+      enabledDate = (
+        <RouteLink
+          to={TRANSACTION_ROUTE}
+          params={{ identifier: amendment.tx_hash }}
+        >
+          {dateLocalized}
+        </RouteLink>
+      )
+    } else if (dateLocalized) {
+      enabledDate = <span>{dateLocalized}</span>
+    }
+
+    return (
+      <tr key={amendment.id}>
+        <td className="count">{index + 1}</td>
+        <td className="name text-truncate">
+          {renderName(amendment.name, amendment.id, amendment.deprecated)}
+        </td>
+        <td className="version">{renderVersion(amendment.rippled_version)}</td>
+        <td className="enabled-date">{enabledDate}</td>
+      </tr>
+    )
+  }
+
+  const getVoterCount = (voted: Voter | undefined) => {
+    if (!voted) return 0
     return voted.validators.filter((val) => val.unl !== false).length
   }
 
-  const renderAmendment = (amendment, index) => (
+  const getConsensusColor = (consensus: string | undefined): string => {
+    if (!consensus) return 'orange'
+    const pct = parseFloat(consensus)
+    if (pct >= 80) return 'green'
+    if (pct >= 50) return 'yellow'
+    return 'orange'
+  }
+
+  const renderVotingStatus = (amendment: AmendmentData) => {
+    if (amendment.eta) {
+      const etaLocalized = localizeDate(
+        new Date(amendment.eta),
+        language,
+        DATE_OPTIONS_AMENDMENTS,
+      )
+      return (
+        <div className="eta">
+          <span className="eta-label">{t('eta')}</span> {etaLocalized}
+        </div>
+      )
+    }
+    return <span className="voting">{t('voting')}</span>
+  }
+
+  const renderConsensusBar = (consensus: string | undefined) => {
+    if (!consensus) return null
+    const pct = parseFloat(consensus)
+    const color = getConsensusColor(consensus)
+    return (
+      <div className="consensus-cell">
+        <span className={`consensus-value ${color}`}>{consensus}</span>
+        <div className="consensus-bar-track">
+          <div
+            className={`consensus-bar-fill ${color}`}
+            style={{ width: `${Math.min(pct, 100)}%` }}
+          />
+        </div>
+      </div>
+    )
+  }
+
+  const renderVotingRow = (amendment: AmendmentData) => (
     <tr
       className={`amendment-row${amendment.eta ? ' incoming' : ''}`}
       key={amendment.id}
     >
-      <td className="count">{index + 1}</td>
-      <td className="version">
-        {amendment.rippled_version ? (
-          <Link
-            to={`https://github.com/XRPLF/rippled/releases/tag/${amendment.rippled_version}`}
-            target="_blank"
-          >
-            {amendment.rippled_version}
-          </Link>
-        ) : (
-          DEFAULT_EMPTY_VALUE
-        )}
-      </td>
-      <td className="amendment-id text-truncate">{amendment.id}</td>
       <td className="name text-truncate">
         {renderName(amendment.name, amendment.id, amendment.deprecated)}
       </td>
-      <td className="voters">{getVoter(amendment.voted)}</td>
-      <td className="threshold">
-        {amendment.threshold ?? DEFAULT_EMPTY_VALUE}
-      </td>
-      <td className="consensus">
-        {amendment.consensus ?? DEFAULT_EMPTY_VALUE}
-      </td>
-      <td className="enabled">
-        {renderEnabled(amendment.voted === undefined)}
-      </td>
-      <td className="on_tx">{renderOnTx(amendment)}</td>
+      <td className="version">{renderVersion(amendment.rippled_version)}</td>
+      <td className="voters">{getVoterCount(amendment.voted)}</td>
+      <td className="threshold">{amendment.threshold}</td>
+      <td className="consensus">{renderConsensusBar(amendment.consensus)}</td>
+      <td className="status">{renderVotingStatus(amendment)}</td>
     </tr>
   )
 
-  const content = amendments ? (
+  if (!amendments)
+    return (
+      <div className="amendments-table">
+        <Loader />
+      </div>
+    )
+
+  if (mode === 'voting' && amendments.length === 0) {
+    return (
+      <div className="amendments-table">
+        <div className="amendments-empty-state">
+          All amendments are currently enabled. No active votes.
+        </div>
+      </div>
+    )
+  }
+
+  const enabledTable = (
     <table className="basic">
       <thead>
         <tr>
           <th className="count">#</th>
-          <th className="version">{t('Version')}</th>
-          <th className="amendment-id">{t('amendment_id')}</th>
           <th className="name">{t('amendment_name')}</th>
+          <th className="version">{t('Version')}</th>
+          <th className="enabled-date">{t('on_tx')}</th>
+        </tr>
+      </thead>
+      <tbody>{amendments.map(renderEnabledRow)}</tbody>
+    </table>
+  )
+
+  const votingTable = (
+    <table className="basic">
+      <thead>
+        <tr>
+          <th className="name">{t('amendment_name')}</th>
+          <th className="version">{t('Version')}</th>
           <th className="voters">{`${t('unl')} ${t('voters')}`}</th>
           <th className="threshold">{t('threshold')}</th>
           <th className="consensus">{t('consensus')}</th>
-          <th className="enabled">{t('enabled')}</th>
-          <th className="on_tx">{t('on_tx')}</th>
+          <th className="status">{t('status')}</th>
         </tr>
       </thead>
-      <tbody>{amendments.map(renderAmendment)}</tbody>
+      <tbody>{amendments.map(renderVotingRow)}</tbody>
     </table>
-  ) : (
-    <Loader />
   )
-  return <div className="amendments-table">{content}</div>
+
+  return (
+    <div className={`amendments-table ${mode}-tab`}>
+      {mode === 'enabled' ? enabledTable : votingTable}
+    </div>
+  )
 }

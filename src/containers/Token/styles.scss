@@ -1,9 +1,155 @@
-@use '../shared/css/variables';
+@use '../shared/css/variables' as *;
+@use '../shared/css/detail-page';
 
 .token-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
   width: 100%;
 
   .loader {
     min-height: 100px;
   }
+}
+
+// Hero
+.token-hero {
+  .token-hero-identity {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+}
+
+.token-hero-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: contain;
+}
+
+.token-hero-name span {
+  font-size: 28px;
+  @include bold;
+  @include gradient-title;
+
+  @include for-size(tablet-landscape-up) {
+    font-size: 34px;
+  }
+}
+
+.token-hero-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+// Stats
+.token-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+// Settings columns
+.token-settings-columns {
+  display: flex;
+  gap: 16px;
+
+  @media (max-width: $tablet-landscape-upper-boundary) {
+    flex-direction: column;
+  }
+}
+
+.token-details-panel,
+.token-flags-panel {
+  flex: 1;
+  min-width: 0;
+  padding-bottom: 16px;
+
+  .dashboard-panel-title {
+    padding-bottom: 16px;
+  }
+}
+
+.token-details-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 16px;
+}
+
+.token-detail-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+}
+
+.token-detail-label {
+  color: $black-40;
+  min-width: 100px;
+  flex-shrink: 0;
+  @include medium;
+
+  @include for-size(tablet-portrait-up) {
+    min-width: 140px;
+  }
+}
+
+.token-detail-value {
+  color: $white;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  &.mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+  }
+
+  a {
+    color: $green-30;
+    text-decoration: none;
+
+    &:hover {
+      color: $green;
+    }
+  }
+}
+
+.token-flags-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 16px;
+}
+
+.token-flag-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.token-flag-label {
+  color: $black-30;
+  font-size: 14px;
+  @include medium;
+}
+
+// Feed
+.token-feed-scroll {
+  padding: 0 12px 12px;
+}
+
+.token-empty-message {
+  text-align: center;
+  font-size: 14px;
+  color: $black-40;
+  padding: 32px;
 }

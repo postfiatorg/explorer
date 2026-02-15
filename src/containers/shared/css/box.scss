@@ -1,8 +1,8 @@
 @use 'variables' as *;
 
 .box {
-  border: $border-subtle;
-  border-radius: $border-radius;
+  border: 1px solid $black-80;
+  border-radius: 12px;
   box-shadow: 0 2px 12px rgb(6 6 14 / 40%);
 }
 
@@ -16,7 +16,7 @@
 }
 
 .box-header {
-  border-bottom: 1px solid $black-20;
+  border-bottom: 1px solid $black-80;
 }
 
 .box-header > .icon {
@@ -27,9 +27,9 @@
 }
 
 .box-header > h1 {
-  padding: 0px;
-  margin: 0px;
-  font-size: 12px;
+  padding: 0;
+  margin: 0;
+  font-size: 14px;
   line-height: 22px;
 
   @include for-size(desktop-up) {

@@ -1,360 +1,42 @@
 @use '../../shared/css/variables' as *;
+@use '../../shared/css/detail-page';
 
-.account-header {
-  margin-bottom: 16px;
+.account-header-address {
+  overflow: hidden;
+  margin-bottom: 4px;
 
-  .title {
-    padding-bottom: 4px;
-    color: $black-40;
-    font-size: 14px;
-    text-transform: uppercase;
-    @include semibold;
-  }
-
-  .box-header {
-    margin-top: 106px;
-    margin-bottom: 80px;
-
-    .title {
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-    }
-
-    h1 {
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .badge {
-      border: 1px solid $yellow-50;
-      background: $yellow-50;
-      box-shadow: 0 1px 1px $yellow-80;
-      color: $black;
-    }
-
-    .classic {
-      margin: 0;
-      color: $white;
-      font-size: 20px;
-      @include bold;
-
-      @include for-size(tablet-landscape-up) {
-        font-size: 24px;
-      }
-
-      @include for-size(desktop-up) {
-        font-size: 36px;
-      }
-    }
-
-    .currency-pair {
-      display: inline-block;
-      padding: 5px;
-      border-width: thin;
-      border-style: solid;
-      border-color: $black-70;
-      margin: 0;
-      margin-left: 12px;
-      color: $white;
-      font-size: 16px;
-      text-transform: none;
-      @include semibold;
-
-      @include for-size(tablet-landscape-up) {
-        font-size: 10px;
-      }
-
-      @include for-size(desktop-up) {
-        font-size: 20px;
-      }
-    }
-
-    .amm {
-      display: inline-block;
-      padding-right: 10px;
-      border-bottom: none;
-      margin: 0;
-      color: $white;
-      font-size: 18px;
-      @include bold;
-
-      @include for-size(tablet-landscape-up) {
-        font-size: 10px;
-      }
-
-      @include for-size(desktop-up) {
-        font-size: 23px;
-      }
-    }
-  }
-
-  .x-address {
-    margin: 0;
+  .copyable-address-text {
+    font-size: 16px;
     color: $white;
-    font-size: 14px;
     @include bold;
+    @include gradient-title;
 
     @include for-size(tablet-landscape-up) {
-      font-size: 18px;
+      font-size: 20px;
     }
 
     @include for-size(desktop-up) {
-      font-size: 36px;
-    }
-  }
-
-  .box-content {
-    min-height: 100px;
-    padding-bottom: 20px;
-  }
-
-  .balance-cards {
-    display: flex;
-    margin-bottom: 24px;
-    gap: 16px;
-
-    @media (width <= 600px) {
-      flex-direction: column;
-    }
-  }
-
-  .balance-card {
-    flex: 1;
-    padding: 20px 24px;
-    border: $border-subtle;
-    border-radius: $border-radius;
-    border-left: 3px solid;
-    background: linear-gradient(180deg, $black-80, $black-90);
-
-    .balance-card-label {
-      padding-bottom: 8px;
-      color: $black-40;
-      font-size: 12px;
-      text-transform: uppercase;
-      @include semibold;
-    }
-
-    .balance-card-value {
-      color: $white;
       font-size: 24px;
-      line-height: 1.2;
-      @include bold;
-
-      @include for-size(desktop-up) {
-        font-size: 28px;
-      }
-    }
-
-    &.balance-card-primary {
-      border-left-color: $green;
-    }
-
-    &.balance-card-reserve {
-      border-left-color: $blue-purple;
     }
   }
+}
 
-  .balance-selector-container {
-    position: relative;
-    margin-bottom: 20px;
-  }
+.account-header-domain {
+  margin-top: 4px;
+  font-size: 14px;
 
-  .info-container {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    margin-top: 68px;
+  a {
+    color: $green-30;
+    text-decoration: none;
 
-    @include for-size(desktop-up) {
-      flex-direction: row;
-      margin-top: 80px;
-    }
-
-    .values {
-      display: flex;
-      flex-direction: row;
-      justify-content: space-between;
-      margin-bottom: 18px;
-      color: $white;
-
-      @include for-size(desktop-up) {
-        flex-direction: column;
-        margin-bottom: 0;
-      }
-
-      .value {
-        color: $white;
-        font-size: 18px;
-        line-height: 22.5px;
-        text-decoration: none;
-        @include bold;
-      }
+    &:hover {
+      color: $green;
     }
   }
+}
 
-  .lower-header {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-
-    @include for-size(desktop-up) {
-      flex-direction: row;
-    }
-  }
-
-  .column {
-    display: inline-block;
-    width: 100%;
-    vertical-align: top;
-
-    @include for-size(desktop-up) {
-      width: 50%;
-
-      &.first {
-        padding-right: calc(50% - clamp(47.5%, 500px, 50%));
-      }
-
-      &.second {
-        padding-left: calc(50% - clamp(47.5%, 500px, 50%));
-        text-align: right;
-      }
-    }
-
-    .secondary {
-      padding: 0;
-      margin-bottom: 20px;
-      font-size: 12px;
-      @include bold;
-
-      @include for-size(desktop-up) {
-        border: none;
-      }
-
-      .label {
-        color: $black-40;
-        text-align: left;
-        text-transform: uppercase;
-        @include medium;
-      }
-
-      ul {
-        width: 100%;
-        padding: 0;
-        margin: 0;
-        list-style: none;
-
-        li {
-          padding: 1px;
-          vertical-align: top;
-
-          a {
-            display: inline-block;
-            text-transform: none;
-            vertical-align: middle;
-            @include medium;
-            @extend %truncate;
-          }
-
-          b {
-            color: $white;
-            word-break: break-all;
-            @include bold;
-          }
-
-          &.flags {
-            color: $blue-purple-30;
-            font-style: italic;
-          }
-        }
-      }
-
-      &.x-address ul {
-        width: 100%;
-
-        li {
-          display: flex;
-          justify-content: space-between;
-
-          @media (width >= 450px) {
-            display: block;
-          }
-
-          .tag {
-            font-weight: 500;
-          }
-
-          .network {
-            font-weight: 500;
-          }
-
-          &.tag-info {
-            padding-top: 14px;
-            font-size: 14px;
-          }
-        }
-      }
-
-      &.balance {
-        .value {
-          margin: -4px 0 5px -0.1em;
-          color: $white;
-          font-size: 26px;
-          line-height: 30px;
-          @include regular;
-          @include for-size(desktop-up) {
-            font-size: 30px;
-            line-height: 34px;
-          }
-          @extend %truncate;
-        }
-
-        .balance-selector-container {
-          position: relative;
-          margin-top: 10px;
-        }
-      }
-
-      &.signer-list {
-        display: block;
-        font-weight: 500;
-
-        h2 {
-          text-align: left;
-        }
-
-        ul {
-          li {
-            display: flex;
-
-            .label {
-              padding-right: 15px;
-              text-align: left;
-              white-space: nowrap;
-            }
-
-            .value {
-              overflow: hidden;
-              margin-left: auto;
-              font-weight: inherit;
-              text-overflow: ellipsis;
-            }
-
-            .account {
-              display: block;
-              font-weight: inherit;
-              @extend %truncate;
-            }
-
-            .weight {
-              overflow: inherit;
-              text-align: right;
-              text-overflow: inherit;
-              white-space: nowrap;
-            }
-          }
-        }
-      }
-    }
-  }
+.account-header-badges {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
 }

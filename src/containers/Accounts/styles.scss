@@ -1,7 +1,209 @@
-@use '../shared/css/variables';
+@use '../shared/css/variables' as *;
+@use '../shared/css/detail-page';
 
 .accounts-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+
   .loader {
     min-height: 100px;
   }
+}
+
+// Balance highlight card
+.account-balance-card {
+  border-color: $green-60;
+  box-shadow: $glow-green-strong;
+  background: linear-gradient(180deg, rgba(50, 230, 133, 0.08) 0%, $black-90 100%);
+
+  .detail-overview-value {
+    font-size: 20px;
+    color: $green-30;
+    @include bold;
+  }
+}
+
+// Optional panels (escrows, pay channels, signers, x-address)
+.account-optional-panel {
+  padding-bottom: 12px;
+}
+
+.account-details-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 16px;
+}
+
+.account-detail-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  min-width: 0;
+}
+
+.account-detail-label {
+  color: $black-40;
+  min-width: 100px;
+  flex-shrink: 0;
+  @include medium;
+
+  @include for-size(tablet-portrait-up) {
+    min-width: 120px;
+  }
+}
+
+.account-detail-value {
+  color: $white;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: right;
+
+  .account {
+    font-size: 12px;
+  }
+}
+
+// Assets tab
+.account-assets-panel {
+  padding: 0;
+}
+
+.account-asset-type-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid $black-80;
+}
+
+.account-asset-type-tab {
+  padding: 10px 20px;
+  border: none;
+  background: none;
+  color: $black-40;
+  font-size: 13px;
+  cursor: pointer;
+  transition: color $transition-fast, background-color $transition-fast;
+  @include medium;
+
+  &:hover {
+    color: $white;
+    background: $black-80;
+  }
+
+  &.active {
+    color: $white;
+    border-bottom: 2px solid $green;
+    @include semibold;
+  }
+}
+
+.account-asset-table {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-size: 13px;
+
+  @include for-size(tablet-portrait-up) {
+    display: table;
+    overflow-x: visible;
+  }
+
+  thead th {
+    color: $black-40;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid $black-80;
+    @include semibold;
+
+    &.right {
+      text-align: right;
+    }
+  }
+
+  tbody tr {
+    transition: background-color $transition-fast;
+
+    &:hover {
+      background: $black-80;
+    }
+  }
+
+  tbody td {
+    padding: 10px 16px;
+    border-bottom: 1px solid $black-90;
+    color: $white;
+    vertical-align: middle;
+
+    &.right {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    &.currency-cell {
+      @include semibold;
+    }
+
+    &.token-id-cell {
+      max-width: 180px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+
+      @include for-size(tablet-portrait-up) {
+        max-width: 280px;
+      }
+
+      @include for-size(tablet-landscape-up) {
+        max-width: none;
+      }
+    }
+
+    &.issuer-cell {
+      color: $black-30;
+      font-size: 12px;
+      max-width: 120px;
+
+      @include for-size(tablet-portrait-up) {
+        max-width: 200px;
+      }
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    a {
+      color: $green-30;
+      text-decoration: none;
+
+      &:hover {
+        color: $green;
+      }
+    }
+  }
+}
+
+.account-asset-empty {
+  text-align: center;
+  color: $black-40;
+  font-size: 14px;
+  padding: 32px 16px;
+}
+
+// Transaction feed
+.accounts-feed-panel {
+  overflow: hidden;
+}
+
+.accounts-feed-scroll {
+  padding: 0 12px 12px;
 }

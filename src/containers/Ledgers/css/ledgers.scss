@@ -233,7 +233,7 @@ $ledger-width: 196px;
     border: $border-subtle;
     border-radius: 0 0 12px 12px;
     border-top: 0;
-    background: rgba($black-80, 0.7);
+    background: rgba(var(--black-80-rgb), 0.7);
     color: $white;
     font-size: 15px;
     text-align: left;

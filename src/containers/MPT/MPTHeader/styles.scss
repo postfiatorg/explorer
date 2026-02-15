@@ -1,148 +1,113 @@
 @use '../../shared/css/variables' as *;
-@use '../../shared/css/table';
+@use '../../shared/css/detail-page';
 
-.mpt-header-container {
-  .mpt-bottom-container {
-    display: flex;
-    flex-direction: column;
-    padding-top: 64px;
+.mpt-hero-id {
+  margin-bottom: 16px;
+
+  .copyable-address-text {
+    font-size: 18px;
+    color: $white;
+    @include bold;
+    @include gradient-title;
+
+    @include for-size(tablet-landscape-up) {
+      font-size: 22px;
+    }
 
     @include for-size(desktop-up) {
-      flex-direction: row;
-      padding-top: 80px;
-    }
-
-    .details {
-      width: 100%;
-      @include for-size(desktop-up) {
-        width: 490px;
-      }
-
-      .jv-indent {
-        border-left: none;
-      }
-    }
-
-    .settings {
-      width: 100%;
-      @include for-size(desktop-up) {
-        width: 650px;
-      }
-    }
-  }
-
-  .mpt-info-container {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    margin-top: 68px;
-
-    @include for-size(desktop-up) {
-      flex-direction: row;
-      margin-top: 80px;
-    }
-
-    .values {
-      display: flex;
-      flex-direction: row;
-      justify-content: space-between;
-      margin-bottom: 18px;
-      color: $white;
-
-      @include for-size(desktop-up) {
-        flex-direction: column;
-        margin-bottom: 0;
-      }
-
-      .title {
-        padding-bottom: 4px;
-        margin-bottom: 4.5px;
-        color: $black-40;
-        font-size: 14px;
-        text-transform: uppercase;
-        @include semibold;
-      }
-
-      .value {
-        display: flex;
-
-        .mpt-issuer {
-          margin: auto;
-          color: $white;
-          font-size: 18px;
-          font-style: normal;
-          line-height: 125%;
-          text-align: right;
-          text-decoration: none;
-          @include bold;
-        }
-
-        .copy {
-          width: 24px;
-          height: 24px;
-          flex: none;
-          flex-grow: 0;
-          order: 1;
-          margin-left: 10px;
-        }
-      }
+      font-size: 28px;
     }
   }
 }
 
-.mpt-token-header {
-  width: 100%;
-  margin-bottom: 16px;
+// Stats
+.mpt-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
 
-  .mpt-box-header {
-    display: flex;
+// Details + Settings columns
+.mpt-details-columns {
+  display: flex;
+  gap: 16px;
+
+  @media (max-width: $tablet-landscape-upper-boundary) {
     flex-direction: column;
-    align-items: flex-start;
-    margin-top: 0;
-    text-align: left;
+  }
+}
 
-    .title-content {
-      overflow: hidden;
-      width: 100%;
-      min-width: 0;
-      min-height: 0;
-      padding-top: 0;
-      margin-top: 0;
-      margin-bottom: 0;
-      color: $white;
-      font-size: 24px;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      @include bold;
-    }
+.mpt-details-panel,
+.mpt-settings-panel {
+  flex: 1;
+  min-width: 0;
+  padding-bottom: 16px;
 
-    .token-title {
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      padding-bottom: 4px;
-      color: $black-40;
-      font-size: 14px;
-      text-transform: uppercase;
+  .dashboard-panel-title {
+    padding-bottom: 16px;
+  }
+}
 
-      @include semibold;
+// Details rows
+.mpt-details-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 16px;
+}
 
-      .badge {
-        background: $mpt;
-        color: $white;
-      }
-    }
+.mpt-detail-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+}
 
-    img {
-      width: 24px;
-      height: 24px;
-      margin-left: 16px;
-      object-fit: contain;
+.mpt-detail-label {
+  color: $black-40;
+  min-width: 100px;
+  flex-shrink: 0;
+  @include medium;
+
+  @include for-size(tablet-portrait-up) {
+    min-width: 140px;
+  }
+}
+
+.mpt-detail-value {
+  color: $white;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  a {
+    color: $green-30;
+    text-decoration: none;
+
+    &:hover {
+      color: $green;
     }
   }
+}
 
-  .box-content {
-    min-height: 100px;
-    padding-bottom: 20px;
-  }
+// Settings flags
+.mpt-flags-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 16px;
+}
+
+.mpt-flag-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.mpt-flag-label {
+  color: $black-30;
+  font-size: 14px;
+  @include medium;
 }

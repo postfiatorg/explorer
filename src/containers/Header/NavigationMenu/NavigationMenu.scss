@@ -26,10 +26,15 @@ $menu-toggle-line-length: $menu-toggle-size - $menu-toggle-line-spacing;
 .navbar-brand {
   display: flex;
   align-items: center;
+  color: $white;
+
+  &:hover {
+    color: $white;
+    text-shadow: none;
+  }
 
   svg {
     height: 26px;
-    color: #fff;
   }
 }
 

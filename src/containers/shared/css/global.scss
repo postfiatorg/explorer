@@ -1,10 +1,11 @@
 // ONLY GLOBAL CSS, KEEP IT TO MINIMAL
 // CSS SHOULD BE SCOPPED TO COMPONENT
+@use '../../../styles/tokens' as *;
 @use 'variables' as *;
 @use 'form';
 
 /**
- * `current_symbols` is used for currency codes missing from other fonts, currently `u+e900` (XRP) and `u+e901` (BTC).
+ * `current_symbols` is used for currency codes missing from other fonts, currently `u+e901` (BTC).
  *
  * By using unicode-range we specify which character points this font-family can be used for. When used in a style (and
  * assuming this font family is first/takes precedent), only these characters will use this font-face. Anything else
@@ -27,7 +28,7 @@ html {
 }
 
 ::selection {
-  background: rgba($green-70, 0.6);
+  background: rgba(var(--green-70-rgb), 0.6);
   color: $white;
 }
 
@@ -36,7 +37,7 @@ body {
   color: $white;
 }
 
-.xrpl-explorer {
+.pft-explorer {
   height: 100%;
 }
 
@@ -50,8 +51,8 @@ body,
 input {
   padding: 0px;
   margin: 0px;
-  background-color: $black-100;
-  background-image: radial-gradient(ellipse at 50% 0%, #14151f 0%, $black-100 70%);
+  background-color: var(--black-100);
+  background-image: radial-gradient(ellipse at 50% 0%, #14151f 0%, var(--black-100) 70%);
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   font-style: normal;
@@ -61,7 +62,7 @@ input {
 body,
 input,
 button {
-  font-family: 'currency_symbols', 'Work Sans', system-ui, 'Segoe UI', Roboto,
+  font-family: 'currency_symbols', 'Inter', 'Work Sans', system-ui, 'Segoe UI', Roboto,
     Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
 }
 

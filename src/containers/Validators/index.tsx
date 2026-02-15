@@ -2,14 +2,12 @@ import { useContext, useEffect } from 'react'
 import axios from 'axios'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from 'react-query'
-import { useWindowSize } from 'usehooks-ts'
-import { deriveAddress } from 'xrpl'
-import { decodeNodePublic } from 'ripple-address-codec'
-import { bytesToHex } from '@xrplf/isomorphic/utils'
 import { SEOHelmet } from '../shared/components/SEOHelmet'
 import NoMatch from '../NoMatch'
 import { Loader } from '../shared/components/Loader'
 import { Tabs } from '../shared/components/Tabs'
+import { CopyableAddress } from '../shared/components/CopyableAddress/CopyableAddress'
+import { StatusBadge } from '../shared/components/StatusBadge/StatusBadge'
 import { useAnalytics } from '../shared/analytics'
 import {
   FETCH_INTERVAL_ERROR_MILLIS,
@@ -27,37 +25,9 @@ import NetworkContext from '../shared/NetworkContext'
 import { VALIDATOR_ROUTE } from '../App/routes'
 import { buildPath, useRouteParams } from '../shared/routing'
 import { VotingTab } from './VotingTab'
-import { ExclusionsTab } from './ExclusionsTab'
 import logger from '../../rippled/lib/logger'
 
 const log = logger({ name: 'validator' })
-
-// Convert validator public key (nXXX...) to account address (rXXX...)
-function validatorPublicKeyToAddress(
-  validatorPublicKey: string,
-): string | null {
-  try {
-    if (!validatorPublicKey.startsWith('n')) {
-      // If it's already an address, return it
-      return validatorPublicKey
-    }
-
-    // Decode the validator public key to get raw bytes
-    const publicKeyBytes = decodeNodePublic(validatorPublicKey)
-
-    // Convert bytes to hex string (deriveAddress expects hex string)
-    const publicKeyHex = bytesToHex(publicKeyBytes)
-
-    // Derive the address from the public key
-    const address = deriveAddress(publicKeyHex)
-
-    // Successfully converted validator key to address
-    return address
-  } catch (error) {
-    // Error converting validator public key to address
-    return null
-  }
-}
 
 const ERROR_MESSAGES = {
   [NOT_FOUND]: {
@@ -77,7 +47,6 @@ export const Validator = () => {
   const rippledSocket = useContext(SocketContext)
   const network = useContext(NetworkContext)
   const { identifier = '', tab = 'details' } = useRouteParams(VALIDATOR_ROUTE)
-  const { width } = useWindowSize()
   const { trackException, trackScreenLoaded } = useAnalytics()
   const { t } = useTranslation()
 
@@ -89,10 +58,12 @@ export const Validator = () => {
     ['fetchValidatorData', identifier],
     async () => fetchValidatorData(),
     {
-      refetchInterval: (returnedData, _) =>
-        returnedData == null
-          ? FETCH_INTERVAL_ERROR_MILLIS
-          : FETCH_INTERVAL_VHS_MILLIS,
+      refetchInterval: (returnedData, query) => {
+        if (query.state.error === NOT_FOUND) return false
+        if (returnedData == null) return FETCH_INTERVAL_ERROR_MILLIS
+        return FETCH_INTERVAL_VHS_MILLIS
+      },
+      retry: (_count, err) => err !== NOT_FOUND,
       refetchOnMount: true,
       enabled: !!network,
     },
@@ -107,16 +78,6 @@ export const Validator = () => {
     },
   )
 
-  const { data: exclusionData, isFetching: exclusionIsLoading } = useQuery<any>(
-    ['fetchExclusionData'],
-    async () => fetchExclusionData(),
-    {
-      refetchInterval: FETCH_INTERVAL_VHS_MILLIS,
-      refetchOnMount: true,
-      enabled: !!network && !!rippledSocket,
-    },
-  )
-
   useEffect(() => {
     trackScreenLoaded({ validator: identifier })
   }, [identifier, tab, trackScreenLoaded])
@@ -124,34 +85,10 @@ export const Validator = () => {
   function fetchValidatorReport(): Promise<ValidatorReport[]> {
     return axios
       .get(`${process.env.VITE_DATA_URL}/validator/${identifier}/reports`)
-      .then((resp) => resp.data.reports)
-      .then((vhsReports: ValidatorReport[]) => {
-        const sortedValidatorReports = vhsReports.sort((a, b) =>
-          a.date > b.date ? -1 : 1,
-        )
-        return sortedValidatorReports
-      })
-  }
-
-  function fetchExclusionData() {
-    // Use WebSocket connection to fetch exclusion data
-    return rippledSocket
-      .send({
-        command: 'exclusion_info',
-      })
-      .then((resp) => {
-        if (resp.error) {
-          log.error(
-            `Error fetching exclusion data: ${resp.error_message || resp.error}`,
-          )
-          return null
-        }
-        return resp
-      })
-      .catch((exclusionError) => {
-        log.error(`Error fetching exclusion data: ${exclusionError.message}`)
-        return null
-      })
+      .then((resp) => resp.data.reports ?? [])
+      .then((vhsReports: ValidatorReport[]) =>
+        vhsReports.sort((a, b) => (a.date > b.date ? -1 : 1)),
+      )
   }
 
   function fetchValidatorData() {
@@ -168,7 +105,6 @@ export const Validator = () => {
               last_ledger_time: ledgerData.close_time,
             }))
             .catch((ledgerError) => {
-              // Log the error and return response without ledger data
               log.error(`Error fetching ledger data: ${ledgerError.message}`)
               return response
             })
@@ -176,29 +112,18 @@ export const Validator = () => {
         return response
       })
       .catch((axiosError) => {
-        const status =
-          axiosError.response && axiosError.response.status
-            ? axiosError.response.status
-            : SERVER_ERROR
+        const status = axiosError.response?.status ?? SERVER_ERROR
         trackException(`${url} --- ${JSON.stringify(axiosError)}`)
         return Promise.reject(status)
       })
   }
 
   function renderPageTitle() {
-    if (!data) {
-      return undefined
-    }
-
+    if (!data) return undefined
     let short = ''
-    if (data.domain) {
-      short = data.domain
-    } else if (data.master_key) {
-      short = `${data.master_key.substring(0, 8)}...`
-    } else if (data.signing_key) {
-      short = `${data.signing_key.substring(0, 8)}...`
-    }
-
+    if (data.domain) short = data.domain
+    else if (data.master_key) short = `${data.master_key.substring(0, 8)}...`
+    else if (data.signing_key) short = `${data.signing_key.substring(0, 8)}...`
     return (
       <SEOHelmet
         title={`${t('validator')} ${short}`}
@@ -215,90 +140,141 @@ export const Validator = () => {
     )
   }
 
-  function renderSummary() {
-    let name = 'Unknown Validator'
-    if (data?.domain) {
-      name = `Validator / Domain: ${data.domain}`
-    } else if (data?.master_key) {
-      name = `Validator / Public Key: ${data.master_key.substring(0, 8)}...`
-    } else if (data?.signing_key) {
-      name = `Validator / Ephemeral Key: ${data.signing_key.substring(0, 8)}...`
-    }
+  function getAgreementColor(score: number): string {
+    if (score >= 0.99) return 'green'
+    if (score >= 0.95) return 'yellow'
+    return 'orange'
+  }
 
-    let subtitle = 'UNKNOWN KEY'
-    if (data?.master_key) {
-      subtitle = `MASTER KEY: ${data.master_key}`
-    } else if (data?.signing_key) {
-      subtitle = `SIGNING KEY: ${data.signing_key}`
-    }
+  function renderHero() {
+    const domain = data?.domain
+    const masterKey = data?.master_key
+    const signingKey = data?.signing_key
+    const isUnl = Boolean(data?.unl)
 
     return (
-      <div className="summary">
-        <div className="type">{name}</div>
-        <div className="hash" title={subtitle}>
-          {subtitle}
+      <div className="validator-hero detail-summary dashboard-panel">
+        <div className="detail-summary-label">Validator</div>
+        <div className="detail-summary-title">
+          {domain ||
+            (masterKey
+              ? `${masterKey.substring(0, 12)}...`
+              : 'Unknown Validator')}
         </div>
+        <div className="validator-hero-badges">
+          {isUnl && <StatusBadge status="verified" label="UNL" />}
+          {data?.domain_verified && (
+            <StatusBadge status="verified" label="Domain Verified" />
+          )}
+        </div>
+        {masterKey && (
+          <div className="detail-summary-hash-row">
+            <span className="detail-summary-hash-label">Master Key:</span>
+            <CopyableAddress address={masterKey} truncate />
+          </div>
+        )}
+        {signingKey && signingKey !== masterKey && (
+          <div className="detail-summary-hash-row">
+            <span className="detail-summary-hash-label">Signing Key:</span>
+            <CopyableAddress address={signingKey} truncate />
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  function renderOverviewGrid() {
+    if (!data) return null
+    const scores = [
+      { label: 'Agreement (1H)', score: data.agreement_1h },
+      { label: 'Agreement (24H)', score: data.agreement_24h },
+      { label: 'Agreement (30D)', score: data.agreement_30day },
+    ]
+    const hasScores = scores.some((s) => s.score != null)
+    if (!hasScores) return null
+    const hasIncomplete = scores.some((s) => s.score?.incomplete)
+
+    return (
+      <div className="detail-overview-grid">
+        {scores.map((s) => {
+          if (!s.score) return null
+          const value = Number(s.score.score)
+          const color = getAgreementColor(value)
+          return (
+            <div className="detail-overview-item" key={s.label}>
+              <span className="detail-overview-label">{s.label}</span>
+              <span
+                className={`detail-overview-value agreement-value ${color}`}
+              >
+                {(value * 100).toFixed(2)}%{s.score.incomplete && '*'}
+              </span>
+              <div className="agreement-bar-track">
+                <div
+                  className={`agreement-bar-fill ${color}`}
+                  style={{ width: `${value * 100}%` }}
+                />
+              </div>
+            </div>
+          )
+        })}
+        {hasIncomplete && (
+          <span className="detail-overview-footnote">
+            * Incomplete scoring period
+          </span>
+        )}
       </div>
     )
   }
 
   function renderTabs() {
-    const tabs = ['details', 'history', 'voting', 'exclusions']
+    const tabsList = ['details', 'history', 'voting']
     const mainPath = buildPath(VALIDATOR_ROUTE, { identifier })
-    return <Tabs tabs={tabs} selected={tab} path={mainPath} />
+    return <Tabs tabs={tabsList} selected={tab} path={mainPath} />
   }
 
   function renderValidator() {
-    let body
-
-    switch (tab) {
-      case 'history':
-        body = <HistoryTab reports={reports ?? []} />
-        break
-      case 'voting':
-        body = data && <VotingTab validatorData={data} network={network} />
-        break
-      case 'exclusions': {
-        // Convert validator public key to address for matching with exclusion data
-        const validatorAddress = validatorPublicKeyToAddress(identifier)
-        body = (
-          <ExclusionsTab
-            validatorId={validatorAddress || identifier}
-            exclusionData={exclusionData}
-            isLoading={exclusionIsLoading}
-          />
-        )
-        break
-      }
-      default:
-        body = data && <SimpleTab data={data} width={width} />
-        break
-    }
-
     return (
       <>
         {renderPageTitle()}
-        {renderSummary()}
+        {renderHero()}
+        {renderOverviewGrid()}
         {renderTabs()}
-        <div className="tab-body">{body}</div>
+        {tab === 'history' && (
+          <div className="validator-tab-body dashboard-panel">
+            <HistoryTab reports={reports ?? []} />
+          </div>
+        )}
+        {tab === 'voting' && data && (
+          <div className="validator-tab-body dashboard-panel">
+            <VotingTab validatorData={data} network={network} />
+          </div>
+        )}
+        {tab === 'details' && data && (
+          <div className="validator-tab-body dashboard-panel">
+            <SimpleTab data={data} />
+          </div>
+        )}
       </>
     )
   }
 
-  const isLoading =
-    dataIsLoading ||
-    reportIsLoading ||
-    (tab === 'exclusions' && exclusionIsLoading)
+  const isLoading = dataIsLoading || reportIsLoading
   let body
 
   if (error) {
     const message = getErrorMessage(error)
-    body = <NoMatch title={message.title} hints={message.hints} />
+    body = (
+      <NoMatch
+        title={message.title}
+        hints={message.hints}
+        errorCode={(error as any)?.code}
+      />
+    )
   } else if (data?.master_key || data?.signing_key) {
     body = renderValidator()
   } else if (!isLoading) {
     body = (
-      <div style={{ textAlign: 'center', fontSize: '14px' }}>
+      <div className="validator-empty">
         <h2>Could not load validator</h2>
       </div>
     )

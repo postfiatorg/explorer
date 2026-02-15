@@ -8,7 +8,6 @@ const TRADING_FEE_TOTAL = 1000
 
 const EXOTIC_SYMBOLS = {
   BTC: '\u20BF',
-  XRP: '\uE900',
   ETH: '\uE902',
 }
 
@@ -308,7 +307,7 @@ export const removeRoutes = (routes, ...routesToRemove) =>
 
 export const formatAsset = (asset) =>
   typeof asset === 'string'
-    ? { currency: 'XRP' }
+    ? { currency: 'PFT' }
     : {
         currency: asset.currency,
         issuer: asset.issuer,

@@ -227,7 +227,7 @@ export const UpgradeStatus = () => {
   }
 
   const fetchStableVersion = () => {
-    const url = 'https://api.github.com/repos/XRPLF/rippled/releases'
+    const url = 'https://api.github.com/repos/postfiatorg/pftld/releases'
     return axios
       .get(url)
       .then(

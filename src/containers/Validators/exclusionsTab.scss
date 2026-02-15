@@ -1,4 +1,4 @@
-@import '../shared/css/variables';
+@use '../shared/css/variables' as *;
 
 .exclusions-tab {
   padding: 40px 16px 0;

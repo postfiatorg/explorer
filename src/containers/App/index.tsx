@@ -3,7 +3,6 @@ import { Navigate } from 'react-router-dom'
 import { Helmet, HelmetProvider } from 'react-helmet-async'
 import { QueryClientProvider } from 'react-query'
 import { useTranslation } from 'react-i18next'
-import Footer from '../Footer'
 import './app.scss'
 
 import { App } from './App'
@@ -19,6 +18,7 @@ import {
   LEDGERS_ROUTE,
   NFT_ROUTE,
   TOKEN_ROUTE,
+  TRANSACTIONS_LIST_ROUTE,
   TRANSACTION_ROUTE,
   VALIDATOR_ROUTE,
   AMENDMENTS_ROUTE,
@@ -27,11 +27,12 @@ import {
   NODES_ROUTE,
   VALIDATORS_ROUTE,
   UPGRADE_STATUS_ROUTE,
-  EXCLUSIONS_ROUTE,
+  ANALYTICS_ROUTE,
 } from './routes'
-import { LedgersPage as Ledgers } from '../Ledgers'
+import { Dashboard } from '../Dashboard/Dashboard'
 import { Ledger } from '../Ledger'
 import { AccountsRouter } from '../Accounts/AccountsRouter'
+import { TransactionsList } from '../TransactionsList/TransactionsList'
 import { Transaction } from '../Transactions'
 import { Validator } from '../Validators'
 import { Token } from '../Token'
@@ -44,7 +45,7 @@ import { MPT } from '../MPT/MPT'
 import { Nodes } from '../Network/Nodes'
 import { Validators } from '../Network/Validators'
 import { UpgradeStatus } from '../Network/UpgradeStatus'
-import { Exclusions } from '../Network/Exclusions'
+import { Analytics } from '../Analytics/Analytics'
 
 export const AppWrapper = () => {
   const mode = process.env.VITE_ENVIRONMENT
@@ -67,20 +68,21 @@ export const AppWrapper = () => {
 
   // Defined here rather than ./routes to avoid circular dependencies when using RouteDefinitions with <RouteLink>.
   const routes: [RouteDefinition<any>, any][] = [
-    [LEDGERS_ROUTE, Ledgers],
+    [LEDGERS_ROUTE, Dashboard],
     [LEDGER_ROUTE, Ledger],
     [ACCOUNT_ROUTE, AccountsRouter],
+    [TRANSACTIONS_LIST_ROUTE, TransactionsList],
     [TRANSACTION_ROUTE, Transaction],
     [NODES_ROUTE, Nodes],
     [VALIDATORS_ROUTE, Validators],
     [UPGRADE_STATUS_ROUTE, UpgradeStatus],
-    [EXCLUSIONS_ROUTE, Exclusions],
     [AMENDMENTS_ROUTE, Amendments],
     [VALIDATOR_ROUTE, Validator],
     [TOKEN_ROUTE, Token],
     [NFT_ROUTE, NFT],
     [AMENDMENT_ROUTE, Amendment],
     [MPT_ROUTE, MPT],
+    [ANALYTICS_ROUTE, Analytics],
   ]
 
   const redirect = legacyRedirect(basename, location)
@@ -165,7 +167,7 @@ export const AppWrapper = () => {
                 </Route>
                 \{' '}
               </Routes>
-              <Footer />
+              {/* Footer replaced by StatusBar in Layout */}
             </div>
           </AppErrorBoundary>
         </div>

@@ -2,44 +2,38 @@
 @use '../shared/css/table';
 
 .amendments-page {
-  .summary {
-    padding: 0 16px;
-    margin-top: 100px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
 
-    @include for-size(tablet-portrait-up) {
-      padding: 0;
-    }
-
-    .type {
-      display: inline-block;
-      padding-bottom: 24px;
-      font-size: 32px;
-
-      @include for-size(tablet-portrait-up) {
-        font-size: 42px;
-      }
-
-      @include bold;
-      @include gradient-title;
-    }
+.amendments-page-title {
+  font-size: 32px;
+  @include for-size(tablet-portrait-up) {
+    font-size: 38px;
   }
+  @include bold;
+  @include gradient-title;
+}
 
-  .wrap {
-    overflow: auto;
-    width: 100%;
-    max-width: 1500px;
-    min-height: 150px;
-    margin: auto;
-  }
+.amendments-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
 }
 
 .amendments-table {
   position: relative;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 
   table {
     .incoming {
       border-left: 3px solid $green-70;
-      background: rgba($green-90, 0.7);
+      background: rgba(var(--green-90-rgb), 0.7);
     }
 
     .eta-label {
@@ -48,24 +42,14 @@
     }
 
     .name {
-      max-width: 120px;
+      max-width: 140px;
 
       @include for-size(tablet-portrait-up) {
         max-width: 180px;
       }
 
       @include for-size(desktop-up) {
-        max-width: 280px;
-      }
-    }
-
-    .amendment-id {
-      display: none;
-      max-width: 120px;
-
-      @include for-size(desktop-up) {
-        display: table-cell;
-        padding-right: 3%;
+        max-width: 240px;
       }
     }
 
@@ -101,12 +85,13 @@
       }
     }
 
-    .version,
-    .enabled,
-    .consensus {
+    .version {
+      display: none;
       max-width: 70px;
       overflow-wrap: break-word;
+
       @include for-size(tablet-portrait-up) {
+        display: table-cell;
         max-width: 100px;
       }
     }
@@ -132,21 +117,82 @@
     color: $yellow-50;
   }
 
-  .voters,
-  .threshold {
-    display: none;
-    max-width: 70px;
+  // Enabled tab
+  &.enabled-tab {
+    .count {
+      display: none;
 
-    @include for-size(desktop-up) {
-      display: table-cell;
+      @include for-size(tablet-portrait-up) {
+        display: table-cell;
+      }
+    }
+
+    .enabled-date {
+      white-space: nowrap;
     }
   }
 
-  .count {
-    display: none;
+  // Voting tab
+  &.voting-tab {
+    .voters,
+    .threshold {
+      display: none;
+      max-width: 70px;
 
-    @include for-size(tablet-portrait-up) {
-      display: table-cell;
+      @include for-size(desktop-up) {
+        display: table-cell;
+      }
+    }
+
+    .consensus {
+      display: none;
+
+      @include for-size(tablet-landscape-up) {
+        display: table-cell;
+      }
+    }
+
+    .consensus-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      min-width: 56px;
+    }
+
+    .consensus-value {
+      font-size: 13px;
+      @include medium;
+
+      &.green { color: $green-50; }
+      &.yellow { color: $yellow-50; }
+      &.orange { color: $orange-50; }
+    }
+
+    .consensus-bar-track {
+      height: 4px;
+      border-radius: 2px;
+      background: $black-80;
+    }
+
+    .consensus-bar-fill {
+      height: 100%;
+      border-radius: 2px;
+      transition: width $transition-default;
+
+      &.green { background: $green-50; }
+      &.yellow { background: $yellow-50; }
+      &.orange { background: $orange-50; }
+    }
+
+    .status {
+      white-space: nowrap;
     }
   }
+}
+
+.amendments-empty-state {
+  padding: 48px 24px;
+  text-align: center;
+  color: $black-40;
+  font-size: 15px;
 }

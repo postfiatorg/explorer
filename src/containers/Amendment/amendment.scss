@@ -1,149 +1,79 @@
 @use '../shared/css/variables' as *;
-@use '../shared/css/table';
+@use '../shared/css/detail-page';
 
-.amendment-summary {
-  width: 80%;
+.amendment-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
   max-width: 1200px;
-  margin: auto;
+  margin: 0 auto;
+  width: 100%;
+}
 
-  .simple-body {
-    max-width: 1100px;
+.amendment-hero {
+  .amendment-hero-badges {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
   }
+}
 
-  .type {
-    display: inline-block;
-    margin-top: 80px;
-    margin-bottom: 32px;
-    font-size: 32px;
+.amendment-info {
+  display: flex;
+  flex-direction: column;
+  margin-top: 16px;
+  border-top: 1px solid $black-80;
+}
 
-    @include for-size(tablet-portrait-up) {
-      margin-top: 120px;
-      margin-bottom: 64px;
-      font-size: 42px;
+.amendment-info-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid $black-80;
+  font-size: 13px;
+  min-width: 0;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.amendment-info-label {
+  color: $black-40;
+  min-width: 100px;
+  flex-shrink: 0;
+  text-transform: capitalize;
+  @include medium;
+
+  @include for-size(tablet-portrait-up) {
+    min-width: 120px;
+  }
+}
+
+.amendment-info-value {
+  color: $white;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  @include medium;
+
+  a {
+    color: $green-30;
+    text-decoration: none;
+
+    &:hover {
+      color: $green;
     }
 
-    @include bold;
-    @include gradient-title;
-  }
-
-  .rows {
-    padding-left: 0;
-  }
-
-  .label {
-    margin-bottom: 0;
-    font-weight: 600;
-  }
-
-  .index {
-    width: 220px;
-  }
-
-  .badge {
-    max-width: fit-content;
-    margin: 0;
-    color: $black-100 !important;
-    text-transform: capitalize;
-
-    &.voting {
-      background-color: $black-30;
-    }
-
-    &.enabled {
-      background-color: $green-60;
-    }
-
-    &.consensus {
-      margin-top: 6px;
-      background-color: $yellow-50;
-      font-weight: 700 !important;
+    &::after {
+      display: none !important;
     }
   }
+}
 
-  .value {
-    &.eta {
-      &.no {
-        color: $yellow-50 !important;
-      }
-    }
-  }
-
-  .note {
-    .unl {
-      display: inline-block;
-      margin: 0 10px;
-      color: $green-40;
-      vertical-align: middle;
-    }
-  }
-
-  .votes {
-    max-width: 1200px;
-    margin: 48px 0;
-
-    .votes-columns {
-      margin: 48px 0;
-
-      @include for-size(desktop-up) {
-        display: grid;
-        gap: 48px;
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .label {
-        @include bold;
-
-        margin-bottom: 24px;
-        font-size: 24px;
-        text-transform: capitalize;
-      }
-
-      .votes-column {
-        min-width: 0;
-        max-width: 100%;
-        flex: 1 1 0px;
-        margin-top: 24px;
-
-        .vals {
-          border-radius: $border-radius;
-          background: linear-gradient(180deg, $black-80, $black-90);
-
-          .row {
-            display: flex;
-            overflow: hidden;
-            padding: 16px;
-            border-bottom: 1px solid $black-70;
-            transition: background-color $transition-fast;
-            white-space: nowrap;
-
-            &:hover {
-              background-color: rgba($black-70, 0.5);
-            }
-
-            &:last-child {
-              border-bottom: none;
-            }
-
-            .val {
-              overflow: hidden;
-              max-width: fit-content;
-              flex: 1;
-              font-size: 14px;
-              text-overflow: ellipsis;
-            }
-
-            .unl {
-              margin-left: 8px;
-              color: $green-40;
-            }
-
-            .index {
-              max-width: 16px;
-              margin-right: 24px;
-            }
-          }
-        }
-      }
-    }
-  }
+.amendment-info-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

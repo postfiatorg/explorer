@@ -1,31 +1,52 @@
-import { useContext, useEffect } from 'react'
+import { useCallback, useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from 'react-query'
-import { useWindowSize } from 'usehooks-ts'
 import { SEOHelmet } from '../shared/components/SEOHelmet'
 import NoMatch from '../NoMatch'
 import { Loader } from '../shared/components/Loader'
-import { Tabs } from '../shared/components/Tabs'
 import {
   NOT_FOUND,
   BAD_REQUEST,
   HASH256_REGEX,
   CTID_REGEX,
+  localizeDate,
+  localizeNumber,
 } from '../shared/utils'
 import { SimpleTab } from './SimpleTab'
 import { DetailTab } from './DetailTab'
+import { CollapsibleJsonPanel } from './CollapsibleJsonPanel'
+import { CopyableAddress } from '../shared/components/CopyableAddress/CopyableAddress'
+import { Account } from '../shared/components/Account'
+import { Sequence } from '../shared/components/Sequence'
 import './transaction.scss'
 import { AnalyticsFields, useAnalytics } from '../shared/analytics'
 import SocketContext from '../shared/SocketContext'
 import { TxStatus } from '../shared/components/TxStatus'
 import { getAction, getCategory } from '../shared/components/Transaction'
-import { buildPath, useRouteParams } from '../shared/routing'
-import { SUCCESSFUL_TRANSACTION } from '../shared/transactionUtils'
+import { TransactionActionIcon } from '../shared/components/TransactionActionIcon/TransactionActionIcon'
+import { useRouteParams, RouteLink } from '../shared/routing'
+import {
+  SUCCESSFUL_TRANSACTION,
+  CURRENCY_OPTIONS,
+  XRP_BASE,
+} from '../shared/transactionUtils'
 import { getTransaction } from '../../rippled'
-import { TRANSACTION_ROUTE } from '../App/routes'
-import { JsonView } from '../shared/components/JsonView'
+import { TRANSACTION_ROUTE, LEDGER_ROUTE } from '../App/routes'
+import { useLanguage } from '../shared/hooks'
 
 const WRONG_NETWORK = 406
+
+const TIME_ZONE = 'UTC'
+const DATE_OPTIONS = {
+  hour: 'numeric',
+  minute: 'numeric',
+  second: 'numeric',
+  year: 'numeric',
+  month: 'numeric',
+  day: 'numeric',
+  hour12: true,
+  timeZone: TIME_ZONE,
+}
 
 const ERROR_MESSAGES: Record<string, { title: string; hints: string[] }> = {}
 ERROR_MESSAGES[NOT_FOUND] = {
@@ -49,16 +70,15 @@ const getErrorMessage = (error) =>
   ERROR_MESSAGES[error] || ERROR_MESSAGES.default
 
 export const Transaction = () => {
-  const { identifier = '', tab = 'simple' } = useRouteParams(TRANSACTION_ROUTE)
+  const { identifier = '' } = useRouteParams(TRANSACTION_ROUTE)
   const { t } = useTranslation()
+  const language = useLanguage()
   const rippledSocket = useContext(SocketContext)
   const { trackException, trackScreenLoaded } = useAnalytics()
   const { isLoading, data, error, isError } = useQuery(
     ['transaction', identifier],
     () => {
-      if (identifier === '') {
-        return undefined
-      }
+      if (identifier === '') return undefined
       if (HASH256_REGEX.test(identifier) || CTID_REGEX.test(identifier)) {
         return getTransaction(identifier, rippledSocket).catch(
           (transactionRequestError) => {
@@ -68,93 +88,159 @@ export const Transaction = () => {
                 transactionRequestError.message,
               )}`,
             )
-
             return Promise.reject(status)
           },
         )
       }
-
       return Promise.reject(BAD_REQUEST)
     },
   )
-  const { width } = useWindowSize()
 
   useEffect(() => {
     if (!data?.processed) return
-
-    const type = data?.processed.tx.TransactionType
-    const status = data?.processed.meta.TransactionResult
-
+    const type = data.processed.tx.TransactionType
+    const status = data.processed.meta.TransactionResult
     const transactionProperties: AnalyticsFields = {
       transaction_action: getAction(type),
       transaction_category: getCategory(type),
       transaction_type: type,
     }
-
     if (status !== SUCCESSFUL_TRANSACTION) {
       transactionProperties.tec_code = status
     }
-
     trackScreenLoaded(transactionProperties)
-  }, [identifier, data?.processed, tab, trackScreenLoaded])
+  }, [identifier, data?.processed, trackScreenLoaded])
 
-  function renderSummary() {
-    const type = data?.processed.tx.TransactionType
+  const [simpleTabEmpty, setSimpleTabEmpty] = useState(false)
+  const handleSimpleTabEmpty = useCallback((empty: boolean) => {
+    setSimpleTabEmpty(empty)
+  }, [])
+
+  function renderOverview(processed: any) {
+    const numberOptions = { ...CURRENCY_OPTIONS, currency: 'PFT' }
+    const time = localizeDate(new Date(processed.date), language, DATE_OPTIONS)
+    const ledgerIndex = processed.ledger_index
+    const fee = processed.tx.Fee
+      ? localizeNumber(
+          Number.parseFloat(processed.tx.Fee) / XRP_BASE,
+          language,
+          numberOptions,
+        )
+      : 0
+    const account = processed.tx.Account
+    const delegate = processed.tx.Delegate
+    const sequence = processed.tx.Sequence
+    const ticketSequence = processed.tx.TicketSequence
+    const isHook = !!processed.tx.EmitDetails
+
     return (
-      <div className="summary">
-        <div className="type">{type}</div>
-        <TxStatus status={data?.processed.meta.TransactionResult} />
-        <div className="txid" title={data?.processed.hash}>
-          <div className="title">{t('hash')}: </div>
-          {data?.processed.hash}
+      <div className="tx-overview-grid">
+        <div className="tx-overview-item tx-overview-item-date">
+          <span className="tx-overview-label">
+            {t('formatted_date', { timeZone: TIME_ZONE })}
+          </span>
+          <span className="tx-overview-value">{time}</span>
         </div>
-        {data?.processed.tx.ctid && (
-          <div className="txid" title={data.processed.tx.ctid}>
-            <div className="title">CTID: </div>
-            {data.processed.tx.ctid}
+        <div className="tx-overview-item">
+          <span className="tx-overview-label">{t('ledger_index')}</span>
+          <span className="tx-overview-value">
+            <RouteLink to={LEDGER_ROUTE} params={{ identifier: ledgerIndex }}>
+              {ledgerIndex}
+            </RouteLink>
+          </span>
+        </div>
+        {account && (
+          <div className="tx-overview-item tx-overview-item-account">
+            <span className="tx-overview-label">{t('account')}</span>
+            <span className="tx-overview-value">
+              <Account account={account} />
+            </span>
           </div>
         )}
+        {delegate && (
+          <div className="tx-overview-item tx-overview-item-account">
+            <span className="tx-overview-label">{t('delegate')}</span>
+            <span className="tx-overview-value">
+              <Account account={delegate} />
+            </span>
+          </div>
+        )}
+        <div className="tx-overview-item">
+          <span className="tx-overview-label">{t('sequence_number')}</span>
+          <span className="tx-overview-value">
+            <Sequence
+              sequence={sequence}
+              ticketSequence={ticketSequence}
+              account={account}
+              isHook={isHook}
+            />
+          </span>
+        </div>
+        <div className="tx-overview-item">
+          <span className="tx-overview-label">{t('transaction_cost')}</span>
+          <span className="tx-overview-value">{fee}</span>
+        </div>
       </div>
     )
   }
 
-  function renderTabs() {
-    const tabs = ['simple', 'detailed', 'raw']
-    const mainPath = buildPath(TRANSACTION_ROUTE, { identifier })
-    return <Tabs tabs={tabs} selected={tab} path={mainPath} />
-  }
-
   function renderTransaction() {
     if (!data) return undefined
+    const { processed, raw } = data
+    const type = processed.tx.TransactionType
+    const category = getCategory(type)
 
-    let body
-
-    switch (tab) {
-      case 'detailed':
-        body = <DetailTab data={data.processed} />
-        break
-      case 'raw':
-        body = <JsonView data={data.raw} />
-        break
-      default:
-        body = <SimpleTab data={data} width={width} />
-        break
-    }
     return (
       <>
-        {renderSummary()}
-        {renderTabs()}
-        <div className="tab-body">{body}</div>
+        <div className={`tx-summary dashboard-panel tx-border-${category}`}>
+          <div className="tx-summary-top">
+            <TransactionActionIcon type={type} withBackground />
+            <div className="tx-summary-type">{type}</div>
+          </div>
+          <TxStatus status={processed.meta.TransactionResult} />
+          <div className="tx-summary-hash">
+            <span className="tx-summary-hash-label">{t('hash')}:</span>
+            <CopyableAddress address={processed.hash} truncate />
+          </div>
+          {processed.tx.ctid && (
+            <div className="tx-summary-hash">
+              <span className="tx-summary-hash-label">CTID:</span>
+              <CopyableAddress address={processed.tx.ctid} truncate />
+            </div>
+          )}
+        </div>
+
+        {renderOverview(processed)}
+
+        <div
+          className="dashboard-panel"
+          style={simpleTabEmpty ? { display: 'none' } : undefined}
+        >
+          <h3 className="dashboard-panel-title">{t('transaction_details')}</h3>
+          <SimpleTab data={data} onEmpty={handleSimpleTabEmpty} />
+        </div>
+
+        <div className="tx-detail-section dashboard-panel">
+          <h3 className="dashboard-panel-title">{t('execution_details')}</h3>
+          <DetailTab data={processed} />
+        </div>
+
+        <CollapsibleJsonPanel data={raw} />
       </>
     )
   }
 
   let body
-
   if (isError) {
     const message = getErrorMessage(error)
-    body = <NoMatch title={message.title} hints={message.hints} />
-  } else if (data?.processed && data?.processed.hash) {
+    body = (
+      <NoMatch
+        title={message.title}
+        hints={message.hints}
+        errorCode={(error as any)?.code}
+      />
+    )
+  } else if (data?.processed?.hash) {
     body = renderTransaction()
   } else if (!identifier) {
     body = (
@@ -165,6 +251,7 @@ export const Transaction = () => {
       />
     )
   }
+
   return (
     <div className="transaction">
       <SEOHelmet

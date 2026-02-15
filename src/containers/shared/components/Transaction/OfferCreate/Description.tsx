@@ -21,8 +21,8 @@ const Description: TransactionDescriptionComponent = (
   const { t, i18n } = useTranslation()
   const language = i18n.resolvedLanguage
   const { data } = props
-  const paysCurrency = data.tx.TakerPays.currency || 'XRP'
-  const getsCurrency = data.tx.TakerGets.currency || 'XRP'
+  const paysCurrency = data.tx.TakerPays.currency || 'PFT'
+  const getsCurrency = data.tx.TakerGets.currency || 'PFT'
   const paysValue = normalize(data.tx.TakerPays)
   const getsValue = normalize(data.tx.TakerGets)
   const invert =
@@ -67,12 +67,12 @@ const Description: TransactionDescriptionComponent = (
           offered to pay
           <b>
             {normalizeAmount(data.tx.TakerGets, language)}
-            <small>{data.tx.TakerGets.currency || 'XRP'}</small>
+            <small>{data.tx.TakerGets.currency || 'PFT'}</small>
           </b>
           in order to receive
           <b>
             {normalizeAmount(data.tx.TakerPays, language)}
-            <small>{data.tx.TakerPays.currency || 'XRP'}</small>
+            <small>{data.tx.TakerPays.currency || 'PFT'}</small>
           </b>
         </Trans>
       </div>

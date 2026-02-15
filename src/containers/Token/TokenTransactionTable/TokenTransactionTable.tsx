@@ -4,7 +4,7 @@ import { useInfiniteQuery } from 'react-query'
 
 import { useAnalytics } from '../../shared/analytics'
 import SocketContext from '../../shared/SocketContext'
-import { TransactionTable } from '../../shared/components/TransactionTable/TransactionTable'
+import { TransactionFeed } from '../../shared/components/TransactionFeed/TransactionFeed'
 import { getAccountTransactions } from '../../../rippled'
 
 export interface TokenTransactionsTableProps {
@@ -47,7 +47,7 @@ export const TokenTransactionTable = ({
   )
 
   return (
-    <TransactionTable
+    <TransactionFeed
       transactions={data?.pages?.map((page: any) => page.transactions).flat()}
       loading={loading}
       emptyMessage={t(error?.message || ('' as any))}
