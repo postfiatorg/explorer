@@ -1,5 +1,4 @@
 import { FC } from 'react'
-import { Coins, Percent } from 'lucide-react'
 import { MetricCard } from '../shared/components/MetricCard/MetricCard'
 import { formatLargeNumber } from '../shared/utils'
 
@@ -18,8 +17,8 @@ export const TokenStats: FC<TokenStatsProps> = ({
 
   return (
     <div className="token-stats">
-      <MetricCard label="Circulating Supply" value={supplyDisplay} icon={Coins} />
-      <MetricCard label="Transfer Fee" value={feeDisplay} icon={Percent} />
+      <MetricCard label="Circulating Supply" value={supplyDisplay} />
+      <MetricCard label="Transfer Fee" value={feeDisplay} />
     </div>
   )
 }

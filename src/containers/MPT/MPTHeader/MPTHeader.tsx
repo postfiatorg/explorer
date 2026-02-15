@@ -1,7 +1,6 @@
 import { useEffect, useContext, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from 'react-query'
-import { Tag, Percent } from 'lucide-react'
 import { Loader } from '../../shared/components/Loader'
 import { CopyableAddress } from '../../shared/components/CopyableAddress/CopyableAddress'
 import { MetricCard } from '../../shared/components/MetricCard/MetricCard'
@@ -81,9 +80,9 @@ export const MPTHeader = (props: Props) => {
 
       <div className="mpt-stats">
         {parsedMetadata?.name && (
-          <MetricCard label="Name" value={parsedMetadata.name} icon={Tag} />
+          <MetricCard label="Name" value={parsedMetadata.name} />
         )}
-        <MetricCard label="Transfer Fee" value={feeDisplay} icon={Percent} />
+        <MetricCard label="Transfer Fee" value={feeDisplay} />
       </div>
 
       <div className="mpt-details-columns">

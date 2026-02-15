@@ -7,7 +7,7 @@ interface MetricCardProps {
   label: string
   value: string | number | undefined
   unit?: string
-  icon: LucideIcon
+  icon?: LucideIcon
   sparklineData?: number[]
   sparklineColor?: string
 }
@@ -26,7 +26,7 @@ export const MetricCard: FC<MetricCardProps> = ({
   return (
     <div className="metric-card">
       <div className="metric-card-header">
-        <Icon size={16} className="metric-card-icon" />
+        {Icon && <Icon size={16} className="metric-card-icon" />}
         <span className="metric-card-label">{label}</span>
       </div>
       <div className="metric-card-value">
