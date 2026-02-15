@@ -1,29 +1,50 @@
-import { useEffect, useContext } from 'react'
+import { useEffect, useContext, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from 'react-query'
-import { Calendar, Percent } from 'lucide-react'
-import { Loader } from '../../shared/components/Loader'
+import { Percent } from 'lucide-react'
 import { CopyableAddress } from '../../shared/components/CopyableAddress/CopyableAddress'
 import { MetricCard } from '../../shared/components/MetricCard/MetricCard'
 import './styles.scss'
 import SocketContext from '../../shared/SocketContext'
-import { getNFTInfo, getAccountInfo } from '../../../rippled/lib/rippled'
-import { formatNFTInfo, formatAccountInfo } from '../../../rippled/lib/utils'
-import { localizeDate, localizeNumber, BAD_REQUEST, HASH256_REGEX } from '../../shared/utils'
+import { getAccountInfo } from '../../../rippled/lib/rippled'
+import { formatAccountInfo } from '../../../rippled/lib/utils'
+import { BAD_REQUEST, HASH256_REGEX } from '../../shared/utils'
 import { Details } from './Details'
 import { Settings } from './Settings'
 import { Account } from '../../shared/components/Account'
-import { getOldestNFTTransaction } from '../../../rippled/NFTTransactions'
-import { useAnalytics } from '../../shared/analytics'
 import { useLanguage } from '../../shared/hooks'
-import { NFTFormattedInfo, AccountFormattedInfo } from '../../shared/Interfaces'
+import { localizeNumber } from '../../shared/utils'
+import { parseIssuerFromNFTokenID } from '../../../rippled/NFTTransactions'
+import { AccountFormattedInfo } from '../../shared/Interfaces'
 
-const TIME_ZONE = 'UTC'
-const DATE_OPTIONS = {
-  year: 'numeric',
-  month: 'short',
-  day: 'numeric',
-  timeZone: TIME_ZONE,
+const NFT_FLAG_BURNABLE = 0x0001
+const NFT_FLAG_ONLY_XRP = 0x0002
+const NFT_FLAG_TRANSFERABLE = 0x0008
+
+const TAXON_SCRAMBLE_A = 384160001
+const TAXON_SCRAMBLE_B = 2459
+
+function parseNFTokenID(tokenId: string) {
+  const flagsInt = parseInt(tokenId.substring(0, 4), 16)
+  const transferFeeRaw = parseInt(tokenId.substring(4, 8), 16)
+  const issuer = parseIssuerFromNFTokenID(tokenId)
+  const scrambledTaxon = parseInt(tokenId.substring(48, 56), 16) >>> 0
+  const sequence = parseInt(tokenId.substring(56, 64), 16) >>> 0
+  const unscramble = ((TAXON_SCRAMBLE_A * sequence + TAXON_SCRAMBLE_B) & 0xFFFFFFFF) >>> 0
+  const taxon = (scrambledTaxon ^ unscramble) >>> 0
+
+  const flags: string[] = []
+  if (flagsInt & NFT_FLAG_BURNABLE) flags.push('lsfBurnable')
+  if (flagsInt & NFT_FLAG_ONLY_XRP) flags.push('lsfOnlyXRP')
+  if (flagsInt & NFT_FLAG_TRANSFERABLE) flags.push('lsfTransferable')
+
+  return {
+    flags,
+    transferFee: transferFeeRaw,
+    issuer,
+    taxon,
+    serial: sequence,
+  }
 }
 
 interface Props {
@@ -31,26 +52,10 @@ interface Props {
   setError: (error: number | null) => void
 }
 
-export const NFTHeader = (props: Props) => {
+export const NFTHeader = ({ tokenId, setError }: Props) => {
   const { t } = useTranslation()
   const language = useLanguage()
-  const { tokenId, setError } = props
   const rippledSocket = useContext(SocketContext)
-  const { trackException } = useAnalytics()
-
-  const { data, isFetching: loading } = useQuery<NFTFormattedInfo>(
-    ['getNFTInfo', tokenId],
-    async () => {
-      const info = await getNFTInfo(rippledSocket, tokenId)
-      return formatNFTInfo(info)
-    },
-    {
-      onError: (e: any) => {
-        trackException(`NFT ${tokenId} --- ${JSON.stringify(e)}`)
-        setError(e.code)
-      },
-    },
-  )
 
   useEffect(() => {
     if (!HASH256_REGEX.test(tokenId)) {
@@ -58,34 +63,20 @@ export const NFTHeader = (props: Props) => {
     }
   }, [setError, tokenId])
 
-  const { data: firstTransaction } = useQuery(
-    ['getFirstTransaction', tokenId],
-    () => getOldestNFTTransaction(rippledSocket, tokenId),
-    { enabled: !!data },
-  )
+  const parsed = useMemo(() => parseNFTokenID(tokenId), [tokenId])
 
   const { data: accountData } = useQuery<AccountFormattedInfo>(
-    ['getAccountInfo'],
+    ['getAccountInfo', parsed.issuer],
     async () => {
-      const info = await getAccountInfo(rippledSocket, data?.issuer)
+      const info = await getAccountInfo(rippledSocket, parsed.issuer)
       return formatAccountInfo(info, {})
     },
-    { enabled: !!data },
+    { enabled: !!parsed.issuer },
   )
 
-  const mintedDisplay =
-    firstTransaction?.transaction?.type === 'NFTokenMint'
-      ? localizeDate(new Date(firstTransaction.transaction.date), language, DATE_OPTIONS) ?? '—'
-      : '—'
-
-  const transferFee = data?.transferFee
-  const feeDisplay = transferFee
-    ? `${localizeNumber((transferFee / 1000).toPrecision(5), language, { minimumFractionDigits: 3 })}%`
+  const feeDisplay = parsed.transferFee
+    ? `${localizeNumber((parsed.transferFee / 1000).toPrecision(5), language, { minimumFractionDigits: 3 })}%`
     : '0%'
-
-  if (loading) return <Loader />
-
-  if (!data) return null
 
   return (
     <>
@@ -94,27 +85,30 @@ export const NFTHeader = (props: Props) => {
         <div className="nft-hero-id">
           <CopyableAddress address={tokenId} truncate />
         </div>
-        {data.issuer && (
+        {parsed.issuer && (
           <div className="detail-summary-hash-row">
             <span className="detail-summary-hash-label">Issuer:</span>
-            <Account account={data.issuer} />
+            <Account account={parsed.issuer} />
           </div>
         )}
       </div>
 
       <div className="nft-stats">
-        <MetricCard label="Minted" value={mintedDisplay} icon={Calendar} />
         <MetricCard label="Transfer Fee" value={feeDisplay} icon={Percent} />
       </div>
 
       <div className="nft-details-columns">
         <div className="nft-details-panel dashboard-panel">
           <h3 className="dashboard-panel-title">{t('details')}</h3>
-          <Details data={{ ...data, domain: accountData?.domain }} />
+          <Details
+            domain={accountData?.domain}
+            taxon={parsed.taxon}
+            serial={parsed.serial}
+          />
         </div>
         <div className="nft-settings-panel dashboard-panel">
           <h3 className="dashboard-panel-title">{t('settings')}</h3>
-          <Settings flags={data.flags!} />
+          <Settings flags={parsed.flags} />
         </div>
       </div>
     </>
