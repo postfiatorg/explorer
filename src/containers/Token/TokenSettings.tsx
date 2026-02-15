@@ -24,7 +24,7 @@ const FLAG_MAP: Array<{ flag: string; label: string; enabledLabel: string; disab
 
 export const TokenSettings: FC<TokenSettingsProps> = ({ data }) => {
   const { t } = useTranslation()
-  const { domain, rate, emailHash, previousLedger, previousTxn, flags } = data
+  const { domain, emailHash, previousLedger, previousTxn, flags } = data
   const truncatedTxn = previousTxn?.replace(/(.{20})..+/, '$1...')
 
   return (
@@ -34,19 +34,13 @@ export const TokenSettings: FC<TokenSettingsProps> = ({ data }) => {
         <div className="token-details-list">
           {domain && (
             <div className="token-detail-row">
-              <span className="token-detail-label">{t('domain')}</span>
+              <span className="token-detail-label">Domain</span>
               <span className="token-detail-value"><DomainLink domain={domain} /></span>
-            </div>
-          )}
-          {rate != null && (
-            <div className="token-detail-row">
-              <span className="token-detail-label">{t('fee_rate')}</span>
-              <span className="token-detail-value">{rate * 100}%</span>
             </div>
           )}
           {previousLedger && (
             <div className="token-detail-row">
-              <span className="token-detail-label">{t('last_ledger')}</span>
+              <span className="token-detail-label">Last Ledger</span>
               <span className="token-detail-value">
                 <RouteLink to={LEDGER_ROUTE} params={{ identifier: previousLedger }}>
                   {previousLedger}
@@ -56,7 +50,7 @@ export const TokenSettings: FC<TokenSettingsProps> = ({ data }) => {
           )}
           {previousTxn && (
             <div className="token-detail-row">
-              <span className="token-detail-label">{t('last_affecting_transaction')}</span>
+              <span className="token-detail-label">Last Transaction</span>
               <span className="token-detail-value">
                 <RouteLink to={TRANSACTION_ROUTE} params={{ identifier: previousTxn }}>
                   {truncatedTxn}
@@ -66,7 +60,7 @@ export const TokenSettings: FC<TokenSettingsProps> = ({ data }) => {
           )}
           {emailHash && (
             <div className="token-detail-row">
-              <span className="token-detail-label">{t('email_hash')}</span>
+              <span className="token-detail-label">Email Hash</span>
               <span className="token-detail-value mono">{emailHash.replace(/(.{20})..+/, '$1...')}</span>
             </div>
           )}

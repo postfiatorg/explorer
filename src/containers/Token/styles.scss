@@ -69,6 +69,10 @@
   flex: 1;
   min-width: 0;
   padding-bottom: 16px;
+
+  .dashboard-panel-title {
+    padding-bottom: 16px;
+  }
 }
 
 .token-details-list {

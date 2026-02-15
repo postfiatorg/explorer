@@ -102,14 +102,11 @@ export const Token = () => {
             <TokenHero
               currency={currency}
               accountId={accountId}
-              domain={tokenData.domain}
               emailHash={tokenData.emailHash}
             />
             <TokenStats
-              balance={tokenData.balance}
-              reserve={tokenData.reserve}
               obligations={tokenData.obligations}
-              sequence={tokenData.sequence}
+              rate={tokenData.rate}
             />
             <TokenSettings data={tokenData} />
           </>

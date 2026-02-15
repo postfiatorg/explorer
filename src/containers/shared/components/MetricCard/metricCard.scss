@@ -9,11 +9,6 @@
   border: 1px solid $black-80;
   border-radius: 12px;
   background: $black-90;
-  transition: border-color $transition-fast;
-
-  &:hover {
-    border-color: $black-70;
-  }
 }
 
 .metric-card-header {

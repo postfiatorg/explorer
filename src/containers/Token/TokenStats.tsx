@@ -1,46 +1,25 @@
 import { FC } from 'react'
-import { Wallet, Shield, Scale, Hash } from 'lucide-react'
+import { Coins, Percent } from 'lucide-react'
 import { MetricCard } from '../shared/components/MetricCard/MetricCard'
-import { useLanguage } from '../shared/hooks'
-import { localizeNumber, formatLargeNumber } from '../shared/utils'
-import { XRP_BASE } from '../shared/transactionUtils'
-
-const CURRENCY_OPTIONS = {
-  style: 'currency',
-  currency: 'PFT',
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 6,
-}
+import { formatLargeNumber } from '../shared/utils'
 
 interface TokenStatsProps {
-  balance: string
-  reserve: number
   obligations?: string
-  sequence: number
+  rate?: number
 }
 
 export const TokenStats: FC<TokenStatsProps> = ({
-  balance,
-  reserve,
   obligations,
-  sequence,
+  rate,
 }) => {
-  const language = useLanguage()
-  const currencyBalance = localizeNumber(
-    parseInt(balance, 10) / XRP_BASE || 0.0,
-    language,
-    CURRENCY_OPTIONS,
-  )
-  const reserveBalance = localizeNumber(reserve || 0.0, language, CURRENCY_OPTIONS)
   const obligationsFormatted = formatLargeNumber(Number.parseFloat(obligations || '0'))
-  const obligationsDisplay = `${obligationsFormatted.num}${obligationsFormatted.unit}`
+  const supplyDisplay = `${obligationsFormatted.num}${obligationsFormatted.unit}`
+  const feeDisplay = rate != null ? `${rate * 100}%` : '0%'
 
   return (
     <div className="token-stats">
-      <MetricCard label="Balance" value={currencyBalance} icon={Wallet} />
-      <MetricCard label="Reserve" value={reserveBalance} icon={Shield} />
-      <MetricCard label="Obligations" value={obligationsDisplay} icon={Scale} />
-      <MetricCard label="Sequence" value={sequence} icon={Hash} />
+      <MetricCard label="Circulating Supply" value={supplyDisplay} icon={Coins} />
+      <MetricCard label="Transfer Fee" value={feeDisplay} icon={Percent} />
     </div>
   )
 }

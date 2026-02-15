@@ -1,19 +1,16 @@
 import { FC } from 'react'
 import Currency from '../shared/components/Currency'
 import { Account } from '../shared/components/Account'
-import DomainLink from '../shared/components/DomainLink'
 
 interface TokenHeroProps {
   currency: string
   accountId: string
-  domain?: string
   emailHash?: string
 }
 
 export const TokenHero: FC<TokenHeroProps> = ({
   currency,
   accountId,
-  domain,
   emailHash,
 }) => (
   <div className="token-hero detail-summary dashboard-panel">
@@ -35,12 +32,6 @@ export const TokenHero: FC<TokenHeroProps> = ({
         <span className="detail-summary-hash-label">Issuer:</span>
         <Account account={accountId} />
       </div>
-      {domain && (
-        <div className="detail-summary-hash-row">
-          <span className="detail-summary-hash-label">Domain:</span>
-          <DomainLink domain={domain} />
-        </div>
-      )}
     </div>
   </div>
 )
