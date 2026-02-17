@@ -32,6 +32,7 @@
     .agreement-cell {
       display: flex;
       flex-direction: column;
+      align-items: center;
       gap: 3px;
       min-width: 56px;
     }
@@ -46,6 +47,7 @@
     }
 
     .agreement-bar-track {
+      width: 100%;
       height: 4px;
       border-radius: 2px;
       background: $black-80;
