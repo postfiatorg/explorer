@@ -72,9 +72,9 @@ export const TransactionFeedCard: FC<TransactionFeedCardProps> = ({
             )}
           </div>
         </div>
-        {tx.close_time && (
+        {(tx.close_time || tx.date) && (
           <span className="tx-feed-card-time">
-            {formatTimeAgo(tx.close_time)}
+            {formatTimeAgo(tx.close_time || tx.date)}
           </span>
         )}
         <div className="tx-feed-card-status">
