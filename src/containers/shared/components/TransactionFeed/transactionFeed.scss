@@ -19,6 +19,34 @@
   text-align: center;
 }
 
+.tx-feed-date-separator {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 0 12px;
+
+  &:first-child {
+    padding-top: 20px;
+  }
+
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: $black-70;
+  }
+
+  span {
+    color: $black-40;
+    font-size: 12px;
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    @include bold;
+  }
+}
+
 .tx-feed-card {
   border: 1px solid $black-80;
   border-left: 3px solid $black-60;
