@@ -1,6 +1,5 @@
 import { FC } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight } from 'lucide-react'
 import { useStreams } from '../../shared/hooks/useStreams'
 import { buildPath } from '../../shared/routing'
 import { LEDGER_ROUTE } from '../../App/routes'
@@ -16,9 +15,6 @@ export const RecentLedgers: FC = () => {
     <div className="dashboard-panel">
       <div className="dashboard-panel-header">
         <h3 className="dashboard-panel-title">Recent Ledgers</h3>
-        <Link to="/" className="dashboard-panel-link">
-          View all <ArrowRight size={14} />
-        </Link>
       </div>
       <div className="recent-ledgers-list">
         {recentLedgers.length === 0 && (
