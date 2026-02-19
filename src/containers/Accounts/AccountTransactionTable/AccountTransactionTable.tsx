@@ -81,6 +81,7 @@ export const AccountTransactionTable = ({
       emptyMessage={emptyMessage && t(emptyMessage as any)}
       onLoadMore={() => fetchNextPage()}
       hasAdditionalResults={hasNextPage}
+      accountId={accountId}
     />
   )
 }

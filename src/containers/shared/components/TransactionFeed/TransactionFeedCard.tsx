@@ -5,6 +5,7 @@ import { ChevronDown } from 'lucide-react'
 import { TransactionActionIcon } from '../TransactionActionIcon/TransactionActionIcon'
 
 import { Account } from '../Account'
+import { Amount } from '../Amount'
 import { getCategory } from '../Transaction'
 import { buildPath } from '../../routing'
 import { TRANSACTION_ROUTE } from '../../../App/routes'
@@ -17,6 +18,7 @@ import { localizeDate } from '../../utils'
 interface TransactionFeedCardProps {
   tx: any
   compact?: boolean
+  accountId?: string
 }
 
 const normalizeTimestamp = (timestamp: number | string | Date): number => {
@@ -39,6 +41,7 @@ const formatTimeAgo = (timestamp: number | string | Date): string => {
 export const TransactionFeedCard: FC<TransactionFeedCardProps> = ({
   tx,
   compact = false,
+  accountId,
 }) => {
   const { t } = useTranslation()
   const [expanded, setExpanded] = useState(false)
@@ -46,6 +49,45 @@ export const TransactionFeedCard: FC<TransactionFeedCardProps> = ({
   const isSuccess = tx.result === SUCCESSFUL_TRANSACTION
 
   const txPath = buildPath(TRANSACTION_ROUTE, { identifier: tx.hash })
+  const paymentAmount =
+    tx.type === 'Payment' ? tx.details?.instructions?.amount : null
+  const paymentDestination =
+    tx.type === 'Payment' ? tx.details?.instructions?.destination : null
+  const isSent = accountId && tx.account === accountId
+  const isReceived = accountId && paymentDestination === accountId
+
+  const renderAccountLine = () => {
+    if (paymentDestination && accountId) {
+      if (isSent) {
+        return (
+          <span className="tx-feed-card-account">
+            <span className="tx-feed-card-direction sent">Sent to</span>
+            <Account account={paymentDestination} />
+          </span>
+        )
+      }
+      if (isReceived) {
+        return (
+          <span className="tx-feed-card-account">
+            <span className="tx-feed-card-direction received">
+              Received from
+            </span>
+            <Account account={tx.account} />
+          </span>
+        )
+      }
+    }
+
+    if (tx.account) {
+      return (
+        <span className="tx-feed-card-account">
+          <Account account={tx.account} />
+        </span>
+      )
+    }
+
+    return null
+  }
 
   return (
     <div
@@ -63,14 +105,13 @@ export const TransactionFeedCard: FC<TransactionFeedCardProps> = ({
                 defaultValue: tx.type,
               })}
             </Link>
-          </div>
-          <div className="tx-feed-card-details">
-            {tx.account && (
-              <span className="tx-feed-card-account">
-                <Account account={tx.account} />
+            {paymentAmount && (
+              <span className="tx-feed-card-amount">
+                <Amount value={paymentAmount} displayIssuer={false} />
               </span>
             )}
           </div>
+          <div className="tx-feed-card-details">{renderAccountLine()}</div>
         </div>
         {(tx.close_time || tx.date) && (
           <span className="tx-feed-card-time">

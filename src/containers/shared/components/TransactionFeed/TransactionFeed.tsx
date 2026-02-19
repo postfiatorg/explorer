@@ -44,6 +44,7 @@ export interface TransactionFeedProps {
   onLoadMore?: MouseEventHandler
   hasAdditionalResults?: boolean
   compact?: boolean
+  accountId?: string
 }
 
 export const TransactionFeed: FC<TransactionFeedProps> = ({
@@ -53,6 +54,7 @@ export const TransactionFeed: FC<TransactionFeedProps> = ({
   onLoadMore,
   hasAdditionalResults = false,
   compact = false,
+  accountId,
 }) => {
   const { t } = useTranslation()
 
@@ -84,7 +86,7 @@ export const TransactionFeed: FC<TransactionFeedProps> = ({
                   <span>{group}</span>
                 </div>
               )}
-              <TransactionFeedCard tx={tx} />
+              <TransactionFeedCard tx={tx} accountId={accountId} />
             </Fragment>
           )
         })}

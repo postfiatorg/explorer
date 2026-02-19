@@ -108,6 +108,7 @@
 .tx-feed-card-header {
   display: flex;
   align-items: center;
+  gap: 8px;
 }
 
 .tx-feed-card-type {
@@ -122,6 +123,40 @@
 
   &::after {
     display: none !important;
+  }
+}
+
+.tx-feed-card-amount {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 8px;
+  border-radius: 100px;
+  font-size: 12px;
+  white-space: nowrap;
+  background: rgba($white, 0.06);
+  color: $black-30;
+  @include medium;
+
+  .amount {
+    font-size: inherit;
+  }
+
+  a::after {
+    display: none !important;
+  }
+}
+
+.tx-feed-card-direction {
+  font-size: 12px;
+  margin-right: 4px;
+  @include medium;
+
+  &.sent {
+    color: $black-40;
+  }
+
+  &.received {
+    color: var(--green-50);
   }
 }
 
