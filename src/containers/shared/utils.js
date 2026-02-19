@@ -142,6 +142,14 @@ export const isValidJsonString = (str) => {
 }
 
 // Document: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/NumberFormat
+const THIN_SPACE = '\u2009'
+
+const formatWithThinGrouping = (lang, config, number) =>
+  new Intl.NumberFormat(lang, config)
+    .formatToParts(number)
+    .map((p) => (p.type === 'group' ? THIN_SPACE : p.value))
+    .join('')
+
 export const localizeNumber = (
   num,
   lang = 'en-US',
@@ -157,7 +165,7 @@ export const localizeNumber = (
   if (config.style === 'currency' && !isMPT) {
     try {
       const neg = number < 0 ? '-' : ''
-      const d = new Intl.NumberFormat(lang, config).format(number)
+      const d = formatWithThinGrouping(lang, config, number)
       const index = d.search(/\d/)
       const symbol = d.slice(0, index).replace(/-/, '').trim()
       const newSymbol =
@@ -167,11 +175,11 @@ export const localizeNumber = (
     } catch (error) {
       config.style = 'decimal'
       delete config.currency
-      return Intl.NumberFormat(lang, config).format(number)
+      return formatWithThinGrouping(lang, config, number)
     }
   }
 
-  return new Intl.NumberFormat(lang, config).format(number)
+  return formatWithThinGrouping(lang, config, number)
 }
 
 export function formatPrice(number, options = {}) {
