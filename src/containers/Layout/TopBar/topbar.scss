@@ -67,7 +67,7 @@
     display: none !important;
   }
 
-  @media (max-width: $phone-upper-boundary) {
+  @media (max-width: $tablet-portrait-upper-boundary) {
     display: none;
   }
 }
@@ -99,7 +99,7 @@
     flex-shrink: 0;
   }
 
-  @media (max-width: $phone-upper-boundary) {
+  @media (max-width: $tablet-portrait-upper-boundary) {
     .language-picker {
       display: none;
     }
