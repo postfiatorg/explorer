@@ -31,12 +31,15 @@
 
 .command-search-input {
   flex: 1;
+  min-width: 0;
+  overflow: hidden;
   padding: 8px 0;
   border: none;
   background: transparent;
   color: $white;
   font-size: 14px;
   outline: none;
+  text-overflow: ellipsis;
 
   &::placeholder {
     color: $black-50;
