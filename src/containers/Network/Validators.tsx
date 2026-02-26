@@ -28,9 +28,25 @@ import ValidatorsTabs from './ValidatorsTabs'
 import SocketContext from '../shared/SocketContext'
 import { getServerState } from '../../rippled/lib/rippled'
 
+const getValidatorId = (validator: ValidatorResponse) =>
+  validator.master_key ||
+  validator.validation_public_key ||
+  validator.signing_key
+
+const getSigningKey = (validator: StreamValidator) =>
+  validator.signing_key ||
+  validator.pubkey ||
+  validator.validation_public_key ||
+  validator.master_key
+
 export const Validators = () => {
   const { t } = useTranslation()
-  const [vList, setVList] = useState<Record<string, StreamValidator>>({})
+  const [vhsValidators, setVhsValidators] = useState<
+    Record<string, ValidatorResponse>
+  >({})
+  const [liveValidators, setLiveValidators] = useState<
+    Record<string, StreamValidator>
+  >({})
   const [validations, setValidations] = useState([])
   const [metrics, setMetrics] = useState({})
   const [unlCount, setUnlCount] = useState(0)
@@ -59,22 +75,47 @@ export const Validators = () => {
     enabled: process.env.VITE_ENVIRONMENT !== 'custom' || !!network,
   })
 
-  function mergeLatest(
-    validators: Record<string, ValidatorResponse>,
-    live: Record<string, StreamValidator>,
-  ): Record<string, StreamValidator> {
-    const updated: Record<string, StreamValidator> = {}
-    const keys = new Set(Object.keys(validators).concat(Object.keys(live)))
-    keys.forEach((d: string) => {
-      const newData: StreamValidator = validators[d] || live[d]
-      if (newData.ledger_index == null && live[d] && live[d].ledger_index) {
-        newData.ledger_index = live[d].ledger_index
-        newData.ledger_hash = live[d].ledger_hash
+  const signingKeyIndex = useMemo(() => {
+    const index: Record<string, string> = {}
+    Object.entries(vhsValidators).forEach(([validatorId, validator]) => {
+      const signingKey = getSigningKey(validator)
+      if (signingKey) {
+        index[signingKey] = validatorId
       }
-      updated[d] = newData
     })
-    return updated
-  }
+    return index
+  }, [vhsValidators])
+
+  const mergedValidators = useMemo(() => {
+    const merged: Record<string, StreamValidator> = { ...vhsValidators }
+    Object.entries(liveValidators).forEach(([signingKey, live]) => {
+      const validatorId = signingKeyIndex[signingKey]
+      if (validatorId && merged[validatorId]) {
+        merged[validatorId] = {
+          ...merged[validatorId],
+          ...live,
+          signing_key: signingKey,
+        }
+      } else {
+        merged[signingKey] = {
+          ...live,
+          signing_key: signingKey,
+        }
+      }
+    })
+    return merged
+  }, [liveValidators, signingKeyIndex, vhsValidators])
+
+  const validatorsBySigningKey = useMemo(() => {
+    const index: Record<string, StreamValidator> = {}
+    Object.values(mergedValidators).forEach((validator) => {
+      const signingKey = getSigningKey(validator)
+      if (signingKey) {
+        index[signingKey] = validator
+      }
+    })
+    return index
+  }, [mergedValidators])
 
   function fetchFeeSettingsData() {
     if (tab === 'voting') {
@@ -96,9 +137,12 @@ export const Validators = () => {
       .then((validators) => {
         const newValidatorList: Record<string, ValidatorResponse> = {}
         validators.forEach((v: ValidatorResponse) => {
-          newValidatorList[v.signing_key] = v
+          const validatorId = getValidatorId(v)
+          if (validatorId) {
+            newValidatorList[validatorId] = v
+          }
         })
-        setVList(() => mergeLatest(newValidatorList, vList))
+        setVhsValidators(newValidatorList)
         setUnlCount(validators.filter((d: any) => Boolean(d.unl)).length)
         return true
       })
@@ -108,22 +152,18 @@ export const Validators = () => {
   const updateValidators = (newValidations: StreamValidator[]) => {
     // @ts-ignore - Work around type assignment for complex validation data types
     setValidations(newValidations)
-    setVList((value) => {
-      const newValidatorsList: Record<string, StreamValidator> = { ...value }
-      newValidations.forEach((validation: any) => {
-        newValidatorsList[validation.pubkey] = {
-          ...value[validation.pubkey],
-          signing_key: validation.pubkey,
-          ledger_index: validation.ledger_index,
-          ledger_hash: validation.ledger_hash,
-        }
-      })
-      return mergeLatest(newValidatorsList, value)
+    const nextLiveValidators: Record<string, StreamValidator> = {}
+    newValidations.forEach((validation: any) => {
+      nextLiveValidators[validation.pubkey] = {
+        ...validation,
+        signing_key: validation.pubkey,
+      }
     })
+    setLiveValidators(nextLiveValidators)
   }
 
-  const validatorCount = Object.keys(vList).length
-  const validators = Object.values(vList)
+  const validatorCount = Object.keys(mergedValidators).length
+  const validators = Object.values(mergedValidators)
 
   const averageAgreement = useMemo(() => {
     const unlValidators = validators.filter((v: any) => Boolean(v.unl))
@@ -200,7 +240,7 @@ export const Validators = () => {
 
       {network && (
         <Streams
-          validators={vList}
+          validators={validatorsBySigningKey}
           updateValidators={updateValidators}
           updateMetrics={setMetrics}
         />
@@ -215,7 +255,7 @@ export const Validators = () => {
       {
         // @ts-ignore - Work around for complex type assignment issues
         <TooltipProvider>
-          <Hexagons data={validations} list={vList} />
+          <Hexagons data={validations} list={validatorsBySigningKey} />
         </TooltipProvider>
       }
 
