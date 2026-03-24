@@ -56,23 +56,6 @@ export const Validators = () => {
     enabled: process.env.VITE_ENVIRONMENT !== 'custom' || !!network,
   })
 
-  function mergeLatest(
-    validators: Record<string, ValidatorResponse>,
-    live: Record<string, StreamValidator>,
-  ): Record<string, StreamValidator> {
-    const updated: Record<string, StreamValidator> = {}
-    const keys = new Set(Object.keys(validators).concat(Object.keys(live)))
-    keys.forEach((d: string) => {
-      const newData: StreamValidator = validators[d] || live[d]
-      if (newData.ledger_index == null && live[d] && live[d].ledger_index) {
-        newData.ledger_index = live[d].ledger_index
-        newData.ledger_hash = live[d].ledger_hash
-      }
-      updated[d] = newData
-    })
-    return updated
-  }
-
   function fetchFeeSettingsData() {
     if (tab === 'voting') {
       getServerState(rippledSocket).then((res) => {
@@ -91,11 +74,11 @@ export const Validators = () => {
       .get(url)
       .then((resp) => resp.data.validators)
       .then((validators) => {
-        const newValidatorList: Record<string, ValidatorResponse> = {}
+        const newValidatorList: Record<string, StreamValidator> = {}
         validators.forEach((v: ValidatorResponse) => {
           newValidatorList[v.signing_key] = v
         })
-        setVList(() => mergeLatest(newValidatorList, vList))
+        setVList(newValidatorList)
         setUnlCount(validators.filter((d: any) => Boolean(d.unl)).length)
         return true
       })
