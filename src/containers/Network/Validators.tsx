@@ -85,6 +85,24 @@ export const Validators = () => {
       .catch((e) => Log.error(e))
   }
 
+  const updateValidators = (newValidations: StreamValidator[]) => {
+    setVList((current) => {
+      let changed = false
+      const updated = { ...current }
+      newValidations.forEach((v: any) => {
+        if (updated[v.pubkey]) {
+          updated[v.pubkey] = {
+            ...updated[v.pubkey],
+            ledger_index: v.ledger_index,
+            ledger_hash: v.ledger_hash,
+          }
+          changed = true
+        }
+      })
+      return changed ? updated : current
+    })
+  }
+
   const validatorCount = Object.keys(vList).length
   const validators = Object.values(vList)
 
@@ -161,7 +179,12 @@ export const Validators = () => {
       />
       <div className="network-page-title">{t('validators')}</div>
 
-      {network && <Streams updateMetrics={setMetrics} />}
+      {network && (
+        <Streams
+          updateValidators={updateValidators}
+          updateMetrics={setMetrics}
+        />
+      )}
 
       <div className="network-stats">
         <MetricCard label="Validators" value={validatorCount || undefined} />
