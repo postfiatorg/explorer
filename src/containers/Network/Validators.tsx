@@ -13,14 +13,12 @@ import {
   FETCH_INTERVAL_ERROR_MILLIS,
   FETCH_INTERVAL_FEE_SETTINGS_MILLIS,
 } from '../shared/utils'
-import { Hexagons } from './Hexagons'
 import {
   FeeSettings,
   StreamValidator,
   ValidatorResponse,
 } from '../shared/vhsTypes'
 import NetworkContext from '../shared/NetworkContext'
-import { TooltipProvider } from '../shared/components/Tooltip'
 import './css/style.scss'
 import { VALIDATORS_ROUTE } from '../App/routes'
 import { useRouteParams } from '../shared/routing'
@@ -31,7 +29,6 @@ import { getServerState } from '../../rippled/lib/rippled'
 export const Validators = () => {
   const { t } = useTranslation()
   const [vList, setVList] = useState<Record<string, StreamValidator>>({})
-  const [validations, setValidations] = useState([])
   const [metrics, setMetrics] = useState({})
   const [unlCount, setUnlCount] = useState(0)
   const [feeSettings, setFeeSettings] = useState<FeeSettings | undefined>(
@@ -103,23 +100,6 @@ export const Validators = () => {
         return true
       })
       .catch((e) => Log.error(e))
-  }
-
-  const updateValidators = (newValidations: StreamValidator[]) => {
-    // @ts-ignore - Work around type assignment for complex validation data types
-    setValidations(newValidations)
-    setVList((value) => {
-      const newValidatorsList: Record<string, StreamValidator> = { ...value }
-      newValidations.forEach((validation: any) => {
-        newValidatorsList[validation.pubkey] = {
-          ...value[validation.pubkey],
-          signing_key: validation.pubkey,
-          ledger_index: validation.ledger_index,
-          ledger_hash: validation.ledger_hash,
-        }
-      })
-      return mergeLatest(newValidatorsList, value)
-    })
   }
 
   const validatorCount = Object.keys(vList).length
@@ -198,26 +178,13 @@ export const Validators = () => {
       />
       <div className="network-page-title">{t('validators')}</div>
 
-      {network && (
-        <Streams
-          validators={vList}
-          updateValidators={updateValidators}
-          updateMetrics={setMetrics}
-        />
-      )}
+      {network && <Streams updateMetrics={setMetrics} />}
 
       <div className="network-stats">
         <MetricCard label="Validators" value={validatorCount || undefined} />
         <MetricCard label="UNL Count" value={unlCount || undefined} />
         <MetricCard label="UNL 30D Agreement" value={averageAgreement} />
       </div>
-
-      {
-        // @ts-ignore - Work around for complex type assignment issues
-        <TooltipProvider>
-          <Hexagons data={validations} list={vList} />
-        </TooltipProvider>
-      }
 
       <div className="wrap">
         <ValidatorsTabs selected={tab} />
