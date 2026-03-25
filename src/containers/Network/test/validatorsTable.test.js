@@ -33,9 +33,9 @@ describe('Validators table', () => {
     const tab = 'uptime'
     const wrapper = createWrapper({ validators, metrics, tab })
     expect(wrapper.find('.uptime-tab').length).toBe(1)
-    expect(wrapper.find('td.h1').at(0).text().trim()).toBe('1.00000')
-    expect(wrapper.find('td.h24').at(0).text().trim()).toBe('0.91729*')
-    expect(wrapper.find('td.d30').at(0).text().trim()).toBe('0.98468*')
+    expect(wrapper.find('td.h1').at(0).text().trim()).toBe('100.00%')
+    expect(wrapper.find('td.h24').at(0).text().trim()).toBe('91.73%*')
+    expect(wrapper.find('td.d30').at(0).text().trim()).toBe('98.47%*')
     wrapper.unmount()
   })
 

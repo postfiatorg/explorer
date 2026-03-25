@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import { CircleCheck } from 'lucide-react'
 import { FeeSettings, StreamValidator } from '../shared/vhsTypes'
 import { RouteLink } from '../shared/routing'
 import { VALIDATOR_ROUTE, LEDGER_ROUTE } from '../App/routes'
@@ -6,7 +7,6 @@ import SuccessIcon from '../shared/images/success.svg'
 import UpIcon from '../shared/images/ic_up.svg'
 import DownIcon from '../shared/images/ic_down.svg'
 import DomainLink from '../shared/components/DomainLink'
-import InfoIcon from '../shared/images/info.svg'
 import { Loader } from '../shared/components/Loader'
 import './css/validatorsTable.scss'
 import { useLanguage } from '../shared/hooks'
@@ -14,7 +14,6 @@ import { DROPS_TO_XRP_FACTOR, renderXRP } from '../shared/utils'
 
 interface ValidatorsTableProps {
   validators: StreamValidator[]
-  metrics: any
   tab: string
   feeSettings?: FeeSettings
 }
@@ -50,12 +49,23 @@ const sortValidators = (data) => {
 }
 
 export const ValidatorsTable = (props: ValidatorsTableProps) => {
-  const { validators: rawValidators, metrics, tab, feeSettings } = props
+  const { validators: rawValidators, tab, feeSettings } = props
   const validators = rawValidators ? sortValidators(rawValidators) : undefined
   const { t } = useTranslation()
   const language = useLanguage()
 
-  const renderDomain = (domain) => domain && <DomainLink domain={domain} />
+  const renderDomain = (domain, domainVerified) => (
+    <>
+      {domainVerified && (
+        <CircleCheck
+          className="domain-verified-badge"
+          size={14}
+          title="Domain verified"
+        />
+      )}
+      {domain && <DomainLink domain={domain} />}
+    </>
+  )
 
   const getAgreementColor = (score: number): string => {
     if (score >= 0.99) return 'green'
@@ -112,9 +122,6 @@ export const ValidatorsTable = (props: ValidatorsTableProps) => {
     const color = d.ledger_hash ? `#${d.ledger_hash.substring(0, 6)}` : ''
     const trusted = d.unl ? 'yes' : 'no'
     const pubkey = d.master_key || d.signing_key
-    const onNegativeUnl = metrics.nUnl && metrics.nUnl.includes(pubkey)
-    const nUnl = onNegativeUnl ? 'yes' : 'no'
-    const domainVerified = d.domain_verified ? 'yes' : 'no'
     const ledgerIndex = d.ledger_index ?? d.current_index
 
     return (
@@ -124,17 +131,11 @@ export const ValidatorsTable = (props: ValidatorsTableProps) => {
             {pubkey}
           </RouteLink>
         </td>
-        <td className="domain text-truncate">{renderDomain(d.domain)}</td>
-        <td className={`verified ${domainVerified}`}>
-          {d.domain_verified && (
-            <SuccessIcon title="Domain verified" alt="Domain verified" />
-          )}
+        <td className="domain text-truncate">
+          {renderDomain(d.domain, d.domain_verified)}
         </td>
         <td className={`unl ${trusted}`}>
           {d.unl && <SuccessIcon title={d.unl} alt={d.unl} />}
-        </td>
-        <td className={`n-unl ${nUnl}`}>
-          {onNegativeUnl && <InfoIcon title={d.unl} alt={d.unl} />}
         </td>
         <td className="version text-truncate">{d.server_version}</td>
         {tab === 'uptime' ? (
@@ -186,9 +187,7 @@ export const ValidatorsTable = (props: ValidatorsTableProps) => {
         <tr>
           <th className="pubkey">{t('pubkey')}</th>
           <th className="domain">{t('domain')}</th>
-          <th className="verified">{t('verified')}</th>
           <th className="unl">{t('unl')}</th>
-          <th className="n-unl">{t('nUnlCol')}</th>
           <th className="version">{t('Version')}</th>
           {tab === 'uptime' ? (
             <>

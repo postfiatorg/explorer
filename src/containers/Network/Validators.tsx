@@ -29,7 +29,6 @@ import { getServerState } from '../../rippled/lib/rippled'
 export const Validators = () => {
   const { t } = useTranslation()
   const [vList, setVList] = useState<Record<string, StreamValidator>>({})
-  const [metrics, setMetrics] = useState({})
   const [unlCount, setUnlCount] = useState(0)
   const [feeSettings, setFeeSettings] = useState<FeeSettings | undefined>(
     undefined,
@@ -154,15 +153,12 @@ export const Validators = () => {
   ) : null
 
   const Body = {
-    uptime: (
-      <ValidatorsTable validators={validators} metrics={metrics} tab="uptime" />
-    ),
+    uptime: <ValidatorsTable validators={validators} tab="uptime" />,
     voting: (
       <>
         {votingNetworkSettings}
         <ValidatorsTable
           validators={validators}
-          metrics={metrics}
           tab="voting"
           feeSettings={feeSettings}
         />
@@ -179,12 +175,7 @@ export const Validators = () => {
       />
       <div className="network-page-title">{t('validators')}</div>
 
-      {network && (
-        <Streams
-          updateValidators={updateValidators}
-          updateMetrics={setMetrics}
-        />
-      )}
+      {network && <Streams updateValidators={updateValidators} />}
 
       <div className="network-stats">
         <MetricCard label="Validators" value={validatorCount || undefined} />

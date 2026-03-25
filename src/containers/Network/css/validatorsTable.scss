@@ -66,15 +66,17 @@
     .domain {
       max-width: 140px;
       @include medium;
-    }
 
-    .verified {
-      max-width: 40px;
-      text-align: center;
-    }
+      .domain-verified-badge {
+        flex-shrink: 0;
+        color: $green-50;
+        margin-right: 6px;
+        vertical-align: middle;
+      }
 
-    .verified.yes {
-      color: $green;
+      a.domain {
+        vertical-align: middle;
+      }
     }
 
     .last-ledger {
@@ -86,31 +88,13 @@
       }
     }
 
-    .unl,
-    .n-unl {
-      max-width: 40px;
-    }
-
     .unl {
+      max-width: 40px;
       text-align: center;
     }
 
     .unl.yes {
       color: $green;
-    }
-
-    .n-unl {
-      text-align: center;
-      text-transform: none;
-
-      img {
-        height: 16px;
-        transform: rotate(180deg);
-      }
-    }
-
-    .n-unl.yes {
-      color: $orange-40;
     }
 
     .fee-icon {
@@ -128,8 +112,7 @@
     .pubkey,
     .score.h1,
     .score.d30,
-    .fee,
-    .verified {
+    .fee {
       display: none;
     }
 
@@ -140,8 +123,7 @@
     }
 
     @include for-size(tablet-landscape-up) {
-      .pubkey,
-      .verified {
+      .pubkey {
         display: table-cell;
       }
     }
@@ -157,22 +139,18 @@
   &.voting-tab {
     .pubkey,
     .last-ledger,
-    .n-unl,
-    .version,
-    .verified {
+    .version {
       display: none;
     }
 
     @include for-size(tablet-portrait-up) {
-      .n-unl,
       .version {
         display: table-cell;
       }
     }
 
     @include for-size(tablet-landscape-up) {
-      .pubkey,
-      .verified {
+      .pubkey {
         display: table-cell;
       }
     }
