@@ -1,0 +1,139 @@
+@use '../../shared/css/variables' as *;
+
+// Version Distribution panel
+.version-distribution {
+  padding: 12px 16px 16px;
+}
+
+.version-bar {
+  display: flex;
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  gap: 2px;
+  margin-bottom: 16px;
+}
+
+.version-bar-segment {
+  min-width: 4px;
+  transition: width 300ms ease;
+}
+
+.version-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.version-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.version-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.version-label {
+  color: $white;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  @include medium;
+}
+
+.version-label-latest {
+  @include semibold;
+}
+
+.version-latest-badge {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: $green-80;
+  color: $green-30;
+  font-size: 11px;
+  line-height: 1.4;
+  @include medium;
+}
+
+.version-count {
+  color: $white;
+  font-variant-numeric: tabular-nums;
+  min-width: 32px;
+  text-align: right;
+  @include semibold;
+}
+
+.version-pct {
+  color: $black-40;
+  font-variant-numeric: tabular-nums;
+  min-width: 48px;
+  text-align: right;
+}
+
+// Validators by Version table
+.upgrade-table-wrap {
+  overflow-x: auto;
+}
+
+.upgrade-table {
+  .ut-version {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+  }
+
+  .ut-version-text {
+    color: $black-40;
+    font-size: 12px;
+  }
+
+  .ut-version-latest {
+    color: $white;
+    @include semibold;
+  }
+
+  .ut-pubkey {
+    max-width: 80px;
+
+    @include for-size(tablet-portrait-up) {
+      max-width: 120px;
+    }
+
+    @include for-size(desktop-up) {
+      max-width: 280px;
+    }
+  }
+
+  .ut-domain {
+    max-width: 120px;
+    @include medium;
+  }
+
+  .ut-unl {
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .ut-unl-yes {
+    color: $green-50;
+    font-size: 11px;
+    @include semibold;
+  }
+
+  .ut-unl-no {
+    color: $black-60;
+  }
+
+  thead .ut-version {
+    display: table-cell;
+  }
+}

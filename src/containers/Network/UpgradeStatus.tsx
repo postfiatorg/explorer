@@ -1,241 +1,161 @@
-import { useState, useContext } from 'react'
+import { useContext, useMemo } from 'react'
 import axios from 'axios'
 import { useQuery } from 'react-query'
 import { useTranslation } from 'react-i18next'
-import BarChartVersion from './BarChartVersion'
+import { Users, CheckCircle, Tag } from 'lucide-react'
 import { SEOHelmet } from '../shared/components/SEOHelmet'
+import { MetricCard } from '../shared/components/MetricCard/MetricCard'
 import {
   FETCH_INTERVAL_MILLIS,
   FETCH_INTERVAL_ERROR_MILLIS,
   isEarlierVersion,
 } from '../shared/utils'
 import Log from '../shared/log'
-import { NodeData, NodeResponse, ValidatorResponse } from '../shared/vhsTypes'
+import { ValidatorResponse } from '../shared/vhsTypes'
 import NetworkContext from '../shared/NetworkContext'
-import { ledgerCompare } from './Nodes'
+import { RouteLink } from '../shared/routing'
+import { VALIDATOR_ROUTE } from '../App/routes'
+import DomainLink from '../shared/components/DomainLink'
 import { Loader } from '../shared/components/Loader'
-import './css/style.scss'
+import './css/upgradeStatus.scss'
 
-interface NodeStats {
-  nodePercent: number
-  nodeCount: number
+interface VersionStat {
+  version: string
+  count: number
+  percentage: number
+  isLatest: boolean
 }
 
-interface ValidatorStats {
-  validatorPercent: number
-  validatorCount: number
-}
+const VERSION_COLORS = [
+  'var(--green-50)',
+  'var(--blue-purple-50)',
+  'var(--blue-50)',
+  'var(--magenta-50)',
+  'var(--orange-50)',
+  'var(--yellow-50)',
+]
 
-interface ValidatorAggregation {
-  [label: string]: ValidatorStats
-}
-
-interface NodeAggregation {
-  [label: string]: NodeStats
-}
-
-interface DataAggregation extends ValidatorStats, NodeStats {
-  label: string
-}
-
-export const aggregateValidators = (validators: ValidatorResponse[]) => {
-  let totalVals = 0
-  const aggregation: ValidatorAggregation = {}
-  validators?.forEach((validator) => {
-    if (!validator.signing_key) return
-    const version = validator.server_version
-    totalVals += 1
-    if (version) {
-      if (!aggregation[version]) {
-        aggregation[version] = { validatorCount: 0, validatorPercent: 0 }
-      }
-      aggregation[version].validatorCount += 1
+const deriveLatestVersion = (
+  validators: ValidatorResponse[],
+): string | null => {
+  const unlVersionCounts: Record<string, number> = {}
+  validators.forEach((v) => {
+    if (v.unl && v.server_version) {
+      unlVersionCounts[v.server_version] =
+        (unlVersionCounts[v.server_version] || 0) + 1
     }
   })
-  for (const label of Object.keys(aggregation)) {
-    aggregation[label].validatorPercent =
-      totalVals > 0 ? (aggregation[label].validatorCount / totalVals) * 100 : 0
-  }
 
-  return aggregation
+  const entries = Object.entries(unlVersionCounts)
+  if (entries.length === 0) return null
+
+  return entries.reduce((best, current) =>
+    current[1] > best[1] ? current : best,
+  )[0]
 }
 
-export const aggregateNodes = (nodes: NodeResponse[]) => {
-  let totalNodes = 0
-  const aggregation: NodeAggregation = {}
-  nodes?.forEach((node) => {
-    const { version } = node
-    if (!node.node_public_key) return
-    totalNodes += 1
-    if (version) {
-      if (!aggregation[version]) {
-        aggregation[version] = { nodeCount: 0, nodePercent: 0 }
-      }
-      aggregation[version].nodeCount += 1
-    }
+const aggregateVersions = (
+  validators: ValidatorResponse[],
+  latestVersion: string | null,
+): VersionStat[] => {
+  const counts: Record<string, number> = {}
+  let total = 0
+
+  validators.forEach((v) => {
+    if (!v.signing_key) return
+    total += 1
+    const version = v.server_version || 'Unknown'
+    counts[version] = (counts[version] || 0) + 1
   })
-  for (const label of Object.keys(aggregation)) {
-    aggregation[label].nodePercent =
-      totalNodes > 0 ? (aggregation[label].nodeCount / totalNodes) * 100 : 0
-  }
 
-  return aggregation
-}
-
-export const aggregateData = (
-  validatorAggregation: ValidatorAggregation,
-  nodeAggregation: NodeAggregation,
-): DataAggregation[] => {
-  const combinedAggregation: { [label: string]: ValidatorStats & NodeStats } =
-    {}
-  for (const label of Object.keys(validatorAggregation)) {
-    combinedAggregation[label] = {
-      validatorPercent: validatorAggregation[label].validatorPercent,
-      validatorCount: validatorAggregation[label].validatorCount,
-      nodePercent: 0,
-      nodeCount: 0,
-    }
-  }
-
-  for (const label of Object.keys(nodeAggregation)) {
-    if (!combinedAggregation[label]) {
-      combinedAggregation[label] = {
-        validatorPercent: 0,
-        validatorCount: 0,
-        nodePercent: nodeAggregation[label].nodePercent,
-        nodeCount: nodeAggregation[label].nodeCount,
-      }
-    } else {
-      combinedAggregation[label].nodePercent =
-        nodeAggregation[label].nodePercent
-      combinedAggregation[label].nodeCount = nodeAggregation[label].nodeCount
-    }
-  }
-
-  return Object.entries(combinedAggregation)
-    .map(([label, stats]) => ({
-      label,
-      ...stats,
+  return Object.entries(counts)
+    .map(([version, count]) => ({
+      version,
+      count,
+      percentage: total > 0 ? (count / total) * 100 : 0,
+      isLatest: version === latestVersion,
     }))
-    .sort((a, b) => (isEarlierVersion(a.label, b.label) ? -1 : 1))
+    .sort((a, b) => {
+      if (a.isLatest !== b.isLatest) return a.isLatest ? -1 : 1
+      if (a.version === 'Unknown') return 1
+      if (b.version === 'Unknown') return -1
+      return isEarlierVersion(a.version, b.version) ? 1 : -1
+    })
 }
 
-/**
- * Extracts the correct node version format from the source data.
- * (https://data.xrpl.org/v1/network/topology/nodes)
- *
- * Node versions often come in in this format:
- * rippled-[version]-[release (optional)]+[rippled hash (optional)]
- * Output format:
- * [version]-[release (optional)]
- * e.g. rippled-1.9.4+ba3c0e51455a88d76d90b996f20c0f102ac3f5a0.DEBUG should returns 1.9.4
- *      rippled-1.9.4-b1 should returns 1.9.4-b1
- *
- * @param version - The version retrieved from source data.
- * @returns - The correct version format.
- */
-const handleNodeVersion = (version: string | undefined) => {
-  let cleanedVersion = version
-  if (version?.startsWith('rippled'))
-    cleanedVersion = `${version.split('-').slice(1).join('-')}`
-  if (version?.includes('+'))
-    cleanedVersion = `${cleanedVersion?.split('+')[0]}`
-  return cleanedVersion
-}
+const sortValidatorsByVersion = (
+  validators: ValidatorResponse[],
+  latestVersion: string | null,
+): ValidatorResponse[] =>
+  [...validators]
+    .filter((v) => v.signing_key)
+    .sort((a, b) => {
+      const aVer = a.server_version || 'Unknown'
+      const bVer = b.server_version || 'Unknown'
+      const aIsLatest = aVer === latestVersion
+      const bIsLatest = bVer === latestVersion
+      if (aIsLatest !== bIsLatest) return aIsLatest ? -1 : 1
+      if (aVer === 'Unknown') return 1
+      if (bVer === 'Unknown') return -1
+      if (aVer !== bVer) {
+        return isEarlierVersion(aVer, bVer) ? 1 : -1
+      }
+      const aUnl = a.unl ? 0 : 1
+      const bUnl = b.unl ? 0 : 1
+      if (aUnl !== bUnl) return aUnl - bUnl
+      const aDomain = a.domain || 'zzz'
+      const bDomain = b.domain || 'zzz'
+      return aDomain.localeCompare(bDomain)
+    })
 
 export const UpgradeStatus = () => {
   const { t } = useTranslation()
-  const [validatorAggregation, setValidatorAggregation] =
-    useState<ValidatorAggregation>({})
-  const [nodeAggregation, setNodeAggregation] = useState<NodeAggregation>({})
   const network = useContext(NetworkContext)
 
-  useQuery(
-    ['fetchUpgradeStatusData'],
-    () => {
-      fetchData()
-    },
+  const { data: validators, isLoading } = useQuery(
+    ['upgradeStatusValidators', network],
+    () =>
+      axios
+        .get(`${process.env.VITE_DATA_URL}/validators/${network}`)
+        .then((resp) => resp.data.validators as ValidatorResponse[]),
     {
-      refetchInterval: (returnedData, _) =>
+      refetchInterval: (returnedData) =>
         returnedData == null
           ? FETCH_INTERVAL_ERROR_MILLIS
           : FETCH_INTERVAL_MILLIS,
       refetchOnMount: true,
       enabled: process.env.VITE_ENVIRONMENT !== 'custom' || !!network,
+      onError: (e) => Log.error(e),
     },
   )
 
-  const { data: stableVersion } = useQuery(
-    ['stableVersion'],
-    () => fetchStableVersion(),
-    {
-      placeholderData: null,
-      retryDelay: (returnedData, _) =>
-        returnedData == null
-          ? FETCH_INTERVAL_ERROR_MILLIS
-          : FETCH_INTERVAL_MILLIS,
-      refetchOnMount: true,
-      enabled: process.env.VITE_ENVIRONMENT !== 'custom' || !!network,
-    },
+  const latestVersion = useMemo(
+    () => deriveLatestVersion(validators ?? []),
+    [validators],
   )
 
-  const fetchData = () => {
-    axios
-      .get(`${process.env.VITE_DATA_URL}/validators/${network}`)
-      .then((resp) => resp.data.validators)
-      .then((validators: ValidatorResponse[]) => {
-        const newValidatorList: Record<string, ValidatorResponse> = {}
-        validators.forEach((validator) => {
-          newValidatorList[validator.signing_key] = validator
-        })
-        setValidatorAggregation(aggregateValidators(validators))
-        return Object.values(newValidatorList)
-      })
-      .catch((e) => Log.error(e))
+  const versionStats = useMemo(
+    () => aggregateVersions(validators ?? [], latestVersion),
+    [validators, latestVersion],
+  )
 
-    axios
-      .get(`${process.env.VITE_DATA_URL}/topology/nodes/${network}`)
-      .then((resp) => resp.data.nodes)
-      .then((allNodes) => {
-        const nodes: NodeData[] = allNodes.map((node: NodeResponse) => ({
-          ...node,
-          version: handleNodeVersion(node.version),
-          validated_ledger: {
-            ledger_index: node.complete_ledgers
-              ? Number(node.complete_ledgers.split('-')[1])
-              : 0,
-          },
-          load_factor: node.load_factor_server
-            ? Number(node.load_factor_server)
-            : null,
-        }))
+  const sortedValidators = useMemo(
+    () => sortValidatorsByVersion(validators ?? [], latestVersion),
+    [validators, latestVersion],
+  )
 
-        nodes.sort((a: NodeData, b: NodeData) => {
-          if (a.server_state === b.server_state) {
-            return ledgerCompare(a, b)
-          }
-          if (a.server_state && !b.server_state) {
-            return -1
-          }
-          return 1
-        })
+  const totalValidators = versionStats.reduce((sum, v) => sum + v.count, 0)
+  const onLatestCount = latestVersion
+    ? (versionStats.find((v) => v.version === latestVersion)?.count ?? 0)
+    : 0
+  const onLatestPercent =
+    totalValidators > 0
+      ? `${((onLatestCount / totalValidators) * 100).toFixed(0)}%`
+      : undefined
 
-        setNodeAggregation(aggregateNodes(nodes))
-        return nodes
-      })
-      .catch((e) => Log.error(e))
-  }
-
-  const fetchStableVersion = () => {
-    const url = 'https://api.github.com/repos/postfiatorg/pftld/releases'
-    return axios
-      .get(url)
-      .then(
-        (resp) =>
-          resp.data.find(
-            (release: any) => release.tag_name && !release.prerelease,
-          )?.tag_name || null,
-      )
+  const getVersionColor = (version: string): string => {
+    const idx = versionStats.findIndex((v) => v.version === version)
+    return idx >= 0 ? VERSION_COLORS[idx % VERSION_COLORS.length] : ''
   }
 
   return (
@@ -245,20 +165,144 @@ export const UpgradeStatus = () => {
         description={t('meta.upgrade_status.description')}
         path="/network/upgrade-status"
       />
-      <div className="type">{t('upgrade_status')}</div>
-      <div className="wrap">
-        {Object.keys(validatorAggregation).length > 0 ||
-        Object.keys(nodeAggregation).length > 0 ? (
-          <div className="upgrade_status">
-            <BarChartVersion
-              data={aggregateData(validatorAggregation, nodeAggregation)}
-              stableVersion={stableVersion}
+      <div className="network-page-title">{t('upgrade_status')}</div>
+
+      {isLoading || !validators ? (
+        <Loader />
+      ) : (
+        <>
+          <div className="network-stats">
+            <MetricCard
+              label="Validators"
+              value={totalValidators || undefined}
+              icon={Users}
+            />
+            <MetricCard
+              label="On Latest"
+              value={onLatestPercent}
+              icon={CheckCircle}
+            />
+            <MetricCard
+              label="Latest Version"
+              value={latestVersion ?? '—'}
+              icon={Tag}
             />
           </div>
-        ) : (
-          <Loader />
-        )}
-      </div>
+
+          <div className="dashboard-panel">
+            <h3 className="dashboard-panel-title">Version Distribution</h3>
+            <div className="version-distribution">
+              {versionStats.length === 0 ? (
+                <div className="dashboard-panel-empty">
+                  No version data available
+                </div>
+              ) : (
+                <>
+                  <div className="version-bar">
+                    {versionStats.map((stat, i) => (
+                      <div
+                        key={stat.version}
+                        className="version-bar-segment"
+                        style={{
+                          width: `${stat.percentage}%`,
+                          backgroundColor:
+                            VERSION_COLORS[i % VERSION_COLORS.length],
+                        }}
+                        title={`${stat.version}: ${stat.count}`}
+                      />
+                    ))}
+                  </div>
+                  <div className="version-list">
+                    {versionStats.map((stat, i) => (
+                      <div key={stat.version} className="version-row">
+                        <span
+                          className="version-dot"
+                          style={{
+                            backgroundColor:
+                              VERSION_COLORS[i % VERSION_COLORS.length],
+                          }}
+                        />
+                        <span
+                          className={`version-label${stat.isLatest ? ' version-label-latest' : ''}`}
+                        >
+                          {stat.version}
+                          {stat.isLatest && (
+                            <span className="version-latest-badge">latest</span>
+                          )}
+                        </span>
+                        <span className="version-count">{stat.count}</span>
+                        <span className="version-pct">
+                          {stat.percentage.toFixed(1)}%
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+
+          <div className="dashboard-panel">
+            <h3 className="dashboard-panel-title">Validators by Version</h3>
+            <div className="upgrade-table-wrap">
+              <table className="basic upgrade-table">
+                <thead>
+                  <tr>
+                    <th className="ut-version">{t('Version')}</th>
+                    <th className="ut-pubkey">{t('pubkey')}</th>
+                    <th className="ut-domain">{t('domain')}</th>
+                    <th className="ut-unl">{t('unl')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sortedValidators.map((v) => {
+                    const pubkey = v.master_key || v.signing_key
+                    const version = v.server_version || 'Unknown'
+                    const color = getVersionColor(version)
+                    return (
+                      <tr key={pubkey}>
+                        <td className="ut-version">
+                          <span
+                            className="version-dot"
+                            style={{ backgroundColor: color }}
+                          />
+                          <span
+                            className={
+                              version === latestVersion
+                                ? 'ut-version-text ut-version-latest'
+                                : 'ut-version-text'
+                            }
+                          >
+                            {version}
+                          </span>
+                        </td>
+                        <td className="ut-pubkey text-truncate" title={pubkey}>
+                          <RouteLink
+                            to={VALIDATOR_ROUTE}
+                            params={{ identifier: pubkey }}
+                          >
+                            {pubkey}
+                          </RouteLink>
+                        </td>
+                        <td className="ut-domain text-truncate">
+                          {v.domain && <DomainLink domain={v.domain} />}
+                        </td>
+                        <td className="ut-unl">
+                          {v.unl ? (
+                            <span className="ut-unl-yes">UNL</span>
+                          ) : (
+                            <span className="ut-unl-no">—</span>
+                          )}
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   )
 }

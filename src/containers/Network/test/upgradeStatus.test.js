@@ -6,104 +6,41 @@ import i18n from '../../../i18n/testConfig'
 import SocketContext from '../../shared/SocketContext'
 import MockWsClient from '../../test/mockWsClient'
 import { QuickHarness } from '../../test/utils'
-import {
-  UpgradeStatus,
-  aggregateData,
-  aggregateNodes,
-  aggregateValidators,
-} from '../UpgradeStatus'
+import { UpgradeStatus } from '../UpgradeStatus'
 import { UPGRADE_STATUS_ROUTE } from '../../App/routes'
 
-const undefinedValidatorsData = [
-  {
-    ledger_index: 74661353,
-    ledger_hash:
-      '613E298A8C0AEB816D16AA61952E0834BBD9B5E5677EA3E9A2413118EE074363',
-  },
+const validatorsData = [
   {
     master_key: 'nHUakYHufAvdx5XqTS2F4Pu7i8fQqDqpKqXN2kUGHhBFcG38GNqL',
     signing_key: 'n9M38x7Sf7epp3gaxgcFxEtwkSc4w2ePb1SgfLiz9bVCr5Lvzrm8',
+    unl: true,
+    domain: 'validator1.postfiat.org',
+    server_version: '2.4.0',
+    agreement_30day: { score: '1.00000', missed: 0, total: 1000 },
+    chain: 'main',
+    partial: false,
+  },
+  {
+    master_key: 'nHB8QMKGt9VB4Vg71VszjBVQnDW3v3QudM4DwFaJfy96bj4Pv9fA',
+    signing_key: 'n9KQ2DVL7QhgovChk81W5KSHPDfAJdRTHencE3Y7cnUBsvrc7uMa',
+    unl: true,
+    domain: 'validator2.postfiat.org',
+    server_version: '2.4.0',
+    agreement_30day: { score: '0.99900', missed: 1, total: 1000 },
+    chain: 'main',
+    partial: false,
+  },
+  {
+    master_key: 'nHUVPzAmAmQ2QSc4oE1iLfsGi17qN2ado8PhxvgEkou76FLxAz7C',
+    signing_key: 'n9J1GJHtua77TBEzBsA8HGMzu5stCbkLFfvMbx3tZeCgKkAzpc6C',
     unl: false,
-    domain: 'gerty.one',
-    ledger_index: 74554449,
-    server_version: '1.9.4',
-    agreement_1hour: {
-      missed: 936,
-      total: 936,
-      score: '0.00000',
-      incomplete: false,
-    },
-    agreement_24hour: {
-      missed: 22338,
-      total: 22338,
-      score: '0.00000',
-      incomplete: false,
-    },
-    agreement_30day: {
-      missed: 263139,
-      total: 535427,
-      score: '0.50854',
-      incomplete: false,
-    },
-    chain: 'chain.4',
+    domain: 'external.example.com',
+    server_version: '2.3.1',
+    agreement_30day: { score: '0.50000', missed: 500, total: 1000 },
+    chain: 'main',
     partial: false,
   },
 ]
-
-const nodesData = [
-  {
-    node_public_key: 'n9JoeT8XKeBSR8y4D9aDz2PL1DD1j6LQwkRTbH2eFqeRmWYHj2Nw',
-    networks: 'dev',
-    complete_ledgers: '22085270-29882772',
-    ip: '34.208.12.148',
-    port: 2459,
-    uptime: 1257336,
-    version: '1.11.0-rc3',
-    server_state: 'full',
-    io_latency_ms: 1,
-    load_factor_server: '256',
-    inbound_count: 4,
-    outbound_count: 9,
-    lat: '45.82',
-    long: '-119.73',
-    country_code: 'US',
-    country: 'United States',
-    region: 'Oregon',
-    region_code: 'OR',
-    city: 'Boardman',
-    postal_code: '97818',
-    timezone: 'America/Los_Angeles',
-  },
-]
-
-describe('UpgradeStatus test functions', () => {
-  it('aggregate data works with validators without keys', () => {
-    const validatorAggregate = aggregateValidators(undefinedValidatorsData)
-    expect(validatorAggregate).toEqual({
-      '1.9.4': { validatorCount: 1, validatorPercent: 100 },
-    })
-    const nodeAggregate = aggregateNodes(nodesData)
-    expect(nodeAggregate).toEqual({
-      '1.11.0-rc3': { nodeCount: 1, nodePercent: 100 },
-    })
-    expect(aggregateData(validatorAggregate, nodeAggregate)).toEqual([
-      {
-        label: '1.9.4',
-        validatorCount: 1,
-        validatorPercent: 100,
-        nodeCount: 0,
-        nodePercent: 0,
-      },
-      {
-        label: '1.11.0-rc3',
-        validatorCount: 0,
-        validatorPercent: 0,
-        nodeCount: 1,
-        nodePercent: 100,
-      },
-    ])
-  })
-})
 
 describe('UpgradeStatus renders', () => {
   let server
@@ -119,11 +56,6 @@ describe('UpgradeStatus renders', () => {
     )
 
   beforeEach(async () => {
-    window.ResizeObserver = jest.fn().mockImplementation(() => ({
-      observe: jest.fn(),
-      unobserve: jest.fn(),
-      disconnect: jest.fn(),
-    }))
     server = new WS(WS_URL, { jsonProtocol: true })
     client = new MockWsClient(WS_URL)
     await server.connected
@@ -142,21 +74,24 @@ describe('UpgradeStatus renders', () => {
     wrapper.unmount()
   })
 
-  it('renders when nodes request errors', async () => {
-    moxios.stubRequest(`${process.env.VITE_DATA_URL}/validators/main`, {
+  it('renders loader while fetching', async () => {
+    const wrapper = createWrapper()
+    expect(wrapper.find('.loader').length).toBeGreaterThan(0)
+    wrapper.unmount()
+  })
+
+  it('renders version distribution after data loads', (done) => {
+    moxios.stubRequest(new RegExp(`${process.env.VITE_DATA_URL}/validators/`), {
       status: 200,
-      response: { validators: undefinedValidatorsData },
-    })
-    moxios.stubRequest(`${process.env.VITE_DATA_URL}/topology/nodes/main`, {
-      status: 502,
+      response: { validators: validatorsData },
     })
 
     const wrapper = createWrapper()
-    wrapper.update()
     setTimeout(() => {
       wrapper.update()
-      expect(wrapper.find('.barchart').length).toEqual(1)
-    })
-    wrapper.unmount()
+      expect(wrapper.find('.version-distribution').length).toEqual(1)
+      expect(wrapper.find('.version-row').length).toEqual(2)
+      done()
+    }, 100)
   })
 })

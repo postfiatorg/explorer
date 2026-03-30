@@ -146,7 +146,6 @@ List of all validators on the network with tabs for uptime and voting views. Inc
 | ----------------- | ------------------------------------------- |
 | `ValidatorsTable` | Table listing all validators                |
 | `ValidatorsTabs`  | Tab navigation (uptime / voting)            |
-| `BarChartVersion` | Bar chart of rippled version distribution   |
 
 ---
 
