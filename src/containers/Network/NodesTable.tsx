@@ -106,7 +106,9 @@ export const NodesTable: FC<{ nodes: NodeData[] }> = ({
       <td className="pubkey text-truncate">{node.node_public_key}</td>
       <td className="ip text-truncate">{node.ip}</td>
       <td className="state center">
-        <span className={node.server_state}>{node.server_state}</span>
+        <span className={node.server_state ?? 'unreachable'}>
+          {node.server_state ?? 'unreachable'}
+        </span>
       </td>
       <td className="version">{getVersion(node.version)}</td>
       <td className="last-ledger">{renderLastLedger(node.validated_ledger)}</td>

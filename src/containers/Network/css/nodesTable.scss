@@ -57,6 +57,12 @@
       color: $black-60;
     }
 
+    .state .unreachable {
+      background-color: $black-40;
+      box-shadow: 0 0 6px $black-40;
+      color: $black-80;
+    }
+
     .version {
       max-width: 60px;
     }
