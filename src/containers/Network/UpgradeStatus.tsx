@@ -35,25 +35,6 @@ const VERSION_COLORS = [
   'var(--yellow-50)',
 ]
 
-const deriveLatestVersion = (
-  validators: ValidatorResponse[],
-): string | null => {
-  const unlVersionCounts: Record<string, number> = {}
-  validators.forEach((v) => {
-    if (v.unl && v.server_version) {
-      unlVersionCounts[v.server_version] =
-        (unlVersionCounts[v.server_version] || 0) + 1
-    }
-  })
-
-  const entries = Object.entries(unlVersionCounts)
-  if (entries.length === 0) return null
-
-  return entries.reduce((best, current) =>
-    current[1] > best[1] ? current : best,
-  )[0]
-}
-
 const aggregateVersions = (
   validators: ValidatorResponse[],
   latestVersion: string | null,
@@ -129,24 +110,34 @@ export const UpgradeStatus = () => {
     },
   )
 
-  const latestVersion = useMemo(
-    () => deriveLatestVersion(validators ?? []),
-    [validators],
+  const { data: latestVersion } = useQuery(
+    ['latestVersion', network],
+    () =>
+      axios
+        .get(`/api/v1/latest-version/${network}`)
+        .then((resp) => resp.data.version as string),
+    {
+      enabled: !!network,
+      staleTime: 60 * 60 * 1000,
+      onError: (e) => Log.error(e),
+    },
   )
 
+  const resolvedLatest = latestVersion ?? null
+
   const versionStats = useMemo(
-    () => aggregateVersions(validators ?? [], latestVersion),
-    [validators, latestVersion],
+    () => aggregateVersions(validators ?? [], resolvedLatest),
+    [validators, resolvedLatest],
   )
 
   const sortedValidators = useMemo(
-    () => sortValidatorsByVersion(validators ?? [], latestVersion),
-    [validators, latestVersion],
+    () => sortValidatorsByVersion(validators ?? [], resolvedLatest),
+    [validators, resolvedLatest],
   )
 
   const totalValidators = versionStats.reduce((sum, v) => sum + v.count, 0)
-  const onLatestCount = latestVersion
-    ? (versionStats.find((v) => v.version === latestVersion)?.count ?? 0)
+  const onLatestCount = resolvedLatest
+    ? (versionStats.find((v) => v.version === resolvedLatest)?.count ?? 0)
     : 0
   const onLatestPercent =
     totalValidators > 0
@@ -184,7 +175,7 @@ export const UpgradeStatus = () => {
             />
             <MetricCard
               label="Latest Version"
-              value={latestVersion ?? '—'}
+              value={resolvedLatest ?? '—'}
               icon={Tag}
             />
           </div>
@@ -268,7 +259,7 @@ export const UpgradeStatus = () => {
                           />
                           <span
                             className={
-                              version === latestVersion
+                              version === resolvedLatest
                                 ? 'ut-version-text ut-version-latest'
                                 : 'ut-version-text'
                             }

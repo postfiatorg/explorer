@@ -85,12 +85,38 @@ describe('UpgradeStatus renders', () => {
       status: 200,
       response: { validators: validatorsData },
     })
+    moxios.stubRequest(/\/api\/v1\/latest-version\//, {
+      status: 200,
+      response: { version: '2.4.0', network: 'devnet' },
+    })
 
     const wrapper = createWrapper()
     setTimeout(() => {
       wrapper.update()
       expect(wrapper.find('.version-distribution').length).toEqual(1)
       expect(wrapper.find('.version-row').length).toEqual(2)
+      done()
+    }, 100)
+  })
+
+  it('renders latest badge from API response', (done) => {
+    moxios.stubRequest(new RegExp(`${process.env.VITE_DATA_URL}/validators/`), {
+      status: 200,
+      response: { validators: validatorsData },
+    })
+    moxios.stubRequest(/\/api\/v1\/latest-version\//, {
+      status: 200,
+      response: { version: '2.4.0', network: 'devnet' },
+    })
+
+    const wrapper = createWrapper()
+    setTimeout(() => {
+      wrapper.update()
+      const latestBadge = wrapper.find('.version-latest-badge')
+      expect(latestBadge.length).toEqual(1)
+      expect(
+        latestBadge.closest('.version-row').find('.version-label').text(),
+      ).toContain('2.4.0')
       done()
     }, 100)
   })
