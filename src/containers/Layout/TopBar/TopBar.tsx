@@ -4,7 +4,6 @@ import { Menu } from 'lucide-react'
 import Logo from '../../shared/images/PFTLedger.svg'
 import { CommandSearch } from './CommandSearch'
 import { NetworkPicker } from '../../Header/NetworkPicker/NetworkPicker'
-import { LanguagePicker } from '../../Header/LanguagePicker/LanguagePicker'
 import './topbar.scss'
 
 interface TopBarProps {
@@ -31,7 +30,6 @@ export const TopBar: FC<TopBarProps> = ({ onMenuClick }) => (
     </div>
     <div className="topbar-right">
       <NetworkPicker />
-      <LanguagePicker />
     </div>
   </header>
 )

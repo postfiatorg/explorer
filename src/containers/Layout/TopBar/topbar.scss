@@ -98,10 +98,4 @@
   @include for-size(tablet-portrait-up) {
     flex-shrink: 0;
   }
-
-  @media (max-width: $tablet-portrait-upper-boundary) {
-    .language-picker {
-      display: none;
-    }
-  }
 }

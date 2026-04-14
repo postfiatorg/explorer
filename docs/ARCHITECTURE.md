@@ -228,13 +228,12 @@ Landing page for custom network mode where users can enter a `rippled` WebSocket
 
 **Files:** `src/containers/Header/`
 
-Site header containing the logo, universal search bar, navigation menu, language picker, and network environment picker.
+Site header containing the logo, universal search bar, navigation menu, and network environment picker.
 
 | Subcomponent      | Purpose                                              |
 | ----------------- | ---------------------------------------------------- |
 | `Search`          | Universal search (accounts, transactions, ledgers, tokens) |
 | `NavigationMenu`  | Main nav with submenu support (Explorer, Network)    |
-| `LanguagePicker`  | i18n language selector                               |
 | `NetworkPicker`   | Network environment selector (mainnet/testnet/devnet)|
 
 ### Footer
