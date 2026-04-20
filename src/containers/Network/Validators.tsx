@@ -25,11 +25,30 @@ import { useRouteParams } from '../shared/routing'
 import ValidatorsTabs from './ValidatorsTabs'
 import SocketContext from '../shared/SocketContext'
 import { getServerState } from '../../rippled/lib/rippled'
+import {
+  ScoringContext,
+  ScoringUnlResponse,
+  ScoringConfig,
+  ScoringRoundMeta,
+  ScoresJson,
+} from './scoringUtils'
+
+const FIVE_MINUTES_MS = 5 * 60 * 1000
+const ONE_HOUR_MS = 60 * 60 * 1000
+const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000
+
+const fetchJsonOrNull = async <T,>(url: string): Promise<T | null> => {
+  try {
+    const response = await axios.get<T>(url)
+    return response.data
+  } catch {
+    return null
+  }
+}
 
 export const Validators = () => {
   const { t } = useTranslation()
   const [vList, setVList] = useState<Record<string, StreamValidator>>({})
-  const [unlCount, setUnlCount] = useState(0)
   const [feeSettings, setFeeSettings] = useState<FeeSettings | undefined>(
     undefined,
   )
@@ -55,6 +74,64 @@ export const Validators = () => {
     enabled: process.env.VITE_ENVIRONMENT !== 'custom' || !!network,
   })
 
+  const { data: scoringUnl } = useQuery<ScoringUnlResponse | null>(
+    ['scoring-unl-current'],
+    () => fetchJsonOrNull<ScoringUnlResponse>('/api/scoring/unl/current'),
+    {
+      staleTime: FIVE_MINUTES_MS,
+      refetchInterval: FIVE_MINUTES_MS,
+      retry: false,
+    },
+  )
+
+  const { data: scoringConfig } = useQuery<ScoringConfig | null>(
+    ['scoring-config'],
+    () => fetchJsonOrNull<ScoringConfig>('/api/scoring/config'),
+    {
+      staleTime: ONE_HOUR_MS,
+      refetchInterval: ONE_HOUR_MS,
+      retry: false,
+    },
+  )
+
+  const roundNumber = scoringUnl?.round_number
+
+  const { data: scoringRound } = useQuery<ScoringRoundMeta | null>(
+    ['scoring-round', roundNumber],
+    () =>
+      fetchJsonOrNull<ScoringRoundMeta>(`/api/scoring/rounds/${roundNumber}`),
+    {
+      enabled: typeof roundNumber === 'number',
+      staleTime: TWENTY_FOUR_HOURS_MS,
+      retry: false,
+    },
+  )
+
+  const { data: scoringScores } = useQuery<ScoresJson | null>(
+    ['scoring-scores', roundNumber],
+    () =>
+      fetchJsonOrNull<ScoresJson>(
+        `/api/scoring/rounds/${roundNumber}/scores.json`,
+      ),
+    {
+      enabled: typeof roundNumber === 'number',
+      staleTime: TWENTY_FOUR_HOURS_MS,
+      retry: false,
+    },
+  )
+
+  const scoringContext = useMemo<ScoringContext | null>(() => {
+    if (!scoringUnl || !scoringScores || !scoringRound || !scoringConfig) {
+      return null
+    }
+    return {
+      unl: scoringUnl,
+      scores: scoringScores,
+      round: scoringRound,
+      config: scoringConfig,
+    }
+  }, [scoringUnl, scoringScores, scoringRound, scoringConfig])
+
   function fetchFeeSettingsData() {
     if (tab === 'voting') {
       getServerState(rippledSocket).then((res) => {
@@ -78,7 +155,6 @@ export const Validators = () => {
           newValidatorList[v.signing_key] = v
         })
         setVList(newValidatorList)
-        setUnlCount(validators.filter((d: any) => Boolean(d.unl)).length)
         return true
       })
       .catch((e) => Log.error(e))
@@ -105,8 +181,23 @@ export const Validators = () => {
   const validatorCount = Object.keys(vList).length
   const validators = Object.values(vList)
 
+  const unlCount = useMemo(() => {
+    if (scoringContext) {
+      return scoringContext.unl.unl.length
+    }
+    return validators.filter((v: any) => Boolean(v.unl)).length
+  }, [scoringContext, validators])
+
   const averageAgreement = useMemo(() => {
-    const unlValidators = validators.filter((v: any) => Boolean(v.unl))
+    const unlKeys = scoringContext ? new Set(scoringContext.unl.unl) : null
+
+    const unlValidators = validators.filter((v: any) => {
+      if (unlKeys) {
+        const key = v.master_key || v.signing_key
+        return unlKeys.has(key)
+      }
+      return Boolean(v.unl)
+    })
     const withScore = unlValidators.filter(
       (v: any) => v.agreement_30day?.score != null,
     )
@@ -117,7 +208,7 @@ export const Validators = () => {
     )
     const avg = (sum / withScore.length) * 100
     return `${avg.toFixed(2)}%`
-  }, [validators])
+  }, [validators, scoringContext])
 
   const votingNetworkSettings = feeSettings ? (
     <div className="voting-current-settings">
@@ -153,7 +244,13 @@ export const Validators = () => {
   ) : null
 
   const Body = {
-    uptime: <ValidatorsTable validators={validators} tab="uptime" />,
+    uptime: (
+      <ValidatorsTable
+        validators={validators}
+        tab="uptime"
+        scoringContext={scoringContext}
+      />
+    ),
     voting: (
       <>
         {votingNetworkSettings}
@@ -161,6 +258,7 @@ export const Validators = () => {
           validators={validators}
           tab="voting"
           feeSettings={feeSettings}
+          scoringContext={scoringContext}
         />
       </>
     ),

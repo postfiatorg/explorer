@@ -31,10 +31,10 @@
 
     .agreement-cell {
       display: flex;
+      min-width: 56px;
       flex-direction: column;
       align-items: center;
       gap: 3px;
-      min-width: 56px;
     }
 
     .agreement-value {
@@ -69,8 +69,8 @@
 
       .domain-verified-badge {
         flex-shrink: 0;
-        color: $green-50;
         margin-right: 6px;
+        color: $green-50;
         vertical-align: middle;
       }
 
@@ -95,6 +95,97 @@
 
     .unl.yes {
       color: $green;
+    }
+
+    .sort-icon {
+      opacity: 0.6;
+      transition: opacity $transition-default;
+
+      &.active {
+        color: $blue-40;
+        opacity: 1;
+      }
+
+      &.inactive {
+        opacity: 0.4;
+      }
+    }
+
+    th.sortable {
+      padding: 0;
+
+      .sort-header-button {
+        all: unset;
+        display: block;
+        width: 100%;
+        padding: inherit;
+        color: inherit;
+        cursor: pointer;
+        font: inherit;
+        text-align: inherit;
+        user-select: none;
+
+        &:focus-visible {
+          outline: 2px solid $blue-40;
+          outline-offset: -2px;
+        }
+
+        &:hover .sort-icon {
+          opacity: 1;
+        }
+      }
+    }
+
+    .sort-header-content {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .status-badge-cell {
+      min-width: 140px;
+      white-space: nowrap;
+
+      .status-badge {
+        display: inline-flex;
+        align-items: center;
+        font-size: 13px;
+        gap: 6px;
+        @include medium;
+      }
+
+      .status-glyph {
+        font-size: 15px;
+        line-height: 1;
+      }
+
+      .status-score {
+        font-variant-numeric: tabular-nums;
+      }
+
+      .status-label {
+        color: $black-40;
+      }
+
+      &.status-on-unl .status-glyph,
+      &.status-on-unl .status-score {
+        color: $green-50;
+      }
+
+      &.status-candidate .status-glyph,
+      &.status-candidate .status-score {
+        color: $yellow-50;
+      }
+
+      &.status-ineligible .status-glyph,
+      &.status-ineligible .status-score {
+        color: $black-40;
+      }
+
+      &.status-no-data .status-glyph,
+      &.status-no-data .status-label {
+        color: $black-60;
+      }
     }
 
     .fee-icon {
@@ -163,22 +254,39 @@
   }
 }
 
+.scoring-freshness-footer {
+  padding: 10px 12px;
+  margin-top: 8px;
+  color: $black-40;
+  font-size: 13px;
+  text-align: right;
+  @include medium;
+
+  &.amber {
+    color: $yellow-50;
+  }
+
+  &.red {
+    color: $orange-50;
+  }
+}
+
 .voting-current-settings {
   margin-bottom: 16px;
 
   .voting-settings-header {
+    margin-bottom: 8px;
     color: $black-40;
     font-size: 12px;
-    text-transform: uppercase;
     letter-spacing: 0.5px;
-    margin-bottom: 8px;
+    text-transform: uppercase;
     @include medium;
   }
 
   .voting-settings-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
     gap: 12px;
+    grid-template-columns: repeat(3, 1fr);
 
     @include for-size(phone-only) {
       grid-template-columns: 1fr;
@@ -189,18 +297,18 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
     padding: 14px 16px;
     border: 1px solid $black-80;
     border-radius: 12px;
     background: $black-90;
+    gap: 4px;
   }
 
   .voting-setting-label {
     color: $black-40;
     font-size: 12px;
-    text-transform: uppercase;
     letter-spacing: 0.5px;
+    text-transform: uppercase;
     @include medium;
   }
 
