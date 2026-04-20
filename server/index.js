@@ -6,6 +6,7 @@ const bodyParser = require('body-parser')
 const compression = require('compression')
 const prerender = require('prerender-node')
 const routes = require('./routes/v1')
+const scoring = require('./routes/scoring')
 
 const log = require('./lib/logger')({ name: 'server' })
 
@@ -51,6 +52,7 @@ const STATIC_FILE_EXTENSIONS = new Set([
 app.use(compression())
 app.use(bodyParser.json())
 app.use('/api/v1', routes)
+app.use('/api/scoring', scoring.router)
 app.get('/sitemap.xml', require('./routes/v1/sitemap'))
 app.get('/robots.txt', require('./routes/v1/robots'))
 
