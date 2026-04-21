@@ -28,6 +28,7 @@ import {
   VALIDATORS_ROUTE,
   UPGRADE_STATUS_ROUTE,
   ANALYTICS_ROUTE,
+  UNL_SCORING_ROUTE,
 } from './routes'
 import { Dashboard } from '../Dashboard/Dashboard'
 import { Ledger } from '../Ledger'
@@ -46,6 +47,7 @@ import { Nodes } from '../Network/Nodes'
 import { Validators } from '../Network/Validators'
 import { UpgradeStatus } from '../Network/UpgradeStatus'
 import { Analytics } from '../Analytics/Analytics'
+import { UNLScoring } from '../UNLScoring'
 
 export const AppWrapper = () => {
   const mode = process.env.VITE_ENVIRONMENT
@@ -75,6 +77,7 @@ export const AppWrapper = () => {
     [TRANSACTION_ROUTE, Transaction],
     [NODES_ROUTE, Nodes],
     [VALIDATORS_ROUTE, Validators],
+    [UNL_SCORING_ROUTE, UNLScoring],
     [UPGRADE_STATUS_ROUTE, UpgradeStatus],
     [AMENDMENTS_ROUTE, Amendments],
     [VALIDATOR_ROUTE, Validator],

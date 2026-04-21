@@ -4,9 +4,11 @@ import { useQuery } from 'react-query'
 import {
   ScoringConfig,
   ScoringContext,
+  ScoringHealth,
   ScoringRoundMeta,
   ScoringUnlResponse,
   ScoresJson,
+  UnlArtifact,
 } from './scoringUtils'
 
 const FIVE_MINUTES_MS = 5 * 60 * 1000
@@ -24,10 +26,16 @@ const fetchJsonOrNull = async <T>(url: string): Promise<T | null> => {
 }
 
 export interface UseScoringContextResult {
-  /** Full scoring context assembled from all four fetches; null while any fetch is still pending or if the scoring service is unreachable / hasn't completed a round yet on this network. */
+  /** Full scoring context assembled from all four core fetches; null while any fetch is still pending or if the scoring service is unreachable / hasn't completed a round yet on this network. */
   context: ScoringContext | null
   /** Latest attempted round (may be running, failed, or complete). Used by callers that need to detect a failed-after-complete situation. */
   latestAttempt: ScoringRoundMeta | null
+  /** Scores artifact for the round immediately prior to the current COMPLETE round. Used for Δ (delta vs previous round) computation on the Scoring page. */
+  priorScores: ScoresJson | null
+  /** UNL artifact for the round immediately prior to the current COMPLETE round. Used to detect `displaced` validators in Δ. */
+  priorUnl: UnlArtifact | null
+  /** Pipeline-status health readout (scheduler, llm_endpoint, publisher_wallet) from the scoring service. Drives the Scoring page banner's health strip. */
+  health: ScoringHealth | null
 }
 
 export const useScoringContext = (): UseScoringContextResult => {
@@ -52,6 +60,10 @@ export const useScoringContext = (): UseScoringContextResult => {
   )
 
   const roundNumber = scoringUnl?.round_number
+  const priorRoundNumber =
+    typeof roundNumber === 'number' && roundNumber > 1
+      ? roundNumber - 1
+      : undefined
 
   const { data: scoringRound } = useQuery<ScoringRoundMeta | null>(
     ['scoring-round', roundNumber],
@@ -91,6 +103,42 @@ export const useScoringContext = (): UseScoringContextResult => {
     },
   )
 
+  const { data: priorScores } = useQuery<ScoresJson | null>(
+    ['scoring-scores', priorRoundNumber],
+    () =>
+      fetchJsonOrNull<ScoresJson>(
+        `/api/scoring/rounds/${priorRoundNumber}/scores.json`,
+      ),
+    {
+      enabled: typeof priorRoundNumber === 'number',
+      staleTime: TWENTY_FOUR_HOURS_MS,
+      retry: false,
+    },
+  )
+
+  const { data: priorUnl } = useQuery<UnlArtifact | null>(
+    ['scoring-unl', priorRoundNumber],
+    () =>
+      fetchJsonOrNull<UnlArtifact>(
+        `/api/scoring/rounds/${priorRoundNumber}/unl.json`,
+      ),
+    {
+      enabled: typeof priorRoundNumber === 'number',
+      staleTime: TWENTY_FOUR_HOURS_MS,
+      retry: false,
+    },
+  )
+
+  const { data: health } = useQuery<ScoringHealth | null>(
+    ['scoring-health'],
+    () => fetchJsonOrNull<ScoringHealth>('/api/scoring/health'),
+    {
+      staleTime: THIRTY_SECONDS_MS,
+      refetchInterval: THIRTY_SECONDS_MS,
+      retry: false,
+    },
+  )
+
   const latestAttempt = useMemo<ScoringRoundMeta | null>(() => {
     if (!latestRoundsResp?.rounds || latestRoundsResp.rounds.length === 0) {
       return null
@@ -110,5 +158,11 @@ export const useScoringContext = (): UseScoringContextResult => {
     }
   }, [scoringUnl, scoringScores, scoringRound, scoringConfig])
 
-  return { context, latestAttempt }
+  return {
+    context,
+    latestAttempt,
+    priorScores: priorScores ?? null,
+    priorUnl: priorUnl ?? null,
+    health: health ?? null,
+  }
 }

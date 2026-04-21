@@ -84,3 +84,7 @@ export const MPT_ROUTE: RouteDefinition<{
 export const ANALYTICS_ROUTE: RouteDefinition = {
   path: '/analytics',
 }
+
+export const UNL_SCORING_ROUTE: RouteDefinition = {
+  path: '/unl-scoring',
+}

@@ -8,6 +8,7 @@ import {
   Shield,
   ArrowUpCircle,
   FileText,
+  Gauge,
 } from 'lucide-react'
 
 export interface SidebarItem {
@@ -22,6 +23,7 @@ export const sidebarConfig: SidebarItem[] = [
   { label: 'Transactions', icon: ArrowLeftRight, path: '/transactions' },
   { label: 'Nodes', icon: Cpu, path: '/network/nodes' },
   { label: 'Validators', icon: Shield, path: '/network/validators' },
+  { label: 'UNL Scoring', icon: Gauge, path: '/unl-scoring' },
   { label: 'Amendments', icon: FileText, path: '/amendments' },
   {
     label: 'Upgrade Status',

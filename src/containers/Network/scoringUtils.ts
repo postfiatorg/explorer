@@ -148,6 +148,54 @@ export const getStatusColor = (status: ScoringStatus): ScoreColor => {
   return 'neutral'
 }
 
+export interface UnlArtifact {
+  unl: string[]
+  alternates: string[]
+}
+
+export interface HealthSignal {
+  healthy: boolean
+  detail: string
+}
+
+export interface ScoringHealth {
+  scheduler: HealthSignal
+  llm_endpoint: HealthSignal
+  publisher_wallet: HealthSignal
+}
+
+export type DeltaKind = 'up' | 'down' | 'same' | 'new' | 'displaced'
+
+export interface ValidatorDelta {
+  kind: DeltaKind
+  value?: number
+}
+
+export const computeValidatorDelta = (
+  masterKey: string,
+  currentScore: number,
+  currentStatus: ScoringStatus,
+  priorScores: ScoresJson | null | undefined,
+  priorUnl: UnlArtifact | null | undefined,
+): ValidatorDelta => {
+  if (!priorScores) return { kind: 'new' }
+
+  const priorEntry = priorScores.validator_scores.find(
+    (e) => e.master_key === masterKey,
+  )
+  if (!priorEntry) return { kind: 'new' }
+
+  const priorWasOnUnl = priorUnl ? priorUnl.unl.includes(masterKey) : false
+  if (priorWasOnUnl && currentStatus !== 'on_unl') {
+    return { kind: 'displaced' }
+  }
+
+  const diff = currentScore - priorEntry.score
+  if (diff > 0) return { kind: 'up', value: diff }
+  if (diff < 0) return { kind: 'down', value: -diff }
+  return { kind: 'same' }
+}
+
 export type StalenessLevel = 'neutral' | 'amber' | 'red'
 
 export const getStalenessLevel = (

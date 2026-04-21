@@ -1,11 +1,11 @@
-import { FC } from 'react'
+import { FC, ReactNode } from 'react'
 import { LucideIcon } from 'lucide-react'
 import { AreaChart, Area, ResponsiveContainer } from 'recharts'
 import './metricCard.scss'
 
 interface MetricCardProps {
   label: string
-  value: string | number | undefined
+  value: ReactNode
   unit?: string
   icon?: LucideIcon
   sparklineData?: number[]

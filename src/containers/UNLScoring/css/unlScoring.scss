@@ -1,0 +1,412 @@
+@use '../../shared/css/variables' as *;
+
+.unl-scoring-page {
+  display: flex;
+  width: 100%;
+  max-width: 1400px;
+  flex-direction: column;
+  margin: 0 auto;
+  gap: 16px;
+}
+
+.unl-scoring-empty {
+  min-height: 200px;
+  padding: 32px;
+}
+
+// ---------------------------------------------------------------------------
+// Banner
+// ---------------------------------------------------------------------------
+
+.unl-scoring-banner {
+  padding: 20px 24px;
+}
+
+.unl-scoring-banner-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.unl-scoring-banner-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.unl-scoring-banner-col-main {
+  flex-grow: 1;
+}
+
+.unl-scoring-banner-col-health {
+  margin-left: auto;
+}
+
+.unl-scoring-banner-label {
+  color: $black-40;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  @include medium;
+}
+
+.unl-scoring-banner-sub {
+  color: $black-40;
+  font-size: 12px;
+}
+
+.unl-scoring-banner-running-label {
+  color: $green-50;
+  font-size: 22px;
+  line-height: 1.1;
+  @include bold;
+}
+
+.unl-scoring-banner-failed {
+  border-left: 3px solid $orange-50;
+}
+
+.unl-scoring-banner-failed-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.unl-scoring-banner-failed-title {
+  color: $orange-50;
+  font-size: 16px;
+  @include bold;
+
+  code {
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: $black-80;
+    color: $orange-50;
+    font-size: 13px;
+    @include medium;
+  }
+}
+
+.unl-scoring-banner-failed-link {
+  color: $blue-40;
+  font-size: 13px;
+  text-decoration: none;
+  @include medium;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.unl-scoring-banner-failed-error {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 8px;
+  color: $black-40;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.unl-scoring-banner-failed-toggle {
+  padding: 0;
+  border: none;
+  background: none;
+  color: $blue-40;
+  cursor: pointer;
+  font: inherit;
+  @include medium;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.unl-scoring-banner-failed-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 8px;
+  border-top: 1px solid $black-80;
+}
+
+// ---------------------------------------------------------------------------
+// Health strip
+// ---------------------------------------------------------------------------
+
+.unl-scoring-health-strip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.unl-scoring-health-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: $black-40;
+  cursor: help;
+  transition: background $transition-default;
+
+  &.unl-scoring-health-green { background: $green-50; }
+  &.unl-scoring-health-red { background: $orange-50; }
+  &.unl-scoring-health-neutral { background: $black-40; }
+}
+
+// ---------------------------------------------------------------------------
+// Ranked table
+// ---------------------------------------------------------------------------
+
+.unl-scoring-ranked {
+  padding: 16px 20px 20px;
+}
+
+.ranked-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.ranked-title {
+  margin: 0;
+  color: $white;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  @include medium;
+}
+
+.ranked-filter {
+  min-width: 260px;
+  padding: 6px 10px;
+  border: 1px solid $black-80;
+  border-radius: 6px;
+  background: $black-90;
+  color: $white;
+  font-size: 13px;
+
+  &::placeholder {
+    color: $black-40;
+  }
+
+  &:focus {
+    outline: 2px solid $blue-40;
+    outline-offset: -1px;
+  }
+}
+
+.ranked-table-wrapper {
+  overflow-x: auto;
+}
+
+.ranked-table {
+  width: 100%;
+
+  thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: $black-90;
+  }
+
+  .ranked-col-rank {
+    width: 48px;
+    color: $black-40;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+
+  .ranked-col-validator {
+    min-width: 200px;
+  }
+
+  .ranked-col-overall {
+    width: 110px;
+    text-align: center;
+  }
+
+  .ranked-col-dimension {
+    min-width: 96px;
+  }
+
+  .ranked-overall-inline {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+  }
+
+  .ranked-overall-value {
+    font-size: 18px;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    @include bold;
+
+    &.green { color: $green-50; }
+    &.yellow { color: $yellow-50; }
+    &.orange { color: $orange-50; }
+    &.neutral { color: $white; }
+  }
+}
+
+.ranked-validator-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.ranked-validator-domain {
+  display: inline-flex;
+  align-items: center;
+  color: $white;
+  font-size: 13px;
+  @include medium;
+
+  .domain-verified-badge {
+    flex-shrink: 0;
+    margin-right: 4px;
+    color: $green-50;
+    vertical-align: middle;
+  }
+
+  a.domain {
+    color: inherit;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+
+    &::after {
+      display: none;
+    }
+  }
+}
+
+.ranked-validator-sep {
+  color: $black-60;
+  font-size: 11px;
+}
+
+.ranked-validator-pubkey {
+  color: $black-40;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  text-decoration: none;
+
+  &:hover {
+    color: $white;
+    text-decoration: underline;
+  }
+}
+
+.ranked-validator-pubkey--primary {
+  color: $white;
+  font-size: 13px;
+  @include medium;
+}
+
+.ranked-dimension {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ranked-dimension-value {
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  @include medium;
+
+  &.green { color: $green-50; }
+  &.yellow { color: $yellow-50; }
+  &.orange { color: $orange-50; }
+  &.neutral { color: $white; }
+}
+
+.ranked-table .agreement-bar-track {
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  background: $black-80;
+}
+
+.ranked-table .agreement-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width $transition-default;
+
+  &.green { background: $green-50; }
+  &.yellow { background: $yellow-50; }
+  &.orange { background: $orange-50; }
+  &.neutral { background: $black-40; }
+}
+
+.ranked-row-churn-gap {
+  outline: 1px dashed $yellow-50;
+  outline-offset: -1px;
+}
+
+.delta {
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  @include medium;
+
+  &.delta-up { color: $green-50; }
+  &.delta-down { color: $orange-50; }
+  &.delta-new { color: $blue-40; }
+  &.delta-displaced { color: $orange-50; }
+}
+
+.ranked-separator td {
+  padding: 6px 0;
+}
+
+.ranked-separator-line {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 22px;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 0;
+    left: 0;
+    height: 1px;
+    background: $black-80;
+  }
+}
+
+.ranked-separator-chip {
+  position: relative;
+  padding: 3px 12px;
+  border: 1px solid $black-80;
+  border-radius: 11px;
+  background: $black-90;
+  color: $black-40;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  @include medium;
+}
+
+.ranked-empty-zone td {
+  padding: 12px 0;
+  color: $black-40;
+  font-size: 13px;
+  text-align: center;
+}

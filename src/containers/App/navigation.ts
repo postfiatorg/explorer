@@ -4,6 +4,7 @@ import {
   AMENDMENTS_ROUTE,
   LEDGERS_ROUTE,
   NODES_ROUTE,
+  UNL_SCORING_ROUTE,
   UPGRADE_STATUS_ROUTE,
   VALIDATORS_ROUTE,
 } from './routes'
@@ -12,6 +13,7 @@ const isNetwork = (path) =>
   path.indexOf(buildPath(VALIDATORS_ROUTE, {})) === 0 ||
   path.indexOf(buildPath(NODES_ROUTE, {})) === 0 ||
   path.indexOf(buildPath(UPGRADE_STATUS_ROUTE, {})) === 0 ||
+  path.indexOf(buildPath(UNL_SCORING_ROUTE, {})) === 0 ||
   path.indexOf(buildPath(AMENDMENTS_ROUTE, {})) === 0
 
 // NOTE: for submenus, remove `path` field and add `children` array of objects
@@ -32,6 +34,10 @@ export const navigationConfig: NavigationMenuAnyRoute[] = [
       {
         route: VALIDATORS_ROUTE,
         title: 'validators',
+      },
+      {
+        route: UNL_SCORING_ROUTE,
+        title: 'unl_scoring',
       },
       {
         route: UPGRADE_STATUS_ROUTE,
