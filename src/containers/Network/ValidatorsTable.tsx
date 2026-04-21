@@ -1,11 +1,6 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import {
-  CircleCheck,
-  ChevronUp,
-  ChevronDown,
-  ChevronsUpDown,
-} from 'lucide-react'
+import { CircleCheck } from 'lucide-react'
 import { FeeSettings, StreamValidator } from '../shared/vhsTypes'
 import { RouteLink } from '../shared/routing'
 import { VALIDATOR_ROUTE, LEDGER_ROUTE } from '../App/routes'
@@ -24,11 +19,7 @@ import {
   getScoringInfoForValidator,
   getStalenessLevel,
   formatRelativeTime,
-  compareSemver,
 } from './scoringUtils'
-
-type SortColumn = 'status' | 'agreement_30d' | 'version' | 'last_ledger'
-type SortDirection = 'asc' | 'desc'
 
 interface ValidatorsTableProps {
   validators: StreamValidator[]
@@ -73,112 +64,34 @@ const fallbackSort = (data: StreamValidator[]): StreamValidator[] =>
     return 0
   })
 
-const compareAgreement30d = (
+const compareAgreement30dDesc = (
   a: StreamValidator,
   b: StreamValidator,
 ): number => {
   const aScore = a.agreement_30day ? Number(a.agreement_30day.score) : -1
   const bScore = b.agreement_30day ? Number(b.agreement_30day.score) : -1
-  return aScore - bScore
+  return bScore - aScore
 }
 
-const compareLastLedger = (a: StreamValidator, b: StreamValidator): number => {
-  const aLedger = a.ledger_index ?? a.current_index ?? -1
-  const bLedger = b.ledger_index ?? b.current_index ?? -1
-  return aLedger - bLedger
-}
-
-const compareVersion = (a: StreamValidator, b: StreamValidator): number =>
-  compareSemver(a.server_version || '', b.server_version || '')
-
-const applyDirection = (cmp: number, dir: SortDirection): number =>
-  dir === 'asc' ? cmp : -cmp
-
-const sortByColumn = (
+const bestFirstSort = (
   data: StreamValidator[],
-  column: SortColumn,
-  direction: SortDirection,
   infoByKey: Map<string, ScoringInfo>,
-): StreamValidator[] => {
-  const sorted = [...data]
-  sorted.sort((a, b) => {
-    let primary = 0
-    if (column === 'status') {
-      const keyA = a.master_key || a.signing_key
-      const keyB = b.master_key || b.signing_key
-      const infoA = infoByKey.get(keyA) ?? { status: 'no_data', score: null }
-      const infoB = infoByKey.get(keyB) ?? { status: 'no_data', score: null }
-      const rankDiff = STATUS_RANK[infoA.status] - STATUS_RANK[infoB.status]
-      if (rankDiff !== 0) {
-        primary = rankDiff
-      } else {
-        const scoreA = infoA.score ?? -1
-        const scoreB = infoB.score ?? -1
-        primary = scoreB - scoreA
-        if (primary === 0) primary = -compareAgreement30d(a, b)
-      }
-      return applyDirection(primary, direction)
-    }
-    if (column === 'agreement_30d') {
-      primary = compareAgreement30d(a, b)
-    } else if (column === 'version') {
-      primary = compareVersion(a, b)
-    } else if (column === 'last_ledger') {
-      primary = compareLastLedger(a, b)
-    }
-    return applyDirection(primary, direction)
+): StreamValidator[] =>
+  [...data].sort((a, b) => {
+    const keyA = a.master_key || a.signing_key
+    const keyB = b.master_key || b.signing_key
+    const infoA = infoByKey.get(keyA) ?? { status: 'no_data', score: null }
+    const infoB = infoByKey.get(keyB) ?? { status: 'no_data', score: null }
+
+    const rankDiff = STATUS_RANK[infoA.status] - STATUS_RANK[infoB.status]
+    if (rankDiff !== 0) return rankDiff
+
+    const scoreA = infoA.score ?? -1
+    const scoreB = infoB.score ?? -1
+    if (scoreA !== scoreB) return scoreB - scoreA
+
+    return compareAgreement30dDesc(a, b)
   })
-  return sorted
-}
-
-const SortableHeader = ({
-  column,
-  label,
-  active,
-  direction,
-  onSort,
-  className,
-}: {
-  column: SortColumn
-  label: string
-  active: boolean
-  direction: SortDirection
-  onSort: (col: SortColumn) => void
-  className?: string
-}) => {
-  const getAriaSort = (): 'ascending' | 'descending' | 'none' => {
-    if (!active) return 'none'
-    return direction === 'asc' ? 'ascending' : 'descending'
-  }
-
-  const renderIcon = () => {
-    if (!active)
-      return <ChevronsUpDown size={14} className="sort-icon inactive" />
-    return direction === 'asc' ? (
-      <ChevronUp size={14} className="sort-icon active" />
-    ) : (
-      <ChevronDown size={14} className="sort-icon active" />
-    )
-  }
-
-  return (
-    <th
-      className={`${className ?? ''} sortable ${active ? 'active' : ''}`}
-      aria-sort={getAriaSort()}
-    >
-      <button
-        type="button"
-        className="sort-header-button"
-        onClick={() => onSort(column)}
-      >
-        <span className="sort-header-content">
-          {label}
-          {renderIcon()}
-        </span>
-      </button>
-    </th>
-  )
-}
 
 export const ValidatorsTable = (props: ValidatorsTableProps) => {
   const { validators: rawValidators, tab, feeSettings, scoringContext } = props
@@ -186,9 +99,6 @@ export const ValidatorsTable = (props: ValidatorsTableProps) => {
   const language = useLanguage()
 
   const scoringEnabled = Boolean(scoringContext)
-
-  const [sortColumn, setSortColumn] = useState<SortColumn>('status')
-  const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
 
   const scoringInfoByKey = useMemo(() => {
     const map = new Map<string, ScoringInfo>()
@@ -206,28 +116,8 @@ export const ValidatorsTable = (props: ValidatorsTableProps) => {
   const validators = useMemo(() => {
     if (!rawValidators) return undefined
     if (!scoringEnabled) return fallbackSort(rawValidators)
-    return sortByColumn(
-      rawValidators,
-      sortColumn,
-      sortDirection,
-      scoringInfoByKey,
-    )
-  }, [
-    rawValidators,
-    scoringEnabled,
-    sortColumn,
-    sortDirection,
-    scoringInfoByKey,
-  ])
-
-  const handleSort = (col: SortColumn) => {
-    if (sortColumn === col) {
-      setSortDirection((d) => (d === 'asc' ? 'desc' : 'asc'))
-    } else {
-      setSortColumn(col)
-      setSortDirection(col === 'status' ? 'desc' : 'desc')
-    }
-  }
+    return bestFirstSort(rawValidators, scoringInfoByKey)
+  }, [rawValidators, scoringEnabled, scoringInfoByKey])
 
   const renderDomain = (domain, domainVerified) => (
     <>
@@ -384,70 +274,6 @@ export const ValidatorsTable = (props: ValidatorsTableProps) => {
     )
   }
 
-  const renderStatusHeader = () => {
-    if (!scoringEnabled) {
-      return <th className="unl">{t('unl')}</th>
-    }
-    return (
-      <SortableHeader
-        column="status"
-        label={t('status', { defaultValue: 'Status' })}
-        active={sortColumn === 'status'}
-        direction={sortDirection}
-        onSort={handleSort}
-        className="status"
-      />
-    )
-  }
-
-  const renderVersionHeader = () => {
-    if (!scoringEnabled) {
-      return <th className="version">{t('Version')}</th>
-    }
-    return (
-      <SortableHeader
-        column="version"
-        label={t('Version')}
-        active={sortColumn === 'version'}
-        direction={sortDirection}
-        onSort={handleSort}
-        className="version"
-      />
-    )
-  }
-
-  const renderAgreement30dHeader = () => {
-    if (!scoringEnabled) {
-      return <th className="score d30">{t('30D')}</th>
-    }
-    return (
-      <SortableHeader
-        column="agreement_30d"
-        label={t('30D')}
-        active={sortColumn === 'agreement_30d'}
-        direction={sortDirection}
-        onSort={handleSort}
-        className="score d30"
-      />
-    )
-  }
-
-  const renderLastLedgerHeader = () => {
-    if (!scoringEnabled) {
-      return <th className="last-ledger">{t('ledger')}</th>
-    }
-    return (
-      <SortableHeader
-        column="last_ledger"
-        label={t('ledger')}
-        active={sortColumn === 'last_ledger'}
-        direction={sortDirection}
-        onSort={handleSort}
-        className="last-ledger"
-      />
-    )
-  }
-
   const renderFreshnessFooter = () => {
     if (!scoringContext) return null
     const { round, config } = scoringContext
@@ -470,13 +296,19 @@ export const ValidatorsTable = (props: ValidatorsTableProps) => {
           <tr>
             <th className="pubkey">{t('pubkey')}</th>
             <th className="domain">{t('domain')}</th>
-            {renderStatusHeader()}
-            {renderVersionHeader()}
+            {scoringEnabled ? (
+              <th className="status">
+                {t('status', { defaultValue: 'Status' })}
+              </th>
+            ) : (
+              <th className="unl">{t('unl')}</th>
+            )}
+            <th className="version">{t('Version')}</th>
             {tab === 'uptime' ? (
               <>
                 <th className="score h1">{t('1H')}</th>
                 <th className="score h24">{t('24H')}</th>
-                {renderAgreement30dHeader()}
+                <th className="score d30">{t('30D')}</th>
               </>
             ) : (
               <>
@@ -488,7 +320,7 @@ export const ValidatorsTable = (props: ValidatorsTableProps) => {
                 <th className="base_fee">{t('base_fee')}</th>
               </>
             )}
-            {renderLastLedgerHeader()}
+            <th className="last-ledger">{t('ledger')}</th>
           </tr>
         </thead>
         <tbody>{validators.map(renderValidator)}</tbody>

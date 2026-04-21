@@ -97,51 +97,6 @@
       color: $green;
     }
 
-    .sort-icon {
-      opacity: 0.6;
-      transition: opacity $transition-default;
-
-      &.active {
-        color: $blue-40;
-        opacity: 1;
-      }
-
-      &.inactive {
-        opacity: 0.4;
-      }
-    }
-
-    th.sortable {
-      padding: 0;
-
-      .sort-header-button {
-        all: unset;
-        display: block;
-        width: 100%;
-        padding: inherit;
-        color: inherit;
-        cursor: pointer;
-        font: inherit;
-        text-align: inherit;
-        user-select: none;
-
-        &:focus-visible {
-          outline: 2px solid $blue-40;
-          outline-offset: -2px;
-        }
-
-        &:hover .sort-icon {
-          opacity: 1;
-        }
-      }
-    }
-
-    .sort-header-content {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
-
     .status-badge-cell {
       min-width: 140px;
       white-space: nowrap;

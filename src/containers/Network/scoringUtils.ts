@@ -112,21 +112,3 @@ export const formatRelativeTime = (
   const diffDays = Math.floor(diffHr / 24)
   return `${diffDays}d ago`
 }
-
-export const compareSemver = (a: string, b: string): number => {
-  const parse = (v: string): [number, number, number] | null => {
-    const m = v.match(/^(\d+)\.(\d+)\.(\d+)/)
-    if (!m) return null
-    return [parseInt(m[1], 10), parseInt(m[2], 10), parseInt(m[3], 10)]
-  }
-  const pa = parse(a)
-  const pb = parse(b)
-  if (pa && pb) {
-    if (pa[0] !== pb[0]) return pa[0] - pb[0]
-    if (pa[1] !== pb[1]) return pa[1] - pb[1]
-    return pa[2] - pb[2]
-  }
-  if (pa && !pb) return 1
-  if (!pa && pb) return -1
-  return a.localeCompare(b)
-}
