@@ -100,47 +100,6 @@
     .status-badge-cell {
       min-width: 140px;
       white-space: nowrap;
-
-      .status-badge {
-        display: inline-flex;
-        align-items: center;
-        font-size: 13px;
-        gap: 6px;
-        @include medium;
-      }
-
-      .status-glyph {
-        font-size: 15px;
-        line-height: 1;
-      }
-
-      .status-score {
-        font-variant-numeric: tabular-nums;
-      }
-
-      .status-label {
-        color: $black-40;
-      }
-
-      &.status-on-unl .status-glyph,
-      &.status-on-unl .status-score {
-        color: $green-50;
-      }
-
-      &.status-candidate .status-glyph,
-      &.status-candidate .status-score {
-        color: $yellow-50;
-      }
-
-      &.status-ineligible .status-glyph,
-      &.status-ineligible .status-score {
-        color: $black-40;
-      }
-
-      &.status-no-data .status-glyph,
-      &.status-no-data .status-label {
-        color: $black-60;
-      }
     }
 
     .fee-icon {

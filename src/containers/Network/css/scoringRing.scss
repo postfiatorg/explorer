@@ -1,0 +1,39 @@
+@use '../../shared/css/variables' as *;
+
+.scoring-ring-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.scoring-ring-track {
+  stroke: $black-80;
+}
+
+.scoring-ring-fill {
+  transition: stroke-dashoffset $transition-default;
+
+  &.scoring-ring-fill-green { stroke: $green-50; }
+  &.scoring-ring-fill-yellow { stroke: $yellow-50; }
+  &.scoring-ring-fill-orange { stroke: $orange-50; }
+  &.scoring-ring-fill-neutral { stroke: $black-40; }
+}
+
+.scoring-ring-center {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inset: 0;
+}
+
+.scoring-ring-value {
+  font-size: 34px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  @include bold;
+
+  &.scoring-ring-value-green { color: $green-50; }
+  &.scoring-ring-value-yellow { color: $yellow-50; }
+  &.scoring-ring-value-orange { color: $orange-50; }
+  &.scoring-ring-value-neutral { color: $white; }
+}

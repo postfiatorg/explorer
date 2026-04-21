@@ -3,12 +3,12 @@
 
 .validator {
   display: flex;
-  flex-direction: column;
-  gap: 16px;
-  max-width: 1200px;
-  margin: 0 auto;
   width: 100%;
+  max-width: 1200px;
   min-height: 400px;
+  flex-direction: column;
+  margin: 0 auto;
+  gap: 16px;
 
   .loader {
     z-index: 1;
@@ -18,21 +18,159 @@
 .validator-hero {
   .validator-hero-badges {
     display: flex;
-    gap: 8px;
     margin-bottom: 16px;
+    gap: 8px;
   }
 }
 
 .validator-tab-body {
-  padding: 16px;
   min-height: 200px;
+  padding: 16px;
 }
 
 .validator-empty {
-  text-align: center;
-  font-size: 14px;
-  color: $black-40;
   padding: 32px;
+  color: $black-40;
+  font-size: 14px;
+  text-align: center;
+}
+
+.detail-scoring {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  gap: 16px;
+
+  .detail-scoring-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .detail-scoring-title {
+    color: $black-40;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    @include medium;
+  }
+
+  .detail-scoring-failed-note {
+    color: $orange-50;
+    font-size: 12px;
+    text-decoration: none;
+    @include medium;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .detail-scoring-body {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+
+    @media (width < 720px) {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 20px;
+    }
+  }
+
+  .detail-scoring-overall-half {
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .detail-scoring-dimensions-half {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    min-width: 0;
+    gap: 8px;
+  }
+
+  .detail-scoring-dim-row {
+    display: grid;
+    grid-template-columns: 100px 1fr 32px;
+    align-items: center;
+    gap: 12px;
+    cursor: help;
+  }
+
+  .detail-scoring-dim-label {
+    color: $black-40;
+    font-size: 11px;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    @include medium;
+  }
+
+  .detail-scoring-dim-bar-wrapper {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .detail-scoring-dim-value {
+    font-size: 15px;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    @include bold;
+  }
+
+  .detail-scoring-dim-row .agreement-bar-track {
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: $black-80;
+  }
+
+  .detail-scoring-dim-row .agreement-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width $transition-default;
+
+    &.green { background: $green-50; }
+    &.yellow { background: $yellow-50; }
+    &.orange { background: $orange-50; }
+    &.neutral { background: $black-40; }
+  }
+
+  .detail-scoring-dim-row .agreement-value {
+    &.green { color: $green-50; }
+    &.yellow { color: $yellow-50; }
+    &.orange { color: $orange-50; }
+    &.neutral { color: $white; }
+  }
+
+  .detail-scoring-no-data {
+    margin: 0;
+    color: $black-40;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .detail-scoring-footer {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .detail-scoring-link {
+    color: $blue-40;
+    font-size: 13px;
+    text-decoration: none;
+    @include medium;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
 }
 
 // Agreement bars in overview cards
@@ -50,8 +188,8 @@
     width: 100%;
     height: 4px;
     border-radius: 2px;
-    background: $black-80;
     margin-top: 2px;
+    background: $black-80;
   }
 
   .agreement-bar-fill {

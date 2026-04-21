@@ -8,6 +8,16 @@ import { Loader } from '../shared/components/Loader'
 import { Tabs } from '../shared/components/Tabs'
 import { CopyableAddress } from '../shared/components/CopyableAddress/CopyableAddress'
 import { StatusBadge } from '../shared/components/StatusBadge/StatusBadge'
+import { ScoringStatusBadge } from '../Network/ScoringStatusBadge'
+import { ScoringRing } from '../Network/ScoringRing'
+import { useScoringContext } from '../Network/useScoringContext'
+import {
+  SCORING_DIMENSIONS,
+  findScoreEntry,
+  getScoringInfoForValidator,
+  getScoreColor,
+  getStatusColor,
+} from '../Network/scoringUtils'
 import { useAnalytics } from '../shared/analytics'
 import {
   FETCH_INTERVAL_ERROR_MILLIS,
@@ -68,6 +78,8 @@ export const Validator = () => {
       enabled: !!network,
     },
   )
+
+  const { context: scoringContext, latestAttempt } = useScoringContext()
 
   const { data: reports, isFetching: reportIsLoading } = useQuery(
     ['fetchValidatorReport', identifier],
@@ -232,12 +244,111 @@ export const Validator = () => {
     return <Tabs tabs={tabsList} selected={tab} path={mainPath} />
   }
 
+  function renderScoringSection() {
+    if (!scoringContext) return null
+
+    const masterKey = data?.master_key ?? data?.signing_key
+    const scoringInfo = getScoringInfoForValidator(
+      data?.master_key,
+      scoringContext,
+    )
+    const scoreEntry = findScoreEntry(data?.master_key, scoringContext.scores)
+    const { round } = scoringContext
+
+    const scoringLink = masterKey
+      ? `/unl-scoring/rounds/${round.round_number}?validator=${masterKey}`
+      : '/unl-scoring'
+
+    const failedRoundNote =
+      latestAttempt &&
+      latestAttempt.status === 'FAILED' &&
+      latestAttempt.round_number > round.round_number ? (
+        <a
+          className="detail-scoring-failed-note"
+          href={`/unl-scoring/rounds/${latestAttempt.round_number}`}
+        >
+          round #{latestAttempt.round_number} failed — see why
+        </a>
+      ) : null
+
+    if (scoringInfo.status === 'no_data' || !scoreEntry) {
+      return (
+        <div className="detail-scoring dashboard-panel">
+          <div className="detail-scoring-header">
+            <span className="detail-scoring-title">Scoring</span>
+            {failedRoundNote}
+          </div>
+          <p className="detail-scoring-no-data">
+            This validator wasn&apos;t scored in the latest round. Validators
+            appear in rounds automatically once they&apos;re active on the
+            network — no registration required.
+          </p>
+        </div>
+      )
+    }
+
+    const overall = scoreEntry.score
+    const overallColor = getStatusColor(scoringInfo.status)
+
+    return (
+      <div className="detail-scoring dashboard-panel">
+        <div className="detail-scoring-header">
+          <span className="detail-scoring-title">Scoring</span>
+          {failedRoundNote}
+        </div>
+
+        <div className="detail-scoring-body">
+          <div className="detail-scoring-overall-half">
+            <ScoringRing score={overall} color={overallColor} size={120} />
+            <ScoringStatusBadge info={scoringInfo} hideScore />
+          </div>
+
+          <div className="detail-scoring-dimensions-half">
+            {SCORING_DIMENSIONS.map((dim) => {
+              const value = scoreEntry[dim.key]
+              const color = getScoreColor(value)
+              return (
+                <div
+                  className="detail-scoring-dim-row"
+                  key={dim.key}
+                  title={dim.tooltip}
+                >
+                  <span className="detail-scoring-dim-label">{dim.label}</span>
+                  <div className="detail-scoring-dim-bar-wrapper">
+                    <div className="agreement-bar-track">
+                      <div
+                        className={`agreement-bar-fill ${color}`}
+                        style={{ width: `${value}%` }}
+                      />
+                    </div>
+                  </div>
+                  <span
+                    className={`detail-scoring-dim-value agreement-value ${color}`}
+                  >
+                    {value}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        <div className="detail-scoring-footer">
+          <a className="detail-scoring-link" href={scoringLink}>
+            View reasoning and round history →
+          </a>
+        </div>
+      </div>
+    )
+  }
+
   function renderValidator() {
     return (
       <>
         {renderPageTitle()}
         {renderHero()}
         {renderOverviewGrid()}
+        {renderScoringSection()}
         {renderTabs()}
         {tab === 'history' && (
           <div className="validator-tab-body dashboard-panel">

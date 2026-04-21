@@ -1,0 +1,42 @@
+@use '../../shared/css/variables' as *;
+
+.scoring-status-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 13px;
+  gap: 6px;
+  @include medium;
+
+  .scoring-status-glyph {
+    font-size: 15px;
+    line-height: 1;
+  }
+
+  .scoring-status-score {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .scoring-status-label {
+    color: $black-40;
+  }
+
+  &.scoring-status-on-unl .scoring-status-glyph,
+  &.scoring-status-on-unl .scoring-status-score {
+    color: $green-50;
+  }
+
+  &.scoring-status-candidate .scoring-status-glyph,
+  &.scoring-status-candidate .scoring-status-score {
+    color: $yellow-50;
+  }
+
+  &.scoring-status-ineligible .scoring-status-glyph,
+  &.scoring-status-ineligible .scoring-status-score {
+    color: $black-40;
+  }
+
+  &.scoring-status-no-data .scoring-status-glyph,
+  &.scoring-status-no-data .scoring-status-label {
+    color: $black-60;
+  }
+}

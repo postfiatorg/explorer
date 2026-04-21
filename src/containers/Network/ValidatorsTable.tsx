@@ -20,6 +20,7 @@ import {
   getStalenessLevel,
   formatRelativeTime,
 } from './scoringUtils'
+import { ScoringStatusBadge } from './ScoringStatusBadge'
 
 interface ValidatorsTableProps {
   validators: StreamValidator[]
@@ -27,20 +28,6 @@ interface ValidatorsTableProps {
   feeSettings?: FeeSettings
   scoringContext?: ScoringContext | null
 }
-
-const STATUS_BADGE_LABELS = {
-  on_unl: 'on UNL',
-  candidate: 'candidate',
-  ineligible: 'ineligible',
-  no_data: 'no data',
-} as const
-
-const STATUS_BADGE_GLYPHS = {
-  on_unl: '●',
-  candidate: '◐',
-  ineligible: '○',
-  no_data: '—',
-} as const
 
 const fallbackSort = (data: StreamValidator[]): StreamValidator[] =>
   [...data].sort((a, b) => {
@@ -183,25 +170,11 @@ export const ValidatorsTable = (props: ValidatorsTableProps) => {
       <td className={`${className} vote`} />
     )
 
-  const renderStatusBadge = (info: ScoringInfo) => {
-    const label = STATUS_BADGE_LABELS[info.status]
-    const glyph = STATUS_BADGE_GLYPHS[info.status]
-    const showScore = info.status !== 'no_data' && info.score != null
-    const ariaLabel = showScore ? `Score ${info.score}, ${label}` : label
-    return (
-      <td
-        className={`status-badge-cell status-${info.status.replace('_', '-')}`}
-      >
-        <span className="status-badge" aria-label={ariaLabel}>
-          <span className="status-glyph" aria-hidden="true">
-            {glyph}
-          </span>
-          {showScore && <span className="status-score">{info.score}</span>}
-          <span className="status-label">{label}</span>
-        </span>
-      </td>
-    )
-  }
+  const renderStatusBadge = (info: ScoringInfo) => (
+    <td className="status-badge-cell">
+      <ScoringStatusBadge info={info} />
+    </td>
+  )
 
   const renderValidator = (d) => {
     const color = d.ledger_hash ? `#${d.ledger_hash.substring(0, 6)}` : ''

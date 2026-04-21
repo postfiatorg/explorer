@@ -78,6 +78,76 @@ export const getScoringInfoForValidator = (
   return { status: 'no_data', score: null }
 }
 
+export type ScoringDimension =
+  | 'consensus'
+  | 'reliability'
+  | 'software'
+  | 'diversity'
+  | 'identity'
+
+export interface DimensionMeta {
+  key: ScoringDimension
+  label: string
+  tooltip: string
+}
+
+export const SCORING_DIMENSIONS: DimensionMeta[] = [
+  {
+    key: 'consensus',
+    label: 'Consensus',
+    tooltip:
+      "How reliably the validator's proposals match consensus across recent ledgers.",
+  },
+  {
+    key: 'reliability',
+    label: 'Reliability',
+    tooltip:
+      'Operational reliability signaled by verified domain (public accountability) and current UNL membership.',
+  },
+  {
+    key: 'software',
+    label: 'Software',
+    tooltip:
+      'Whether the validator runs up-to-date software and votes reasonable fees.',
+  },
+  {
+    key: 'diversity',
+    label: 'Diversity',
+    tooltip:
+      'Geographic and infrastructure spread. Validators in underrepresented countries or on less common cloud providers score higher.',
+  },
+  {
+    key: 'identity',
+    label: 'Identity',
+    tooltip:
+      'Identity and reputation. Verified domain and organizational identity raise this score.',
+  },
+]
+
+export const findScoreEntry = (
+  masterKey: string | undefined,
+  scores: ScoresJson | null | undefined,
+): ValidatorScoreEntry | null => {
+  if (!masterKey || !scores) return null
+  return scores.validator_scores.find((e) => e.master_key === masterKey) ?? null
+}
+
+export type ScoreColor = 'green' | 'yellow' | 'orange' | 'neutral'
+
+export const getScoreColor = (value: number | null | undefined): ScoreColor => {
+  if (value == null) return 'neutral'
+  if (value >= 70) return 'green'
+  if (value >= 40) return 'yellow'
+  return 'orange'
+}
+
+export const getStatusColor = (status: ScoringStatus): ScoreColor => {
+  if (status === 'on_unl') return 'green'
+  if (status === 'candidate') return 'yellow'
+  if (status === 'ineligible') return 'orange'
+  return 'neutral'
+}
+
 export type StalenessLevel = 'neutral' | 'amber' | 'red'
 
 export const getStalenessLevel = (
