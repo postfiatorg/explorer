@@ -10,6 +10,7 @@ export interface ScoringRoundMeta {
   round_number: number
   status: string
   completed_at: string | null
+  error_message?: string
 }
 
 export interface ValidatorScoreEntry {
@@ -211,6 +212,47 @@ export const getStalenessLevel = (
   if (elapsedHours > cadenceHours * 2) return 'red'
   if (elapsedHours > cadenceHours + 24) return 'amber'
   return 'neutral'
+}
+
+export const formatCadence = (
+  cadenceHours: number | null | undefined,
+): string => {
+  if (
+    cadenceHours == null ||
+    !Number.isFinite(cadenceHours) ||
+    cadenceHours <= 0
+  ) {
+    return 'unknown'
+  }
+
+  if (cadenceHours === 1) return 'hourly'
+  if (cadenceHours === 24) return 'daily'
+  if (cadenceHours === 168) return 'weekly'
+
+  const totalMinutes = Math.round(cadenceHours * 60)
+
+  if (totalMinutes < 60) {
+    return `every ${totalMinutes} minutes`
+  }
+
+  if (totalMinutes < 1440) {
+    const hours = Math.floor(totalMinutes / 60)
+    const minutes = totalMinutes % 60
+    if (minutes === 0) return `every ${hours} hours`
+    return `every ${hours}h ${minutes}m`
+  }
+
+  if (totalMinutes < 10080) {
+    const days = Math.floor(totalMinutes / 1440)
+    const hours = Math.floor((totalMinutes % 1440) / 60)
+    if (hours === 0) return `every ${days} days`
+    return `every ${days}d ${hours}h`
+  }
+
+  const weeks = Math.floor(totalMinutes / 10080)
+  const days = Math.floor((totalMinutes % 10080) / 1440)
+  if (days === 0) return `every ${weeks} weeks`
+  return `every ${weeks}w ${days}d`
 }
 
 export const formatRelativeTime = (

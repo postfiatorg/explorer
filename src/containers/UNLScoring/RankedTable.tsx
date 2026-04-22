@@ -1,4 +1,4 @@
-import { FC, useMemo, useState } from 'react'
+import { FC, useEffect, useMemo, useState } from 'react'
 import { CircleCheck } from 'lucide-react'
 import DomainLink from '../shared/components/DomainLink'
 import { buildPath } from '../shared/routing'
@@ -153,7 +153,7 @@ const RankedValidatorRow: FC<{
 
 const useDebouncedValue = <T,>(value: T, delayMs: number): T => {
   const [debounced, setDebounced] = useState(value)
-  useMemo(() => {
+  useEffect(() => {
     const handle = setTimeout(() => setDebounced(value), delayMs)
     return () => clearTimeout(handle)
   }, [value, delayMs])
@@ -207,10 +207,12 @@ export const RankedTable: FC<RankedTableProps> = ({
 
   const filteredRows = useMemo(() => {
     if (!debouncedQuery) return rows
-    return rows.filter((r) =>
-      r.entry.master_key.toLowerCase().includes(debouncedQuery),
-    )
-  }, [rows, debouncedQuery])
+    return rows.filter((r) => {
+      if (r.entry.master_key.toLowerCase().includes(debouncedQuery)) return true
+      const domain = validatorMetaByKey.get(r.entry.master_key)?.domain
+      return domain ? domain.toLowerCase().includes(debouncedQuery) : false
+    })
+  }, [rows, debouncedQuery, validatorMetaByKey])
 
   const onUnlRows = filteredRows.filter((r) => r.status === 'on_unl')
   const candidateRows = filteredRows.filter((r) => r.status === 'candidate')
@@ -252,7 +254,7 @@ export const RankedTable: FC<RankedTableProps> = ({
           <input
             className="ranked-filter"
             type="search"
-            placeholder="Filter by pubkey…"
+            placeholder="Filter by pubkey or domain…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
@@ -308,7 +310,9 @@ export const RankedTable: FC<RankedTableProps> = ({
               )
             })}
 
-            <SeparatorChip label="candidate" />
+            <SeparatorChip
+              label={`candidate · +${config.unl_min_score_gap} to displace`}
+            />
 
             {candidateRows.length === 0 ? (
               <EmptyZoneRow message="— No candidates this round —" />
@@ -326,7 +330,9 @@ export const RankedTable: FC<RankedTableProps> = ({
               })
             )}
 
-            <SeparatorChip label="ineligible" />
+            <SeparatorChip
+              label={`ineligible · below ${config.unl_score_cutoff}`}
+            />
 
             {ineligibleRows.length === 0 ? (
               <EmptyZoneRow message="— No ineligible validators this round —" />

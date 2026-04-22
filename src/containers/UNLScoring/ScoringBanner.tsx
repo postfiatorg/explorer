@@ -5,6 +5,7 @@ import {
   ScoringContext,
   ScoringHealth,
   ScoringRoundMeta,
+  formatCadence,
   formatRelativeTime,
 } from '../Network/scoringUtils'
 
@@ -115,8 +116,16 @@ const IdleBanner: FC<{
 
   return (
     <div className="network-stats">
-      <MetricCard label="Last round" value={`#${roundNumber}`} />
-      <MetricCard label="Next round in" value={countdown} />
+      <MetricCard
+        label="Last round"
+        value={`#${roundNumber}`}
+        subtitle={completedAt ? formatRelativeTime(completedAt) : null}
+      />
+      <MetricCard
+        label="Next round in"
+        value={countdown}
+        subtitle={formatCadence(cadenceHours)}
+      />
       <MetricCard label="Health" value={<HealthStrip health={health} />} />
     </div>
   )
@@ -153,7 +162,7 @@ const FailedBanner: FC<{
   health: ScoringHealth | null
 }> = ({ failedRound, lastSuccessfulRoundNumber, lastCompletedAt, health }) => {
   const [expanded, setExpanded] = useState(false)
-  const errorMsg = (failedRound as any).error_message as string | undefined
+  const errorMsg = failedRound.error_message
   const shortError = errorMsg && errorMsg.length > 120
   const displayError =
     shortError && !expanded ? `${errorMsg.slice(0, 120)}…` : errorMsg

@@ -52,6 +52,14 @@
   @include medium;
 }
 
+.metric-card-subtitle {
+  color: $black-40;
+  font-size: 12px;
+  line-height: 1.3;
+  text-align: center;
+  @include medium;
+}
+
 .metric-card-sparkline {
   margin-top: 4px;
   width: 100%;

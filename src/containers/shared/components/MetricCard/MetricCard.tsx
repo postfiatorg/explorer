@@ -7,6 +7,7 @@ interface MetricCardProps {
   label: string
   value: ReactNode
   unit?: string
+  subtitle?: ReactNode
   icon?: LucideIcon
   sparklineData?: number[]
   sparklineColor?: string
@@ -16,6 +17,7 @@ export const MetricCard: FC<MetricCardProps> = ({
   label,
   value,
   unit,
+  subtitle,
   icon: Icon,
   sparklineData,
   sparklineColor = '#32e685',
@@ -35,6 +37,7 @@ export const MetricCard: FC<MetricCardProps> = ({
           <span className="metric-card-unit">{unit}</span>
         )}
       </div>
+      {subtitle && <div className="metric-card-subtitle">{subtitle}</div>}
       {chartData.length > 2 && (
         <div className="metric-card-sparkline">
           <ResponsiveContainer width="100%" height={32}>
