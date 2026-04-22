@@ -8,6 +8,7 @@ import {
   ScoringRoundMeta,
   ScoringUnlResponse,
   ScoresJson,
+  SnapshotJson,
   UnlArtifact,
 } from './scoringUtils'
 
@@ -34,6 +35,8 @@ export interface UseScoringContextResult {
   priorScores: ScoresJson | null
   /** UNL artifact for the round immediately prior to the current COMPLETE round. Used to detect `displaced` validators in Δ. */
   priorUnl: UnlArtifact | null
+  /** Snapshot artifact for the current COMPLETE round — per-validator enrichment (domain, ASN, country, agreement buckets) that fed the LLM. Drives the drill-down enrichment block. */
+  snapshot: SnapshotJson | null
   /** Pipeline-status health readout (scheduler, llm_endpoint, publisher_wallet) from the scoring service. Drives the Scoring page banner's health strip. */
   health: ScoringHealth | null
 }
@@ -129,6 +132,19 @@ export const useScoringContext = (): UseScoringContextResult => {
     },
   )
 
+  const { data: scoringSnapshot } = useQuery<SnapshotJson | null>(
+    ['scoring-snapshot', roundNumber],
+    () =>
+      fetchJsonOrNull<SnapshotJson>(
+        `/api/scoring/rounds/${roundNumber}/snapshot.json`,
+      ),
+    {
+      enabled: typeof roundNumber === 'number',
+      staleTime: TWENTY_FOUR_HOURS_MS,
+      retry: false,
+    },
+  )
+
   const { data: health } = useQuery<ScoringHealth | null>(
     ['scoring-health'],
     () => fetchJsonOrNull<ScoringHealth>('/api/scoring/health'),
@@ -163,6 +179,7 @@ export const useScoringContext = (): UseScoringContextResult => {
     latestAttempt,
     priorScores: priorScores ?? null,
     priorUnl: priorUnl ?? null,
+    snapshot: scoringSnapshot ?? null,
     health: health ?? null,
   }
 }

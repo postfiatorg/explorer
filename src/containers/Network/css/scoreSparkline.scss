@@ -1,0 +1,106 @@
+@use '../../shared/css/variables' as *;
+
+.score-sparkline {
+  display: block;
+  max-width: 100%;
+}
+
+.score-sparkline-line {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.5;
+}
+
+.score-sparkline-area {
+  stroke: none;
+}
+
+.score-sparkline-dot,
+.score-sparkline-current {
+  stroke: none;
+}
+
+.score-sparkline-green {
+  .score-sparkline-line {
+    stroke: $green-50;
+  }
+
+  .score-sparkline-dot,
+  .score-sparkline-current {
+    fill: $green-50;
+  }
+
+  .score-sparkline-area-stop-top {
+    stop-color: $green-50;
+    stop-opacity: 0.35;
+  }
+
+  .score-sparkline-area-stop-bottom {
+    stop-color: $green-50;
+    stop-opacity: 0;
+  }
+}
+
+.score-sparkline-yellow {
+  .score-sparkline-line {
+    stroke: $yellow-50;
+  }
+
+  .score-sparkline-dot,
+  .score-sparkline-current {
+    fill: $yellow-50;
+  }
+
+  .score-sparkline-area-stop-top {
+    stop-color: $yellow-50;
+    stop-opacity: 0.35;
+  }
+
+  .score-sparkline-area-stop-bottom {
+    stop-color: $yellow-50;
+    stop-opacity: 0;
+  }
+}
+
+.score-sparkline-orange {
+  .score-sparkline-line {
+    stroke: $orange-50;
+  }
+
+  .score-sparkline-dot,
+  .score-sparkline-current {
+    fill: $orange-50;
+  }
+
+  .score-sparkline-area-stop-top {
+    stop-color: $orange-50;
+    stop-opacity: 0.35;
+  }
+
+  .score-sparkline-area-stop-bottom {
+    stop-color: $orange-50;
+    stop-opacity: 0;
+  }
+}
+
+.score-sparkline-neutral {
+  .score-sparkline-line {
+    stroke: $black-40;
+  }
+
+  .score-sparkline-dot,
+  .score-sparkline-current {
+    fill: $black-40;
+  }
+
+  .score-sparkline-area-stop-top {
+    stop-color: $black-40;
+    stop-opacity: 0.25;
+  }
+
+  .score-sparkline-area-stop-bottom {
+    stop-color: $black-40;
+    stop-opacity: 0;
+  }
+}

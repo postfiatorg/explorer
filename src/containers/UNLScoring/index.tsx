@@ -23,6 +23,7 @@ export const UNLScoring = () => {
     latestAttempt,
     priorScores,
     priorUnl,
+    snapshot,
     health,
   } = useScoringContext()
 
@@ -71,6 +72,7 @@ export const UNLScoring = () => {
         context={scoringContext}
         priorScores={priorScores}
         priorUnl={priorUnl}
+        snapshot={snapshot}
         validatorMetaByKey={validatorMetaByKey}
       />
     </>

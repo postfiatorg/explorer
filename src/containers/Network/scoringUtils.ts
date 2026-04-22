@@ -154,6 +154,45 @@ export interface UnlArtifact {
   alternates: string[]
 }
 
+export interface ASNInfo {
+  asn: number
+  as_name: string
+}
+
+export interface GeoLocation {
+  country: string
+}
+
+export interface AgreementBucket {
+  score: number
+  total: number
+  missed: number
+}
+
+export interface SnapshotValidator {
+  master_key: string
+  domain: string | null
+  domain_verified: boolean
+  asn: ASNInfo | null
+  geolocation: GeoLocation | null
+  agreement_1h: AgreementBucket | null
+  agreement_24h: AgreementBucket | null
+  agreement_30d: AgreementBucket | null
+  server_version: string | null
+  unl: boolean
+  base_fee: number | null
+  identity: string | null
+  signing_key: string | null
+  // IP is present in the snapshot artifact but must not be rendered on public
+  // scoring surfaces (DDoS risk). Preserved here so per-validator download
+  // artifacts round-trip the full record the pipeline consumed.
+  ip: string
+}
+
+export interface SnapshotJson {
+  validators: SnapshotValidator[]
+}
+
 export interface HealthSignal {
   healthy: boolean
   detail: string

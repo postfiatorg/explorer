@@ -1,4 +1,4 @@
-import { FC, useEffect, useMemo, useState } from 'react'
+import { FC, Fragment, useEffect, useMemo, useState } from 'react'
 import { CircleCheck } from 'lucide-react'
 import DomainLink from '../shared/components/DomainLink'
 import { buildPath } from '../shared/routing'
@@ -8,6 +8,8 @@ import {
   ScoringContext,
   ScoringStatus,
   ScoresJson,
+  SnapshotJson,
+  SnapshotValidator,
   UnlArtifact,
   ValidatorDelta,
   ValidatorScoreEntry,
@@ -15,6 +17,7 @@ import {
   getScoreColor,
   getStatusColor,
 } from '../Network/scoringUtils'
+import { ValidatorDrillDown } from './ValidatorDrillDown'
 
 export interface ValidatorMeta {
   domain: string | null
@@ -25,6 +28,7 @@ interface RankedTableProps {
   context: ScoringContext
   priorScores: ScoresJson | null
   priorUnl: UnlArtifact | null
+  snapshot: SnapshotJson | null
   validatorMetaByKey: Map<string, ValidatorMeta>
 }
 
@@ -96,16 +100,45 @@ const RankedValidatorRow: FC<{
   row: RankedRow
   rank: number
   meta: ValidatorMeta | undefined
-}> = ({ row, rank, meta }) => {
+  isExpanded: boolean
+  onToggle: () => void
+}> = ({ row, rank, meta, isExpanded, onToggle }) => {
   const { entry, status, delta, withinChurnGap } = row
   const pubkeyTruncated = `${entry.master_key.slice(0, 10)}...${entry.master_key.slice(-6)}`
   const detailHref = buildPath(VALIDATOR_ROUTE, {
     identifier: entry.master_key,
   })
   const overallColor = getStatusColor(status)
+
+  const handleRowClick = (e: React.MouseEvent<HTMLTableRowElement>) => {
+    const target = e.target as HTMLElement
+    if (target.closest('a, button')) return
+    onToggle()
+  }
+
+  const handleRowKeyDown = (e: React.KeyboardEvent<HTMLTableRowElement>) => {
+    if (e.target !== e.currentTarget) return
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      onToggle()
+    }
+  }
+
+  const rowClass = [
+    'ranked-row',
+    withinChurnGap ? 'ranked-row-churn-gap' : '',
+    isExpanded ? 'ranked-row-expanded' : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
+
   return (
     <tr
-      className={`ranked-row ${withinChurnGap ? 'ranked-row-churn-gap' : ''}`}
+      className={rowClass}
+      onClick={handleRowClick}
+      onKeyDown={handleRowKeyDown}
+      tabIndex={0}
+      aria-expanded={isExpanded}
     >
       <td className="ranked-col-rank">{rank}</td>
       <td className="ranked-col-validator">
@@ -164,12 +197,30 @@ export const RankedTable: FC<RankedTableProps> = ({
   context,
   priorScores,
   priorUnl,
+  snapshot,
   validatorMetaByKey,
 }) => {
-  const { scores, unl, config } = context
+  const { scores, unl, config, round } = context
 
   const [query, setQuery] = useState('')
   const debouncedQuery = useDebouncedValue(query.trim().toLowerCase(), 200)
+
+  const [expandedKeys, setExpandedKeys] = useState<Set<string>>(() => new Set())
+  const toggleExpansion = (masterKey: string) => {
+    setExpandedKeys((prev) => {
+      const next = new Set(prev)
+      if (next.has(masterKey)) next.delete(masterKey)
+      else next.add(masterKey)
+      return next
+    })
+  }
+
+  const snapshotByKey = useMemo<Map<string, SnapshotValidator>>(() => {
+    const map = new Map<string, SnapshotValidator>()
+    if (!snapshot) return map
+    snapshot.validators.forEach((v) => map.set(v.master_key, v))
+    return map
+  }, [snapshot])
 
   const rows = useMemo<RankedRow[]>(() => {
     const onUnlSet = new Set(unl.unl)
@@ -246,6 +297,30 @@ export const RankedTable: FC<RankedTableProps> = ({
     ineligibleRows.length === 0 &&
     !debouncedQuery
 
+  const renderRowWithDrillDown = (r: RankedRow, rankValue: number) => {
+    const isExpanded = expandedKeys.has(r.entry.master_key)
+    return (
+      <Fragment key={r.entry.master_key}>
+        <RankedValidatorRow
+          row={r}
+          rank={rankValue}
+          meta={validatorMetaByKey.get(r.entry.master_key)}
+          isExpanded={isExpanded}
+          onToggle={() => toggleExpansion(r.entry.master_key)}
+        />
+        {isExpanded && (
+          <ValidatorDrillDown
+            masterKey={r.entry.master_key}
+            currentRoundNumber={round.round_number}
+            scoreEntry={r.entry}
+            snapshotEntry={snapshotByKey.get(r.entry.master_key) ?? null}
+            colspan={TOTAL_COLS}
+          />
+        )}
+      </Fragment>
+    )
+  }
+
   if (bothEmptyCollapse) {
     return (
       <div className="unl-scoring-ranked dashboard-panel">
@@ -265,14 +340,7 @@ export const RankedTable: FC<RankedTableProps> = ({
             <tbody>
               {onUnlRows.map((r) => {
                 rank += 1
-                return (
-                  <RankedValidatorRow
-                    row={r}
-                    rank={rank}
-                    meta={validatorMetaByKey.get(r.entry.master_key)}
-                    key={r.entry.master_key}
-                  />
-                )
+                return renderRowWithDrillDown(r, rank)
               })}
               <SeparatorChip label="all on UNL" />
             </tbody>
@@ -289,7 +357,7 @@ export const RankedTable: FC<RankedTableProps> = ({
         <input
           className="ranked-filter"
           type="search"
-          placeholder="Filter by pubkey…"
+          placeholder="Filter by pubkey or domain…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
@@ -300,14 +368,7 @@ export const RankedTable: FC<RankedTableProps> = ({
           <tbody>
             {onUnlRows.map((r) => {
               rank += 1
-              return (
-                <RankedValidatorRow
-                  row={r}
-                  rank={rank}
-                  meta={validatorMetaByKey.get(r.entry.master_key)}
-                  key={r.entry.master_key}
-                />
-              )
+              return renderRowWithDrillDown(r, rank)
             })}
 
             <SeparatorChip
@@ -319,14 +380,7 @@ export const RankedTable: FC<RankedTableProps> = ({
             ) : (
               candidateRows.map((r) => {
                 rank += 1
-                return (
-                  <RankedValidatorRow
-                    row={r}
-                    rank={rank}
-                    meta={validatorMetaByKey.get(r.entry.master_key)}
-                    key={r.entry.master_key}
-                  />
-                )
+                return renderRowWithDrillDown(r, rank)
               })
             )}
 
@@ -339,14 +393,7 @@ export const RankedTable: FC<RankedTableProps> = ({
             ) : (
               ineligibleRows.map((r) => {
                 rank += 1
-                return (
-                  <RankedValidatorRow
-                    row={r}
-                    rank={rank}
-                    meta={validatorMetaByKey.get(r.entry.master_key)}
-                    key={r.entry.master_key}
-                  />
-                )
+                return renderRowWithDrillDown(r, rank)
               })
             )}
           </tbody>

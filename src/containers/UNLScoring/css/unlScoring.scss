@@ -87,8 +87,8 @@
   flex-wrap: wrap;
   align-items: baseline;
   justify-content: space-between;
-  gap: 16px;
   margin-bottom: 8px;
+  gap: 16px;
 }
 
 .unl-scoring-banner-failed-title {
@@ -121,10 +121,10 @@
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: 8px;
   margin-bottom: 8px;
   color: $black-40;
   font-size: 13px;
+  gap: 8px;
   line-height: 1.5;
 }
 
@@ -147,9 +147,9 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
   padding-top: 8px;
   border-top: 1px solid $black-80;
+  gap: 12px;
 }
 
 // ---------------------------------------------------------------------------
@@ -188,8 +188,8 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
   margin-bottom: 12px;
+  gap: 12px;
 }
 
 .ranked-title {
@@ -229,8 +229,8 @@
 
   thead th {
     position: sticky;
-    top: 0;
     z-index: 1;
+    top: 0;
     background: $black-90;
   }
 
@@ -390,18 +390,18 @@
 .ranked-separator-line {
   position: relative;
   display: flex;
+  height: 22px;
   align-items: center;
   justify-content: center;
-  height: 22px;
 
   &::before {
-    content: '';
     position: absolute;
     top: 50%;
     right: 0;
     left: 0;
     height: 1px;
     background: $black-80;
+    content: '';
   }
 }
 
@@ -423,4 +423,136 @@
   color: $black-40;
   font-size: 13px;
   text-align: center;
+}
+
+// ---------------------------------------------------------------------------
+// Row clickability + expanded state
+// ---------------------------------------------------------------------------
+
+.ranked-row {
+  cursor: pointer;
+  transition: background $transition-default;
+
+  &:focus-visible {
+    outline: 2px solid $blue-40;
+    outline-offset: -2px;
+  }
+
+  &:hover {
+    background: rgba($white, 0.03);
+  }
+
+  &.ranked-row-expanded {
+    background: rgba($white, 0.08);
+    box-shadow: inset 3px 0 0 $blue-40;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Drill-down panel
+// ---------------------------------------------------------------------------
+
+.drill-down-row > td {
+  padding: 8px 12px 12px;
+  border: none;
+  background: transparent;
+}
+
+.drill-down-panel {
+  display: flex;
+  flex-direction: column;
+  padding: 18px 20px 20px;
+  border: 1px solid $black-80;
+  border-radius: 8px;
+  background: $black-100;
+  gap: 16px;
+}
+
+.drill-down-enrichment {
+  display: grid;
+  gap: 12px 24px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.drill-down-field {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+}
+
+.drill-down-label {
+  color: $black-40;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  @include medium;
+}
+
+.drill-down-value {
+  color: $white;
+  font-size: 13px;
+  @include medium;
+}
+
+.drill-down-reasoning {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.drill-down-reasoning-text {
+  margin: 0;
+  color: $white;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.drill-down-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.drill-down-button {
+  padding: 6px 12px;
+  border: 1px solid $black-80;
+  border-radius: 6px;
+  background: $black-90;
+  color: $white;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  transition:
+    background $transition-default,
+    border-color $transition-default;
+  @include medium;
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $blue-40;
+    outline-offset: 1px;
+  }
+
+  &:hover:not(:disabled) {
+    border-color: $black-60;
+    background: $black-80;
+  }
+}
+
+.drill-down-link {
+  color: $blue-40;
+  font-size: 12px;
+  text-decoration: none;
+  @include medium;
+
+  &:hover {
+    text-decoration: underline;
+  }
 }
