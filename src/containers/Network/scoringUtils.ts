@@ -268,7 +268,10 @@ export const formatRelativeTime = (
   const diffMin = Math.floor(diffSec / 60)
   if (diffMin < 60) return `${diffMin}m ago`
   const diffHr = Math.floor(diffMin / 60)
-  if (diffHr < 24) return `${diffHr}h ago`
+  if (diffHr < 24) {
+    const remMin = diffMin % 60
+    return remMin === 0 ? `${diffHr}h ago` : `${diffHr}h ${remMin}m ago`
+  }
   const diffDays = Math.floor(diffHr / 24)
   return `${diffDays}d ago`
 }

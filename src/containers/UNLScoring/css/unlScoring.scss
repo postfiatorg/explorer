@@ -64,6 +64,20 @@
   @include bold;
 }
 
+.banner-countdown {
+  &.banner-countdown-neutral {
+    color: $white;
+  }
+
+  &.banner-countdown-amber {
+    color: $yellow-50;
+  }
+
+  &.banner-countdown-red {
+    color: $orange-50;
+  }
+}
+
 .unl-scoring-banner-failed {
   border-left: 3px solid $orange-50;
 }

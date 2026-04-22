@@ -1,4 +1,4 @@
-import { FC, useState } from 'react'
+import { FC, useEffect, useState } from 'react'
 import { MetricCard } from '../shared/components/MetricCard/MetricCard'
 import {
   HealthSignal,
@@ -15,25 +15,81 @@ interface ScoringBannerProps {
   health: ScoringHealth | null
 }
 
+type CountdownTone = 'neutral' | 'amber' | 'red'
+
+interface CountdownDisplay {
+  text: string
+  tone: CountdownTone
+}
+
+const BANNER_TICK_MS = 30 * 1000
+const OVERDUE_AMBER_RATIO = 0.1
+const OVERDUE_RED_RATIO = 0.5
+
+const useTicker = (intervalMs: number): number => {
+  const [tick, setTick] = useState(() => Date.now())
+  useEffect(() => {
+    const id = setInterval(() => setTick(Date.now()), intervalMs)
+    return () => clearInterval(id)
+  }, [intervalMs])
+  return tick
+}
+
+const formatOverdue = (overdueMin: number): string => {
+  if (overdueMin < 1) return 'due now'
+  if (overdueMin < 60) return `due ${overdueMin}m ago`
+  const overdueHr = Math.floor(overdueMin / 60)
+  if (overdueHr < 24) {
+    const remMin = overdueMin % 60
+    return remMin === 0
+      ? `due ${overdueHr}h ago`
+      : `due ${overdueHr}h ${remMin}m ago`
+  }
+  const overdueDays = Math.floor(overdueHr / 24)
+  const remHr = overdueHr % 24
+  return remHr === 0
+    ? `due ${overdueDays}d ago`
+    : `due ${overdueDays}d ${remHr}h ago`
+}
+
 const formatCountdown = (
   completedAt: string | null,
   cadenceHours: number,
-): string => {
-  if (!completedAt) return 'unknown'
+  now: number,
+): CountdownDisplay => {
+  if (!completedAt) return { text: 'unknown', tone: 'neutral' }
   const completedMs = Date.parse(completedAt)
-  if (Number.isNaN(completedMs)) return 'unknown'
-  const nextMs = completedMs + cadenceHours * 60 * 60 * 1000
-  const remainingMs = nextMs - Date.now()
-  if (remainingMs <= 0) return 'due now'
+  if (Number.isNaN(completedMs)) {
+    return { text: 'unknown', tone: 'neutral' }
+  }
 
-  const totalSeconds = Math.floor(remainingMs / 1000)
-  const days = Math.floor(totalSeconds / 86400)
-  const hours = Math.floor((totalSeconds % 86400) / 3600)
-  const minutes = Math.floor((totalSeconds % 3600) / 60)
+  const cadenceMs = cadenceHours * 60 * 60 * 1000
+  const remainingMs = completedMs + cadenceMs - now
 
-  if (days > 0) return `${days}d ${hours}h`
-  if (hours > 0) return `${hours}h ${minutes}m`
-  return `${minutes}m`
+  if (remainingMs > 0) {
+    // Ceil so the countdown and the floored "X ago" elapsed card always sum to the cadence without losing a sub-minute residual.
+    const totalMinutes = Math.ceil(remainingMs / 60000)
+    const days = Math.floor(totalMinutes / 1440)
+    const hours = Math.floor((totalMinutes % 1440) / 60)
+    const minutes = totalMinutes % 60
+
+    let text: string
+    if (days > 0) text = `${days}d ${hours}h`
+    else if (hours > 0) text = `${hours}h ${minutes}m`
+    else text = `${minutes}m`
+
+    return { text, tone: 'neutral' }
+  }
+
+  const overdueMs = -remainingMs
+  const text = formatOverdue(Math.floor(overdueMs / 60000))
+
+  let tone: CountdownTone
+  if (overdueMs < cadenceMs * OVERDUE_AMBER_RATIO) tone = 'neutral'
+  else if (overdueMs < cadenceMs * OVERDUE_RED_RATIO) tone = 'amber'
+  else tone = 'red'
+
+  return { text, tone }
 }
 
 const toneFor = (signal: HealthSignal | undefined): string => {
@@ -69,6 +125,7 @@ export const ScoringBanner: FC<ScoringBannerProps> = ({
   latestAttempt,
   health,
 }) => {
+  const now = useTicker(BANNER_TICK_MS)
   const { round, config } = context
   const status = latestAttempt?.status ?? round.status
 
@@ -83,6 +140,7 @@ export const ScoringBanner: FC<ScoringBannerProps> = ({
         lastSuccessfulRoundNumber={round.round_number}
         lastCompletedAt={round.completed_at}
         health={health}
+        now={now}
       />
     )
   }
@@ -93,7 +151,13 @@ export const ScoringBanner: FC<ScoringBannerProps> = ({
     latestAttempt.status !== 'FAILED' &&
     latestAttempt.round_number > round.round_number
   ) {
-    return <InProgressBanner runningRound={latestAttempt} health={health} />
+    return (
+      <InProgressBanner
+        runningRound={latestAttempt}
+        health={health}
+        now={now}
+      />
+    )
   }
 
   return (
@@ -102,6 +166,7 @@ export const ScoringBanner: FC<ScoringBannerProps> = ({
       completedAt={round.completed_at}
       cadenceHours={config.cadence_hours}
       health={health}
+      now={now}
     />
   )
 }
@@ -111,19 +176,26 @@ const IdleBanner: FC<{
   completedAt: string | null
   cadenceHours: number
   health: ScoringHealth | null
-}> = ({ roundNumber, completedAt, cadenceHours, health }) => {
-  const countdown = formatCountdown(completedAt, cadenceHours)
+  now: number
+}> = ({ roundNumber, completedAt, cadenceHours, health, now }) => {
+  const countdown = formatCountdown(completedAt, cadenceHours, now)
 
   return (
     <div className="network-stats">
       <MetricCard
         label="Last round"
         value={`#${roundNumber}`}
-        subtitle={completedAt ? formatRelativeTime(completedAt) : null}
+        subtitle={completedAt ? formatRelativeTime(completedAt, now) : null}
       />
       <MetricCard
         label="Next round in"
-        value={countdown}
+        value={
+          <span
+            className={`banner-countdown banner-countdown-${countdown.tone}`}
+          >
+            {countdown.text}
+          </span>
+        }
         subtitle={formatCadence(cadenceHours)}
       />
       <MetricCard label="Health" value={<HealthStrip health={health} />} />
@@ -134,7 +206,8 @@ const IdleBanner: FC<{
 const InProgressBanner: FC<{
   runningRound: ScoringRoundMeta
   health: ScoringHealth | null
-}> = ({ runningRound, health }) => (
+  now: number
+}> = ({ runningRound, health, now }) => (
   <div className="unl-scoring-banner unl-scoring-banner-running dashboard-panel">
     <div className="unl-scoring-banner-row">
       <div className="unl-scoring-banner-col unl-scoring-banner-col-main">
@@ -143,7 +216,7 @@ const InProgressBanner: FC<{
         </span>
         <span className="unl-scoring-banner-sub">
           {runningRound.completed_at
-            ? `started ${formatRelativeTime(runningRound.completed_at)}`
+            ? `started ${formatRelativeTime(runningRound.completed_at, now)}`
             : 'in progress'}
         </span>
       </div>
@@ -160,7 +233,14 @@ const FailedBanner: FC<{
   lastSuccessfulRoundNumber: number
   lastCompletedAt: string | null
   health: ScoringHealth | null
-}> = ({ failedRound, lastSuccessfulRoundNumber, lastCompletedAt, health }) => {
+  now: number
+}> = ({
+  failedRound,
+  lastSuccessfulRoundNumber,
+  lastCompletedAt,
+  health,
+  now,
+}) => {
   const [expanded, setExpanded] = useState(false)
   const errorMsg = failedRound.error_message
   const shortError = errorMsg && errorMsg.length > 120
@@ -198,7 +278,7 @@ const FailedBanner: FC<{
       <div className="unl-scoring-banner-failed-footer">
         <span className="unl-scoring-banner-sub">
           Showing data from last successful round #{lastSuccessfulRoundNumber}
-          {lastCompletedAt && ` (${formatRelativeTime(lastCompletedAt)})`}
+          {lastCompletedAt && ` (${formatRelativeTime(lastCompletedAt, now)})`}
         </span>
         <HealthStrip health={health} />
       </div>
