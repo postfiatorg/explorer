@@ -2,6 +2,7 @@ import { FC } from 'react'
 import { buildPath } from '../shared/routing'
 import { VALIDATOR_ROUTE } from '../App/routes'
 import { ScoreSparkline } from '../Network/ScoreSparkline'
+import { ASN_DISPLAY_NAMES } from '../Network/asnDisplayNames'
 import { SnapshotValidator, ValidatorScoreEntry } from '../Network/scoringUtils'
 import { useScoreHistory } from './useScoreHistory'
 
@@ -37,7 +38,11 @@ const formatAgreement30d = (entry: SnapshotValidator | null): string => {
 
 const formatASN = (entry: SnapshotValidator | null): string => {
   if (!entry?.asn) return '—'
-  return `AS${entry.asn.asn} — ${entry.asn.as_name}`
+  const friendly = ASN_DISPLAY_NAMES[entry.asn.asn]
+  if (friendly) return friendly
+  return entry.asn.as_name
+    ? `AS${entry.asn.asn} — ${entry.asn.as_name}`
+    : `AS${entry.asn.asn}`
 }
 
 export const ValidatorDrillDown: FC<ValidatorDrillDownProps> = ({
