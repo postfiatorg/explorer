@@ -1,6 +1,11 @@
 import axios from 'axios'
 import { useQuery } from 'react-query'
-import { ScoresJson, ScoringRoundMeta } from '../Network/scoringUtils'
+import {
+  ScoresJson,
+  ScoringRoundMeta,
+  ScoringStatus,
+  UnlArtifact,
+} from '../Network/scoringUtils'
 
 const THREE_MINUTES_MS = 3 * 60 * 1000
 const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000
@@ -19,14 +24,26 @@ const fetchJsonOrNull = async <T>(url: string): Promise<T | null> => {
   }
 }
 
+interface RoundArtifacts {
+  scores: ScoresJson | null
+  unl: UnlArtifact | null
+}
+
 export interface ScoreHistoryPoint {
   round_number: number
-  score: number | null
+  score: number
+  status: ScoringStatus
 }
 
 export interface UseScoreHistoryResult {
   points: ScoreHistoryPoint[]
   isLoading: boolean
+}
+
+const resolveStatus = (masterKey: string, unl: UnlArtifact): ScoringStatus => {
+  if (unl.unl.includes(masterKey)) return 'on_unl'
+  if (unl.alternates.includes(masterKey)) return 'candidate'
+  return 'ineligible'
 }
 
 export const useScoreHistory = (
@@ -50,19 +67,23 @@ export const useScoreHistory = (
   const roundNumbers = (recentRounds?.rounds ?? []).map((r) => r.round_number)
   const batchKey = roundNumbers.join(',')
 
-  const { data: scoresByRound, isLoading: loadingScores } = useQuery<
-    Record<number, ScoresJson | null>
+  const { data: artifactsByRound, isLoading: loadingArtifacts } = useQuery<
+    Record<number, RoundArtifacts>
   >(
-    ['scoring-history-batch', batchKey],
+    ['scoring-history-artifacts', batchKey],
     async () => {
       const results = await Promise.all(
-        roundNumbers.map((n) =>
+        roundNumbers.flatMap((n) => [
           fetchJsonOrNull<ScoresJson>(`/api/scoring/rounds/${n}/scores.json`),
-        ),
+          fetchJsonOrNull<UnlArtifact>(`/api/scoring/rounds/${n}/unl.json`),
+        ]),
       )
-      const byRound: Record<number, ScoresJson | null> = {}
+      const byRound: Record<number, RoundArtifacts> = {}
       roundNumbers.forEach((n, i) => {
-        byRound[n] = results[i]
+        byRound[n] = {
+          scores: results[i * 2] as ScoresJson | null,
+          unl: results[i * 2 + 1] as UnlArtifact | null,
+        }
       })
       return byRound
     },
@@ -73,8 +94,8 @@ export const useScoreHistory = (
     },
   )
 
-  if (!scoresByRound) {
-    return { points: [], isLoading: loadingRounds || loadingScores }
+  if (!artifactsByRound) {
+    return { points: [], isLoading: loadingRounds || loadingArtifacts }
   }
 
   // Reverse so the series reads oldest → newest for left-to-right sparkline rendering.
@@ -82,12 +103,19 @@ export const useScoreHistory = (
     .slice()
     .reverse()
     .map((n) => {
-      const scores = scoresByRound[n]
-      const entry = scores?.validator_scores.find(
+      const round = artifactsByRound[n]
+      if (!round?.scores || !round.unl) return null
+      const entry = round.scores.validator_scores.find(
         (e) => e.master_key === masterKey,
       )
-      return { round_number: n, score: entry?.score ?? null }
+      if (!entry) return null
+      return {
+        round_number: n,
+        score: entry.score,
+        status: resolveStatus(masterKey, round.unl),
+      }
     })
+    .filter((p): p is ScoreHistoryPoint => p !== null)
 
   return { points, isLoading: false }
 }

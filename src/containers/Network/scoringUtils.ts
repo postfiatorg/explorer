@@ -149,6 +149,13 @@ export const getStatusColor = (status: ScoringStatus): ScoreColor => {
   return 'neutral'
 }
 
+export const getStatusLabel = (status: ScoringStatus): string => {
+  if (status === 'on_unl') return 'on UNL'
+  if (status === 'candidate') return 'candidate'
+  if (status === 'ineligible') return 'ineligible'
+  return 'no data'
+}
+
 export interface UnlArtifact {
   unl: string[]
   alternates: string[]

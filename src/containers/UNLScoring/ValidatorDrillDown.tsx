@@ -53,9 +53,6 @@ export const ValidatorDrillDown: FC<ValidatorDrillDownProps> = ({
   colspan,
 }) => {
   const { points } = useScoreHistory(masterKey, true)
-  const sparklineScores = points
-    .filter((p) => p.score !== null)
-    .map((p) => p.score as number)
 
   const pubkeyFile = filenamePubkey(masterKey)
   const detailHref = buildPath(VALIDATOR_ROUTE, { identifier: masterKey })
@@ -100,14 +97,11 @@ export const ValidatorDrillDown: FC<ValidatorDrillDownProps> = ({
             </div>
             <div className="drill-down-field drill-down-sparkline-field">
               <span className="drill-down-label">
-                Score history ({sparklineScores.length}{' '}
-                {sparklineScores.length === 1 ? 'round' : 'rounds'})
+                Score history ({points.length}{' '}
+                {points.length === 1 ? 'round' : 'rounds'})
               </span>
-              {sparklineScores.length > 0 ? (
-                <ScoreSparkline
-                  scores={sparklineScores}
-                  currentScore={scoreEntry.score}
-                />
+              {points.length > 0 ? (
+                <ScoreSparkline points={points} />
               ) : (
                 <span className="drill-down-value">—</span>
               )}
