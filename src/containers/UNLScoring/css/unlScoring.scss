@@ -547,6 +547,389 @@
   }
 }
 
+// ---------------------------------------------------------------------------
+// Round navigation strip
+// ---------------------------------------------------------------------------
+
+.round-nav {
+  display: flex;
+  flex-direction: column;
+  padding: 14px 18px;
+  gap: 12px;
+}
+
+.round-nav-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.round-nav-arrow {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border: 1px solid $black-80;
+  border-radius: 6px;
+  background: $black-90;
+  color: $white;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  gap: 4px;
+  @include medium;
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.35;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $blue-40;
+    outline-offset: 1px;
+  }
+
+  &:hover:not(:disabled) {
+    border-color: $black-60;
+    background: $black-80;
+  }
+}
+
+.round-nav-meta {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  font-size: 14px;
+  gap: 8px;
+  text-align: center;
+}
+
+.round-nav-round-number {
+  color: $white;
+  font-size: 16px;
+  @include bold;
+}
+
+.round-nav-meta-sep {
+  color: $black-60;
+}
+
+.round-nav-meta-state-complete {
+  color: $green-50;
+  @include medium;
+}
+
+.round-nav-meta-state-failed {
+  color: $orange-50;
+  @include medium;
+}
+
+.round-nav-meta-state-running {
+  color: $yellow-50;
+  @include medium;
+}
+
+.round-nav-meta-state-dry-run-complete {
+  color: $black-40;
+  @include medium;
+}
+
+.round-nav-meta-relative {
+  color: $black-40;
+  font-size: 13px;
+}
+
+.round-nav-meta-placeholder {
+  color: $black-40;
+}
+
+.round-nav-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  padding-top: 6px;
+  border-top: 1px solid $black-80;
+  gap: 12px;
+}
+
+.round-nav-strip-label {
+  color: $black-40;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  @include medium;
+}
+
+.round-nav-strip-glyphs {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.round-nav-glyph {
+  display: inline-flex;
+  width: 22px;
+  height: 22px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  transition:
+    transform $transition-default,
+    border-color $transition-default;
+
+  &:focus-visible {
+    outline: 2px solid $blue-40;
+    outline-offset: 1px;
+  }
+
+  &:hover {
+    transform: scale(1.1);
+  }
+}
+
+.round-nav-glyph-complete {
+  color: $green-50;
+}
+
+.round-nav-glyph-failed {
+  color: $orange-50;
+}
+
+.round-nav-glyph-running {
+  color: $yellow-50;
+}
+
+.round-nav-glyph-dry-run {
+  color: $black-40;
+}
+
+.round-nav-glyph-current {
+  border-color: $blue-40;
+  background: rgba($blue-40, 0.1);
+}
+
+// ---------------------------------------------------------------------------
+// Audit trail panel
+// ---------------------------------------------------------------------------
+
+.audit-trail {
+  display: flex;
+  flex-direction: column;
+  padding: 18px 20px 20px;
+  gap: 18px;
+}
+
+.audit-trail-title {
+  margin: 0;
+  color: $white;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  @include medium;
+}
+
+.audit-trail-placeholder {
+  margin: 0;
+  color: $black-40;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.audit-trail-section {
+  display: flex;
+  flex-direction: column;
+  padding-top: 14px;
+  border-top: 1px solid $black-80;
+  gap: 10px;
+
+  &:first-of-type {
+    padding-top: 0;
+    border-top: none;
+  }
+}
+
+.audit-trail-label {
+  color: $white;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  @include bold;
+}
+
+.audit-trail-value {
+  color: $white;
+  font-size: 13px;
+  @include medium;
+}
+
+.audit-trail-cid {
+  font-family: monospace;
+  font-size: 12px;
+  word-break: break-all;
+}
+
+.audit-trail-links {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.audit-gateway-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border: 1px solid $black-80;
+  border-radius: 6px;
+  background: $black-90;
+  color: $white;
+  font-size: 13px;
+  text-decoration: none;
+  transition:
+    background $transition-default,
+    border-color $transition-default;
+  @include medium;
+
+  &:focus-visible {
+    outline: 2px solid $blue-40;
+    outline-offset: 1px;
+  }
+
+  &:hover {
+    border-color: $black-60;
+    background: $black-80;
+    color: $white;
+  }
+}
+
+.audit-trail-hash-link {
+  color: $white;
+  font-family: monospace;
+  font-size: 12px;
+  text-decoration: none;
+  word-break: break-all;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.audit-trail-grid {
+  display: grid;
+  margin: 0;
+  gap: 10px 14px;
+  grid-template-columns: auto 1fr;
+
+  dt {
+    color: $white;
+    font-size: 13px;
+    @include medium;
+
+    &::after {
+      content: ':';
+    }
+  }
+
+  dd {
+    margin: 0;
+    color: $white;
+    font-size: 13px;
+    word-break: break-all;
+  }
+}
+
+.audit-trail-relative {
+  color: $black-40;
+  font-size: 12px;
+}
+
+.audit-trail-download {
+  align-self: flex-start;
+  padding: 6px 12px;
+  border: 1px solid $black-80;
+  border-radius: 6px;
+  background: $black-90;
+  color: $white;
+  font-size: 12px;
+  text-decoration: none;
+  @include medium;
+
+  &:hover {
+    border-color: $black-60;
+    background: $black-80;
+  }
+}
+
+.audit-trail-memo-wrap {
+  position: relative;
+}
+
+.audit-trail-memo-body {
+  max-width: 100%;
+  padding: 8px 32px 8px 10px;
+  border: 1px solid $black-80;
+  border-radius: 4px;
+  margin: 0;
+  background: $black-100;
+  color: $white;
+  font-family: monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.audit-trail-memo-copy {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: inline-flex;
+  width: 22px;
+  height: 22px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid $black-80;
+  border-radius: 4px;
+  background: $black-90;
+  color: $black-40;
+  cursor: pointer;
+  transition:
+    color $transition-default,
+    border-color $transition-default;
+
+  &:focus-visible {
+    outline: 2px solid $blue-40;
+    outline-offset: 1px;
+  }
+
+  &:hover {
+    border-color: $black-60;
+    color: $white;
+  }
+}
+
+.audit-trail-muted {
+  color: $black-40;
+  font-size: 12px;
+}
+
+.audit-trail-override {
+  padding: 6px 10px;
+  border-left: 3px solid $yellow-50;
+  background: rgba($yellow-50, 0.08);
+  font-size: 13px;
+  font-style: italic;
+}
+
 .drill-down-link {
   color: $blue-40;
   font-size: 12px;

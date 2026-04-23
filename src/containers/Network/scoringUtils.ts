@@ -11,6 +11,62 @@ export interface ScoringRoundMeta {
   status: string
   completed_at: string | null
   error_message?: string
+  // Optional fields populated on completed rounds — used by the audit-trail
+  // panel and by client-side stage derivation.
+  created_at?: string | null
+  started_at?: string | null
+  snapshot_hash?: string | null
+  scores_hash?: string | null
+  vl_sequence?: number | null
+  ipfs_cid?: string | null
+  memo_tx_hash?: string | null
+  github_pages_commit_url?: string | null
+  override_type?: string | null
+  override_reason?: string | null
+}
+
+export type FailedAtStage =
+  | 'COLLECTING'
+  | 'SCORED'
+  | 'SELECTED_OR_VL_SIGNED'
+  | 'IPFS_PUBLISHED'
+  | 'VL_DISTRIBUTED'
+  | 'ONCHAIN_PUBLISHED'
+
+export const deriveFailedAtStage = (
+  round: ScoringRoundMeta,
+): FailedAtStage | null => {
+  if (round.status !== 'FAILED') return null
+  if (round.snapshot_hash == null) return 'COLLECTING'
+  if (round.scores_hash == null) return 'SCORED'
+  if (round.vl_sequence == null) return 'SELECTED_OR_VL_SIGNED'
+  if (round.ipfs_cid == null) return 'IPFS_PUBLISHED'
+  if (round.github_pages_commit_url == null) return 'VL_DISTRIBUTED'
+  if (round.memo_tx_hash == null) return 'ONCHAIN_PUBLISHED'
+  return null
+}
+
+// Non-terminal pipeline stages — rounds in any of these states are in-flight.
+export const IN_PROGRESS_STATUSES = new Set([
+  'COLLECTING',
+  'SCORED',
+  'SELECTED',
+  'VL_SIGNED',
+  'IPFS_PUBLISHED',
+  'VL_DISTRIBUTED',
+])
+
+export type RoundStateKind =
+  | 'complete'
+  | 'failed'
+  | 'running'
+  | 'dry_run_complete'
+
+export const classifyRoundState = (status: string): RoundStateKind => {
+  if (status === 'COMPLETE') return 'complete'
+  if (status === 'FAILED') return 'failed'
+  if (status === 'DRY_RUN_COMPLETE') return 'dry_run_complete'
+  return 'running'
 }
 
 export interface ValidatorScoreEntry {
