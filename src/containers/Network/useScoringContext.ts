@@ -162,15 +162,18 @@ export const useScoringContext = (): UseScoringContextResult => {
     return latestRoundsResp.rounds[0]
   }, [latestRoundsResp])
 
+  // `config` is treated as a soft dependency. An isolated `/api/scoring/config`
+  // failure leaves downstream surfaces (banner, methodology, ranked table)
+  // rendering with `—` placeholders instead of the whole page collapsing.
   const context = useMemo<ScoringContext | null>(() => {
-    if (!scoringUnl || !scoringScores || !scoringRound || !scoringConfig) {
+    if (!scoringUnl || !scoringScores || !scoringRound) {
       return null
     }
     return {
       unl: scoringUnl,
       scores: scoringScores,
       round: scoringRound,
-      config: scoringConfig,
+      config: scoringConfig ?? null,
     }
   }, [scoringUnl, scoringScores, scoringRound, scoringConfig])
 

@@ -3,7 +3,10 @@ import { Link, useLocation } from 'react-router-dom'
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { sidebarConfig, sidebarFooterLinks, SidebarItem } from './sidebarConfig'
 import { useSidebarContext } from '../SidebarContext'
+import { useScoringAvailability } from '../../Network/useScoringAvailability'
 import './sidebar.scss'
+
+const UNL_SCORING_LABEL = 'UNL Scoring'
 
 interface SidebarNavItemProps {
   item: SidebarItem
@@ -60,12 +63,21 @@ interface SidebarProps {
 export const Sidebar: FC<SidebarProps> = ({ onNavigate }) => {
   const { collapsed, setCollapsed } = useSidebarContext()
   const { pathname } = useLocation()
+  const { state: scoringState } = useScoringAvailability()
+
+  // Hide the UNL Scoring nav entry on networks that haven't completed a
+  // scoring round yet; re-appears automatically once the first round lands.
+  // Loading and error states keep the link visible so it doesn't flicker on
+  // transient hiccups.
+  const items = sidebarConfig.filter(
+    (item) => item.label !== UNL_SCORING_LABEL || scoringState !== 'genesis',
+  )
 
   return (
     <aside className={`sidebar ${collapsed ? 'collapsed' : ''}`}>
       <nav className="sidebar-nav">
         <div className="sidebar-main">
-          {sidebarConfig.map((item) => (
+          {items.map((item) => (
             <SidebarNavItem
               key={item.label}
               item={item}

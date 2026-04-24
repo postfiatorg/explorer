@@ -26,6 +26,7 @@ import ValidatorsTabs from './ValidatorsTabs'
 import SocketContext from '../shared/SocketContext'
 import { getServerState } from '../../rippled/lib/rippled'
 import { useScoringContext } from './useScoringContext'
+import { useScoringAvailability } from './useScoringAvailability'
 
 export const Validators = () => {
   const { t } = useTranslation()
@@ -56,6 +57,7 @@ export const Validators = () => {
   })
 
   const { context: scoringContext } = useScoringContext()
+  const { state: scoringState } = useScoringAvailability()
 
   function fetchFeeSettingsData() {
     if (tab === 'voting') {
@@ -174,6 +176,7 @@ export const Validators = () => {
         validators={validators}
         tab="uptime"
         scoringContext={scoringContext}
+        scoringState={scoringState}
       />
     ),
     voting: (
@@ -184,6 +187,7 @@ export const Validators = () => {
           tab="voting"
           feeSettings={feeSettings}
           scoringContext={scoringContext}
+          scoringState={scoringState}
         />
       </>
     ),

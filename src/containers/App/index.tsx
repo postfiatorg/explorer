@@ -41,6 +41,7 @@ import { Token } from '../Token'
 import { NFT } from '../NFT/NFT'
 import { legacyRedirect } from './legacyRedirects'
 import { useCustomNetworks } from '../shared/hooks'
+import { ScoringStalenessProvider } from '../shared/ScoringStaleness'
 import { Amendments } from '../Amendments'
 import { Amendment } from '../Amendment'
 import { MPT } from '../MPT/MPT'
@@ -96,86 +97,91 @@ export const AppWrapper = () => {
     <HelmetProvider>
       <AnalyticsSetPath />
       <QueryClientProvider client={queryClient}>
-        <div className="app-wrapper">
-          <AppErrorBoundary>
-            <Helmet
-              defaultTitle={t('xrpl_explorer')}
-              titleTemplate={`${t('xrpl_explorer')} | %s`}
-              htmlAttributes={{ lang: i18n.language }}
-            >
-              <meta name="description" content={t('app.meta.description')} />
-              <meta name="author" content={t('app.meta.author')} />
-              <meta property="og:site_name" content={t('xrpl_explorer')} />
-              <meta property="og:type" content="website" />
-              <meta property="og:title" content={t('xrpl_explorer')} />
-              <meta
-                property="og:description"
-                content={t('app.meta.description')}
-              />
-              <meta name="twitter:card" content="summary" />
-              <meta name="twitter:title" content={t('xrpl_explorer')} />
-              <meta
-                name="twitter:description"
-                content={t('app.meta.description')}
-              />
-              <script type="application/ld+json">
-                {JSON.stringify({
-                  '@context': 'https://schema.org',
-                  '@type': 'WebSite',
-                  name: 'PFT Explorer',
-                  description:
-                    'Blockchain explorer for the Post Fiat (PFT) Ledger',
-                  publisher: {
-                    '@type': 'Organization',
-                    name: 'PFT Ledger Project',
-                    url: 'https://postfiat.org',
-                  },
-                })}
-              </script>
-            </Helmet>
-            <div className="app">
-              <Routes>
-                {/* Start: Redirects */}
-                {/* Ensures redirects happen without loading other routes. Specifically for hash routes */}
-                {redirect && (
-                  <Route path="" element={<Navigate to={redirect} replace />} />
-                )}
-                <Route
-                  path={updatePath('/explorer')}
-                  element={<Navigate to={updatePath('/')} replace />}
+        <ScoringStalenessProvider>
+          <div className="app-wrapper">
+            <AppErrorBoundary>
+              <Helmet
+                defaultTitle={t('xrpl_explorer')}
+                titleTemplate={`${t('xrpl_explorer')} | %s`}
+                htmlAttributes={{ lang: i18n.language }}
+              >
+                <meta name="description" content={t('app.meta.description')} />
+                <meta name="author" content={t('app.meta.author')} />
+                <meta property="og:site_name" content={t('xrpl_explorer')} />
+                <meta property="og:type" content="website" />
+                <meta property="og:title" content={t('xrpl_explorer')} />
+                <meta
+                  property="og:description"
+                  content={t('app.meta.description')}
                 />
-                <Route
-                  path={updatePath('/ledgers')}
-                  element={<Navigate to={updatePath('/')} replace />}
+                <meta name="twitter:card" content="summary" />
+                <meta name="twitter:title" content={t('xrpl_explorer')} />
+                <meta
+                  name="twitter:description"
+                  content={t('app.meta.description')}
                 />
-                <Route
-                  path={updatePath('/index.html')}
-                  element={<Navigate to={updatePath('/')} replace />}
-                />
-                <Route
-                  path={updatePath('/index.htm')}
-                  element={<Navigate to={updatePath('/')} replace />}
-                />
-                {/* End: Redirects */}
-                {mode === 'custom' && (
-                  <Route path="/" element={<CustomNetworkHome />} />
-                )}
-                <Route element={<App rippledUrl={rippledUrl} />}>
-                  {routes.map(([route, Component]) => (
+                <script type="application/ld+json">
+                  {JSON.stringify({
+                    '@context': 'https://schema.org',
+                    '@type': 'WebSite',
+                    name: 'PFT Explorer',
+                    description:
+                      'Blockchain explorer for the Post Fiat (PFT) Ledger',
+                    publisher: {
+                      '@type': 'Organization',
+                      name: 'PFT Ledger Project',
+                      url: 'https://postfiat.org',
+                    },
+                  })}
+                </script>
+              </Helmet>
+              <div className="app">
+                <Routes>
+                  {/* Start: Redirects */}
+                  {/* Ensures redirects happen without loading other routes. Specifically for hash routes */}
+                  {redirect && (
                     <Route
-                      key={route.path}
-                      path={updatePath(route.path)}
-                      element={<Component />}
+                      path=""
+                      element={<Navigate to={redirect} replace />}
                     />
-                  ))}
-                  <Route path="*" element={<NoMatch />} />
-                </Route>
-                \{' '}
-              </Routes>
-              {/* Footer replaced by StatusBar in Layout */}
-            </div>
-          </AppErrorBoundary>
-        </div>
+                  )}
+                  <Route
+                    path={updatePath('/explorer')}
+                    element={<Navigate to={updatePath('/')} replace />}
+                  />
+                  <Route
+                    path={updatePath('/ledgers')}
+                    element={<Navigate to={updatePath('/')} replace />}
+                  />
+                  <Route
+                    path={updatePath('/index.html')}
+                    element={<Navigate to={updatePath('/')} replace />}
+                  />
+                  <Route
+                    path={updatePath('/index.htm')}
+                    element={<Navigate to={updatePath('/')} replace />}
+                  />
+                  {/* End: Redirects */}
+                  {mode === 'custom' && (
+                    <Route path="/" element={<CustomNetworkHome />} />
+                  )}
+                  <Route element={<App rippledUrl={rippledUrl} />}>
+                    {routes.map(([route, Component]) => (
+                      <Route
+                        key={route.path}
+                        path={updatePath(route.path)}
+                        element={<Component />}
+                      />
+                    ))}
+                    <Route path="*" element={<NoMatch />} />
+                  </Route>
+                  \{' '}
+                </Routes>
+                {/* Footer replaced by StatusBar in Layout */}
+              </div>
+            </AppErrorBoundary>
+          </div>
+        </ScoringStalenessProvider>
       </QueryClientProvider>
     </HelmetProvider>
   )

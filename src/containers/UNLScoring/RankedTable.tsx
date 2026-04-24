@@ -236,7 +236,10 @@ export const RankedTable: FC<RankedTableProps> = ({
     // Sort by score descending
     base.sort((a, b) => b.entry.score - a.entry.score)
 
-    // Compute weakest-on-UNL for churn-gap highlight
+    // Without config we cannot compute the churn-gap threshold — the highlight
+    // is skipped rather than rendered from a hardcoded default.
+    if (!config) return base
+
     const unlScores = base.filter((r) => onUnlSet.has(r.entry.master_key))
     if (unlScores.length === 0) return base
     const weakestOnUnl = unlScores[unlScores.length - 1].entry.score
@@ -366,7 +369,11 @@ export const RankedTable: FC<RankedTableProps> = ({
             })}
 
             <SeparatorChip
-              label={`candidate · +${config.unl_min_score_gap} to displace`}
+              label={
+                config
+                  ? `candidate · +${config.unl_min_score_gap} to displace`
+                  : 'candidate · +— to displace'
+              }
             />
 
             {candidateRows.length === 0 ? (
@@ -379,7 +386,11 @@ export const RankedTable: FC<RankedTableProps> = ({
             )}
 
             <SeparatorChip
-              label={`ineligible · below ${config.unl_score_cutoff}`}
+              label={
+                config
+                  ? `ineligible · below ${config.unl_score_cutoff}`
+                  : 'ineligible · below —'
+              }
             />
 
             {ineligibleRows.length === 0 ? (

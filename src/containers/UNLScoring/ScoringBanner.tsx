@@ -54,13 +54,15 @@ const formatOverdue = (overdueMin: number): string => {
 
 const formatCountdown = (
   completedAt: string | null,
-  cadenceHours: number,
+  cadenceHours: number | null,
   now: number,
 ): CountdownDisplay => {
-  if (!completedAt) return { text: 'unknown', tone: 'neutral' }
+  if (!completedAt || cadenceHours == null) {
+    return { text: '—', tone: 'neutral' }
+  }
   const completedMs = Date.parse(completedAt)
   if (Number.isNaN(completedMs)) {
-    return { text: 'unknown', tone: 'neutral' }
+    return { text: '—', tone: 'neutral' }
   }
 
   const cadenceMs = cadenceHours * 60 * 60 * 1000
@@ -164,7 +166,7 @@ export const ScoringBanner: FC<ScoringBannerProps> = ({
     <IdleBanner
       roundNumber={round.round_number}
       completedAt={round.completed_at}
-      cadenceHours={config.cadence_hours}
+      cadenceHours={config?.cadence_hours ?? null}
       health={health}
       now={now}
     />
@@ -174,7 +176,7 @@ export const ScoringBanner: FC<ScoringBannerProps> = ({
 const IdleBanner: FC<{
   roundNumber: number
   completedAt: string | null
-  cadenceHours: number
+  cadenceHours: number | null
   health: ScoringHealth | null
   now: number
 }> = ({ roundNumber, completedAt, cadenceHours, health, now }) => {
@@ -196,7 +198,7 @@ const IdleBanner: FC<{
             {countdown.text}
           </span>
         }
-        subtitle={formatCadence(cadenceHours)}
+        subtitle={cadenceHours != null ? formatCadence(cadenceHours) : '—'}
       />
       <MetricCard label="Health" value={<HealthStrip health={health} />} />
     </div>

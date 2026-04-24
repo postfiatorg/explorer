@@ -11,6 +11,8 @@ import { StatusBadge } from '../shared/components/StatusBadge/StatusBadge'
 import { ScoringStatusBadge } from '../Network/ScoringStatusBadge'
 import { ScoringRing } from '../Network/ScoringRing'
 import { useScoringContext } from '../Network/useScoringContext'
+import { useScoringAvailability } from '../Network/useScoringAvailability'
+import { Skeleton } from '../shared/components/Skeleton/Skeleton'
 import {
   SCORING_DIMENSIONS,
   findScoreEntry,
@@ -80,6 +82,7 @@ export const Validator = () => {
   )
 
   const { context: scoringContext, latestAttempt } = useScoringContext()
+  const { state: scoringState } = useScoringAvailability()
 
   const { data: reports, isFetching: reportIsLoading } = useQuery(
     ['fetchValidatorReport', identifier],
@@ -245,6 +248,53 @@ export const Validator = () => {
   }
 
   function renderScoringSection() {
+    // Genesis — no rounds have ever completed on this network; omit the
+    // Scoring section entirely until the first round lands.
+    if (scoringState === 'genesis') return null
+
+    // Loading — show a skeleton placeholder instead of a dashed "no data"
+    // state so the section doesn't pop in after a visible delay.
+    if (scoringState === 'loading' && !scoringContext) {
+      return (
+        <div className="detail-scoring dashboard-panel">
+          <div className="detail-scoring-header">
+            <span className="detail-scoring-title">Scoring</span>
+          </div>
+          <div className="detail-scoring-body">
+            <div className="detail-scoring-overall-half">
+              <Skeleton variant="circle" width={120} height={120} />
+            </div>
+            <div className="detail-scoring-dimensions-half">
+              {SCORING_DIMENSIONS.map((dim) => (
+                <div className="detail-scoring-dim-row" key={dim.key}>
+                  <Skeleton variant="text" width={80} />
+                  <div className="detail-scoring-dim-bar-wrapper">
+                    <Skeleton variant="rect" height={8} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )
+    }
+
+    // Error without a warm cache — the service is unreachable and the proxy
+    // has nothing to serve; render a compact inline notice rather than an
+    // empty section.
+    if (scoringState === 'error' && !scoringContext) {
+      return (
+        <div className="detail-scoring dashboard-panel">
+          <div className="detail-scoring-header">
+            <span className="detail-scoring-title">Scoring</span>
+          </div>
+          <p className="detail-scoring-no-data">
+            Scoring data temporarily unavailable.
+          </p>
+        </div>
+      )
+    }
+
     if (!scoringContext) return null
 
     const masterKey = data?.master_key ?? data?.signing_key

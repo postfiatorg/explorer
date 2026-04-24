@@ -2,13 +2,19 @@ import { FC } from 'react'
 import { ScoringConfig, formatCadence } from '../Network/scoringUtils'
 
 interface MethodologyExplainerProps {
-  config: ScoringConfig
+  config: ScoringConfig | null
 }
+
+const DASH = '—'
 
 export const MethodologyExplainer: FC<MethodologyExplainerProps> = ({
   config,
 }) => {
-  const cadence = formatCadence(config.cadence_hours)
+  const cutoff = config?.unl_score_cutoff ?? DASH
+  const maxSize = config?.unl_max_size ?? DASH
+  const minGap = config?.unl_min_score_gap ?? DASH
+  const cadence =
+    config?.cadence_hours != null ? formatCadence(config.cadence_hours) : DASH
 
   return (
     <div className="methodology dashboard-panel">
@@ -21,13 +27,12 @@ export const MethodologyExplainer: FC<MethodologyExplainerProps> = ({
           </p>
           <p>
             A validator must score at or above the eligibility cutoff (currently{' '}
-            {config.unl_score_cutoff}) to qualify. The top {config.unl_max_size}{' '}
-            qualifying validators are placed on the UNL for the coming round.
+            {cutoff}) to qualify. The top {maxSize} qualifying validators are
+            placed on the UNL for the coming round.
           </p>
           <p>
-            To prevent churn, a challenger must score at least{' '}
-            {config.unl_min_score_gap} points higher than the weakest incumbent
-            to displace it.
+            To prevent churn, a challenger must score at least {minGap} points
+            higher than the weakest incumbent to displace it.
           </p>
           <p>
             Scoring runs {cadence}. Each round produces auditable artifacts

@@ -96,7 +96,7 @@ export interface ScoringContext {
   unl: ScoringUnlResponse
   scores: ScoresJson
   round: ScoringRoundMeta
-  config: ScoringConfig
+  config: ScoringConfig | null
 }
 
 export interface ScoringInfo {

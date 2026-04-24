@@ -168,6 +168,22 @@
   }
 }
 
+.status-badge-unavailable {
+  color: $black-40;
+  font-size: 13px;
+  opacity: 0.6;
+}
+
+.scoring-unavailable-notice {
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  color: $yellow-50;
+  font-size: 12px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  @include medium;
+}
+
 .scoring-freshness-footer {
   padding: 10px 12px;
   margin-top: 8px;

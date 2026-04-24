@@ -9,6 +9,7 @@ import UpIcon from '../shared/images/ic_up.svg'
 import DownIcon from '../shared/images/ic_down.svg'
 import DomainLink from '../shared/components/DomainLink'
 import { Loader } from '../shared/components/Loader'
+import { Skeleton } from '../shared/components/Skeleton/Skeleton'
 import './css/validatorsTable.scss'
 import { useLanguage } from '../shared/hooks'
 import { DROPS_TO_XRP_FACTOR, renderXRP } from '../shared/utils'
@@ -20,6 +21,7 @@ import {
   getStalenessLevel,
   formatRelativeTime,
 } from './scoringUtils'
+import { ScoringAvailability } from './useScoringAvailability'
 import { ScoringStatusBadge } from './ScoringStatusBadge'
 
 interface ValidatorsTableProps {
@@ -27,6 +29,7 @@ interface ValidatorsTableProps {
   tab: string
   feeSettings?: FeeSettings
   scoringContext?: ScoringContext | null
+  scoringState?: ScoringAvailability
 }
 
 const fallbackSort = (data: StreamValidator[]): StreamValidator[] =>
@@ -81,11 +84,25 @@ const bestFirstSort = (
   })
 
 export const ValidatorsTable = (props: ValidatorsTableProps) => {
-  const { validators: rawValidators, tab, feeSettings, scoringContext } = props
+  const {
+    validators: rawValidators,
+    tab,
+    feeSettings,
+    scoringContext,
+    scoringState,
+  } = props
   const { t } = useTranslation()
   const language = useLanguage()
 
+  // Genesis → hide the Status column entirely and revert to the binary UNL
+  // column. Loading / error / available → render the Status column (content
+  // fills in once the scoring context loads; skeleton until then).
+  const showStatusColumn = scoringState
+    ? scoringState !== 'genesis'
+    : Boolean(scoringContext)
   const scoringEnabled = Boolean(scoringContext)
+  const scoringLoading = scoringState === 'loading'
+  const scoringErrored = scoringState === 'error'
 
   const scoringInfoByKey = useMemo(() => {
     const map = new Map<string, ScoringInfo>()
@@ -176,6 +193,22 @@ export const ValidatorsTable = (props: ValidatorsTableProps) => {
     </td>
   )
 
+  const renderStatusSkeleton = () => (
+    <td className="status-badge-cell">
+      <Skeleton variant="rect" width={80} height={20} />
+    </td>
+  )
+
+  const renderStatusUnavailable = () => (
+    <td className="status-badge-cell status-badge-unavailable">—</td>
+  )
+
+  const renderStatusCell = (info: ScoringInfo) => {
+    if (scoringEnabled) return renderStatusBadge(info)
+    if (scoringLoading) return renderStatusSkeleton()
+    return renderStatusUnavailable()
+  }
+
   const renderValidator = (d) => {
     const color = d.ledger_hash ? `#${d.ledger_hash.substring(0, 6)}` : ''
     const trusted = d.unl ? 'yes' : 'no'
@@ -196,8 +229,8 @@ export const ValidatorsTable = (props: ValidatorsTableProps) => {
         <td className="domain text-truncate">
           {renderDomain(d.domain, d.domain_verified)}
         </td>
-        {scoringEnabled ? (
-          renderStatusBadge(scoringInfo)
+        {showStatusColumn ? (
+          renderStatusCell(scoringInfo)
         ) : (
           <td className={`unl ${trusted}`}>
             {d.unl && <SuccessIcon title={d.unl} alt={d.unl} />}
@@ -252,7 +285,7 @@ export const ValidatorsTable = (props: ValidatorsTableProps) => {
     const { round, config } = scoringContext
     const staleness = getStalenessLevel(
       round.completed_at,
-      config.cadence_hours,
+      config?.cadence_hours,
     )
     const relative = formatRelativeTime(round.completed_at)
     return (
@@ -262,14 +295,21 @@ export const ValidatorsTable = (props: ValidatorsTableProps) => {
     )
   }
 
+  const errorNotice = scoringErrored ? (
+    <div className="scoring-unavailable-notice">
+      Scoring data temporarily unavailable.
+    </div>
+  ) : null
+
   const content = validators ? (
     <>
+      {errorNotice}
       <table className="basic">
         <thead>
           <tr>
             <th className="pubkey">{t('pubkey')}</th>
             <th className="domain">{t('domain')}</th>
-            {scoringEnabled ? (
+            {showStatusColumn ? (
               <th className="status">
                 {t('status', { defaultValue: 'Status' })}
               </th>

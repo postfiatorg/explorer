@@ -1,7 +1,7 @@
 import axios from 'axios'
-import { useContext, useEffect, useMemo } from 'react'
+import { useContext, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useQuery } from 'react-query'
+import { useQuery, useQueryClient } from 'react-query'
 import { useParams } from 'react-router'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { SEOHelmet } from '../shared/components/SEOHelmet'
@@ -10,6 +10,8 @@ import NetworkContext from '../shared/NetworkContext'
 import { ValidatorResponse } from '../shared/vhsTypes'
 import { ScoringContext } from '../Network/scoringUtils'
 import { useScoringContext } from '../Network/useScoringContext'
+import { useScoringAvailability } from '../Network/useScoringAvailability'
+import { useScoringStaleness } from '../shared/ScoringStaleness'
 import { ScoringBanner } from './ScoringBanner'
 import { RankedTable, ValidatorMeta } from './RankedTable'
 import { RoundNavigation } from './RoundNavigation'
@@ -17,6 +19,13 @@ import { AuditTrailPanel } from './AuditTrailPanel'
 import { MethodologyExplainer } from './MethodologyExplainer'
 import { useRoundView } from './useRoundView'
 import { useRecentRounds } from './useRecentRounds'
+import { useScoreHistory } from './useScoreHistory'
+import {
+  ScoringErrorPanel,
+  ScoringGenesisPanel,
+  ScoringPageSkeleton,
+  ScoringStaleBanner,
+} from './ScoringStatePanels'
 import './css/unlScoring.scss'
 
 interface VhsValidatorsResponse {
@@ -53,6 +62,10 @@ export const UNLScoring = () => {
   const { t } = useTranslation()
   const network = useContext(NetworkContext)
   const { context: latestContext, latestAttempt, health } = useScoringContext()
+  const { state: scoringState, refetch: refetchAvailability } =
+    useScoringAvailability()
+  const { isStale } = useScoringStaleness()
+  const queryClient = useQueryClient()
   const navigate = useNavigate()
   const { roundId: roundIdParam } = useParams<{ roundId?: string }>()
   const [searchParams] = useSearchParams()
@@ -61,6 +74,35 @@ export const UNLScoring = () => {
     () => parseValidatorParam(rawValidatorParam),
     [rawValidatorParam],
   )
+
+  // Warm the score-history cache at page mount so the first drill-down opens
+  // with the sparkline already rendered instead of shimmering for ~1s while
+  // the batch (`/rounds?limit=10` + per-round scores/unl artifacts) runs.
+  // Empty master key → zero-sized points result, but the underlying
+  // react-query cache keys match what the drill-down will later request.
+  useScoreHistory('', scoringState === 'available')
+
+  const [isRetrying, setIsRetrying] = useState(false)
+  const handleRetry = async () => {
+    setIsRetrying(true)
+    try {
+      // Invalidate everything under the scoring namespace so a click also
+      // retries `config`, `unl/current`, `health`, round details, etc.
+      await Promise.all([
+        queryClient.invalidateQueries({
+          predicate: (query) => {
+            const key = query.queryKey
+            return Array.isArray(key) && typeof key[0] === 'string'
+              ? (key[0] as string).startsWith('scoring-')
+              : false
+          },
+        }),
+        refetchAvailability(),
+      ])
+    } finally {
+      setIsRetrying(false)
+    }
+  }
 
   const latestRoundNumber = latestContext?.round.round_number
 
@@ -218,8 +260,15 @@ export const UNLScoring = () => {
     </div>
   )
 
+  const networkLabel =
+    typeof network === 'string' && network.length > 0 ? network : 'this'
+
   let body: JSX.Element
-  if (isRoundNotFound) {
+  if (scoringState === 'genesis') {
+    body = <ScoringGenesisPanel networkLabel={networkLabel} />
+  } else if (scoringState === 'error' && !latestContext) {
+    body = <ScoringErrorPanel onRetry={handleRetry} isRetrying={isRetrying} />
+  } else if (isRoundNotFound) {
     body = latestContext ? (
       <>
         <ScoringBanner
@@ -233,11 +282,7 @@ export const UNLScoring = () => {
       renderNotFound()
     )
   } else if (!latestContext) {
-    body = (
-      <div className="unl-scoring-empty">
-        <Loader />
-      </div>
-    )
+    body = <ScoringPageSkeleton />
   } else {
     body = (
       <>
@@ -289,6 +334,7 @@ export const UNLScoring = () => {
         path="/unl-scoring"
       />
       <div className="network-page-title">{t('unl_scoring')}</div>
+      {isStale && scoringState === 'available' && <ScoringStaleBanner />}
       {body}
     </div>
   )
