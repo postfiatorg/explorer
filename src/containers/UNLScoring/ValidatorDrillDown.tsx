@@ -3,7 +3,12 @@ import { buildPath } from '../shared/routing'
 import { VALIDATOR_ROUTE } from '../App/routes'
 import { ScoreSparkline } from '../Network/ScoreSparkline'
 import { ASN_DISPLAY_NAMES } from '../Network/asnDisplayNames'
-import { SnapshotValidator, ValidatorScoreEntry } from '../Network/scoringUtils'
+import {
+  SCORING_DIMENSIONS,
+  SnapshotValidator,
+  ValidatorScoreEntry,
+  getScoreColor,
+} from '../Network/scoringUtils'
 import { useScoreHistory } from './useScoreHistory'
 
 interface ValidatorDrillDownProps {
@@ -76,6 +81,37 @@ export const ValidatorDrillDown: FC<ValidatorDrillDownProps> = ({
     <tr className="drill-down-row" data-drilldown-key={masterKey}>
       <td colSpan={colspan}>
         <div className="drill-down-panel">
+          {/* Dimension scores on mobile only — the table's dimension columns
+              collapse below the tablet-portrait breakpoint, so the scores move
+              into the single inline expansion to keep the row readable. */}
+          <div className="drill-down-dimensions">
+            {SCORING_DIMENSIONS.map((dim) => {
+              const value = scoreEntry[dim.key]
+              const color = getScoreColor(value)
+              return (
+                <div className="drill-down-dim-row" key={dim.key}>
+                  <span className="drill-down-dim-label" title={dim.tooltip}>
+                    {dim.label}
+                  </span>
+                  <div className="drill-down-dim-bar-wrapper">
+                    <div className="agreement-bar-track">
+                      <div
+                        className={`agreement-bar-fill ${color}`}
+                        style={{
+                          width: `${Math.max(0, Math.min(100, value))}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <span
+                    className={`drill-down-dim-value agreement-value ${color}`}
+                  >
+                    {value}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
           <div className="drill-down-enrichment">
             <div className="drill-down-field">
               <span className="drill-down-label">Network provider</span>

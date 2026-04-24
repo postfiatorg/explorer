@@ -73,6 +73,11 @@
     opacity: 0.7;
   }
 
+  &:focus-visible {
+    outline: 2px solid $blue-40;
+    outline-offset: 2px;
+  }
+
   &:hover:not(:disabled) {
     border-color: $black-40;
     background: $black-70;
@@ -582,6 +587,42 @@
   gap: 16px;
 }
 
+.drill-down-dimensions {
+  display: none;
+  flex-direction: column;
+  padding-bottom: 12px;
+  border-bottom: 1px solid $black-80;
+  gap: 8px;
+}
+
+.drill-down-dim-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.drill-down-dim-label {
+  flex: 0 0 96px;
+  color: $black-40;
+  font-size: 11px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  @include medium;
+}
+
+.drill-down-dim-bar-wrapper {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.drill-down-dim-value {
+  flex: 0 0 36px;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  @include bold;
+}
+
 .drill-down-enrichment {
   display: grid;
   gap: 12px 24px;
@@ -887,6 +928,18 @@
   font-family: monospace;
   font-size: 12px;
   word-break: break-all;
+
+  // Allow the CID text to wrap onto multiple lines inside the CopyableAddress
+  // so the copy button stays inside the panel on narrow viewports instead of
+  // being pushed off the right edge.
+  .copyable-address {
+    flex-wrap: wrap;
+  }
+
+  .copyable-address-text {
+    white-space: normal;
+    word-break: break-all;
+  }
 }
 
 .audit-trail-links {
@@ -1119,5 +1172,37 @@
 
   &:hover {
     text-decoration: underline;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Mobile: collapse dimension columns into the inline drill-down
+// ---------------------------------------------------------------------------
+// Below the tablet-portrait breakpoint the ranked table's five dimension
+// columns (Consensus, Reliability, Software, Diversity, Identity) no longer
+// fit horizontally. The <th> and <td> cells for those columns are removed
+// from the visual layout and the same scores surface inside the existing
+// drill-down panel instead, keeping a single inline expansion per row.
+
+@media (max-width: $tablet-portrait-upper-boundary) {
+  .ranked-table .ranked-col-dimension {
+    display: none;
+  }
+
+  .drill-down-dimensions {
+    display: flex;
+  }
+
+  // Let the Validator cell wrap onto multiple lines on narrow screens so the
+  // domain + truncated pubkey combination doesn't force the whole table to
+  // scroll horizontally. Relax the column's min-width so the table can shrink
+  // to the viewport width.
+  .ranked-table .ranked-col-validator {
+    min-width: 0;
+  }
+
+  .ranked-validator-cell {
+    flex-wrap: wrap;
+    white-space: normal;
   }
 }
