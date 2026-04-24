@@ -930,6 +930,73 @@
   font-style: italic;
 }
 
+// ---------------------------------------------------------------------------
+// Methodology explainer
+// ---------------------------------------------------------------------------
+
+.methodology {
+  display: flex;
+  flex-direction: column;
+  padding: 18px 20px;
+  gap: 12px;
+}
+
+.methodology-section {
+  padding-top: 14px;
+  border-top: 1px solid $black-80;
+
+  &:first-of-type {
+    padding-top: 0;
+    border-top: none;
+  }
+}
+
+.methodology-summary {
+  color: $white;
+  cursor: pointer;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  @include bold;
+
+  &::marker {
+    color: $black-40;
+  }
+
+  &:hover {
+    color: $blue-40;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $blue-40;
+    outline-offset: 2px;
+  }
+}
+
+.methodology-body {
+  padding-top: 12px;
+  color: $white;
+  font-size: 13px;
+  line-height: 1.6;
+
+  p {
+    margin: 0 0 10px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+.methodology-chain {
+  padding: 10px 12px;
+  border-radius: 4px;
+  background: $black-100;
+  font-family: monospace;
+  font-size: 12px;
+  text-align: center;
+}
+
 .drill-down-link {
   color: $blue-40;
   font-size: 12px;

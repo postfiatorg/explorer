@@ -12,6 +12,7 @@ import { ScoringBanner } from './ScoringBanner'
 import { RankedTable, ValidatorMeta } from './RankedTable'
 import { RoundNavigation } from './RoundNavigation'
 import { AuditTrailPanel } from './AuditTrailPanel'
+import { MethodologyExplainer } from './MethodologyExplainer'
 import { useRoundView } from './useRoundView'
 import { useRecentRounds } from './useRecentRounds'
 import './css/unlScoring.scss'
@@ -153,6 +154,7 @@ export const UNLScoring = () => {
           <Loader />
         </div>
       )}
+      <MethodologyExplainer config={latestContext.config} />
     </>
   ) : (
     <div className="unl-scoring-empty">
