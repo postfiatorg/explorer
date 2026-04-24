@@ -31,6 +31,7 @@ export interface RoundView {
 export interface UseRoundViewResult {
   view: RoundView | null
   isLoading: boolean
+  roundNotFound: boolean
 }
 
 export const useRoundView = (
@@ -132,5 +133,11 @@ export const useRoundView = (
     }
   }, [round, scores, unl, snapshot, priorScores, priorUnl])
 
-  return { view, isLoading: loadingRound || loadingScores || loadingUnl }
+  const roundNotFound = enabled && !loadingRound && round === null
+
+  return {
+    view,
+    isLoading: loadingRound || loadingScores || loadingUnl,
+    roundNotFound,
+  }
 }

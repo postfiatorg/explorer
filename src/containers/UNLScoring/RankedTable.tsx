@@ -30,6 +30,8 @@ interface RankedTableProps {
   priorUnl: UnlArtifact | null
   snapshot: SnapshotJson | null
   validatorMetaByKey: Map<string, ValidatorMeta>
+  expandedMasterKeys: Set<string>
+  onToggleValidator: (masterKey: string) => void
 }
 
 interface RankedRow {
@@ -199,21 +201,13 @@ export const RankedTable: FC<RankedTableProps> = ({
   priorUnl,
   snapshot,
   validatorMetaByKey,
+  expandedMasterKeys,
+  onToggleValidator,
 }) => {
   const { scores, unl, config, round } = context
 
   const [query, setQuery] = useState('')
   const debouncedQuery = useDebouncedValue(query.trim().toLowerCase(), 200)
-
-  const [expandedKeys, setExpandedKeys] = useState<Set<string>>(() => new Set())
-  const toggleExpansion = (masterKey: string) => {
-    setExpandedKeys((prev) => {
-      const next = new Set(prev)
-      if (next.has(masterKey)) next.delete(masterKey)
-      else next.add(masterKey)
-      return next
-    })
-  }
 
   const snapshotByKey = useMemo<Map<string, SnapshotValidator>>(() => {
     const map = new Map<string, SnapshotValidator>()
@@ -298,7 +292,7 @@ export const RankedTable: FC<RankedTableProps> = ({
     !debouncedQuery
 
   const renderRowWithDrillDown = (r: RankedRow, rankValue: number) => {
-    const isExpanded = expandedKeys.has(r.entry.master_key)
+    const isExpanded = expandedMasterKeys.has(r.entry.master_key)
     return (
       <Fragment key={r.entry.master_key}>
         <RankedValidatorRow
@@ -306,7 +300,7 @@ export const RankedTable: FC<RankedTableProps> = ({
           rank={rankValue}
           meta={validatorMetaByKey.get(r.entry.master_key)}
           isExpanded={isExpanded}
-          onToggle={() => toggleExpansion(r.entry.master_key)}
+          onToggle={() => onToggleValidator(r.entry.master_key)}
         />
         {isExpanded && (
           <ValidatorDrillDown

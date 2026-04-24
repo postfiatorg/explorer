@@ -73,7 +73,7 @@ export const ValidatorDrillDown: FC<ValidatorDrillDownProps> = ({
   }
 
   return (
-    <tr className="drill-down-row">
+    <tr className="drill-down-row" data-drilldown-key={masterKey}>
       <td colSpan={colspan}>
         <div className="drill-down-panel">
           <div className="drill-down-enrichment">

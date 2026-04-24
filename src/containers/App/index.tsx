@@ -29,6 +29,7 @@ import {
   UPGRADE_STATUS_ROUTE,
   ANALYTICS_ROUTE,
   UNL_SCORING_ROUTE,
+  UNL_SCORING_ROUND_ROUTE,
 } from './routes'
 import { Dashboard } from '../Dashboard/Dashboard'
 import { Ledger } from '../Ledger'
@@ -77,6 +78,7 @@ export const AppWrapper = () => {
     [TRANSACTION_ROUTE, Transaction],
     [NODES_ROUTE, Nodes],
     [VALIDATORS_ROUTE, Validators],
+    [UNL_SCORING_ROUND_ROUTE, UNLScoring],
     [UNL_SCORING_ROUTE, UNLScoring],
     [UPGRADE_STATUS_ROUTE, UpgradeStatus],
     [AMENDMENTS_ROUTE, Amendments],

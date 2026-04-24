@@ -1,7 +1,9 @@
 import axios from 'axios'
-import { useContext, useEffect, useMemo, useState } from 'react'
+import { useContext, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from 'react-query'
+import { useParams } from 'react-router'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { SEOHelmet } from '../shared/components/SEOHelmet'
 import { Loader } from '../shared/components/Loader'
 import NetworkContext from '../shared/NetworkContext'
@@ -21,33 +23,70 @@ interface VhsValidatorsResponse {
   validators: ValidatorResponse[]
 }
 
+const BASE_PATH = '/unl-scoring'
+
+const buildScoringUrl = (
+  roundNumber: number | null,
+  latestRoundNumber: number | undefined,
+  validatorPubkeys: string[],
+): string => {
+  const isLatest =
+    roundNumber === null ||
+    (typeof latestRoundNumber === 'number' && roundNumber === latestRoundNumber)
+  const path = isLatest ? BASE_PATH : `${BASE_PATH}/rounds/${roundNumber}`
+  const query =
+    validatorPubkeys.length > 0
+      ? `?validator=${validatorPubkeys.join(',')}`
+      : ''
+  return `${path}${query}`
+}
+
+const parseValidatorParam = (raw: string | null): string[] => {
+  if (!raw) return []
+  return raw
+    .split(',')
+    .map((v) => v.trim())
+    .filter((v) => v.length > 0)
+}
+
 export const UNLScoring = () => {
   const { t } = useTranslation()
   const network = useContext(NetworkContext)
   const { context: latestContext, latestAttempt, health } = useScoringContext()
+  const navigate = useNavigate()
+  const { roundId: roundIdParam } = useParams<{ roundId?: string }>()
+  const [searchParams] = useSearchParams()
+  const rawValidatorParam = searchParams.get('validator')
+  const validatorList = useMemo(
+    () => parseValidatorParam(rawValidatorParam),
+    [rawValidatorParam],
+  )
 
   const latestRoundNumber = latestContext?.round.round_number
 
-  // null = "follow latest", any number = user explicitly selected a round.
-  const [selectedRoundNumber, setSelectedRoundNumber] = useState<number | null>(
-    null,
-  )
+  // undefined → follow latest (bare path); null → invalid segment;
+  // number → pinned to that round.
+  const parsedRoundId = useMemo<number | null | undefined>(() => {
+    if (roundIdParam === undefined) return undefined
+    if (!/^\d+$/.test(roundIdParam)) return null
+    const n = Number(roundIdParam)
+    return n >= 1 ? n : null
+  }, [roundIdParam])
 
-  // Auto-advance: if the user hasn't selected anything, track latest.
-  // If they selected the latest round explicitly, re-enable auto-advance.
-  useEffect(() => {
-    if (
-      selectedRoundNumber !== null &&
-      selectedRoundNumber === latestRoundNumber
-    ) {
-      setSelectedRoundNumber(null)
-    }
-  }, [selectedRoundNumber, latestRoundNumber])
-
-  const viewingRoundNumber = selectedRoundNumber ?? latestRoundNumber
+  const isPinned = typeof parsedRoundId === 'number'
+  const viewingRoundNumber = isPinned ? parsedRoundId : latestRoundNumber
 
   const recentRounds = useRecentRounds()
-  const { view: viewingRound } = useRoundView(viewingRoundNumber)
+  const { view: viewingRound, roundNotFound: viewNotFound } =
+    useRoundView(viewingRoundNumber)
+
+  const tooLarge =
+    isPinned &&
+    typeof latestRoundNumber === 'number' &&
+    (parsedRoundId as number) > latestRoundNumber
+
+  const isRoundNotFound =
+    parsedRoundId === null || tooLarge || (isPinned && viewNotFound)
 
   // If a later COMPLETE round exists in the recent window, this round's VL has
   // already been superseded; surface when the supersession happened. For rounds
@@ -117,50 +156,130 @@ export const UNLScoring = () => {
     }
   }, [viewingRound, latestContext])
 
-  const body = latestContext ? (
-    <>
-      <ScoringBanner
-        context={latestContext}
-        latestAttempt={latestAttempt}
-        health={health}
-      />
-      {typeof viewingRoundNumber === 'number' &&
-        typeof latestRoundNumber === 'number' && (
-          <RoundNavigation
-            viewingRoundNumber={viewingRoundNumber}
-            latestRoundNumber={latestRoundNumber}
-            recentRounds={recentRounds}
-            onSelectRound={(n) =>
-              setSelectedRoundNumber(n === latestRoundNumber ? null : n)
-            }
-          />
-        )}
-      {viewingContext && viewingRound ? (
-        <>
-          <RankedTable
-            context={viewingContext}
-            priorScores={viewingRound.priorScores}
-            priorUnl={viewingRound.priorUnl}
-            snapshot={viewingRound.snapshot}
-            validatorMetaByKey={validatorMetaByKey}
-          />
-          <AuditTrailPanel
-            round={viewingRound.round}
-            supersedingRound={supersedingRound}
-          />
-        </>
-      ) : (
-        <div className="unl-scoring-empty">
-          <Loader />
-        </div>
-      )}
-      <MethodologyExplainer config={latestContext.config} />
-    </>
-  ) : (
-    <div className="unl-scoring-empty">
-      <Loader />
+  // Resolve the validator param against the viewing round's scores. Unknown
+  // pubkeys are silently ignored at render time but are kept in the URL so
+  // they survive round navigation to rounds where they do exist.
+  const expandedMasterKeys = useMemo<Set<string>>(() => {
+    if (!viewingRound || validatorList.length === 0) return new Set()
+    const known = new Set(
+      viewingRound.scores.validator_scores.map((v) => v.master_key),
+    )
+    return new Set(validatorList.filter((pubkey) => known.has(pubkey)))
+  }, [validatorList, viewingRound])
+
+  // The first pubkey in URL order that exists in the current round — used as
+  // the scroll target so a shareable link lands on the primary validator.
+  const firstKnownPubkey = useMemo<string | null>(() => {
+    if (!viewingRound || validatorList.length === 0) return null
+    const known = new Set(
+      viewingRound.scores.validator_scores.map((v) => v.master_key),
+    )
+    return validatorList.find((pubkey) => known.has(pubkey)) ?? null
+  }, [validatorList, viewingRound])
+
+  const handleSelectRound = (roundNumber: number) => {
+    // Round navigation pushes history so Back steps through prior rounds.
+    navigate(buildScoringUrl(roundNumber, latestRoundNumber, validatorList))
+  }
+
+  const handleToggleValidator = (masterKey: string) => {
+    // Drill-down toggles replace history so Back skips expand/collapse noise.
+    const nextList = validatorList.includes(masterKey)
+      ? validatorList.filter((pubkey) => pubkey !== masterKey)
+      : [...validatorList, masterKey]
+    const pinnedRoundNumber = isPinned ? (parsedRoundId as number) : null
+    navigate(buildScoringUrl(pinnedRoundNumber, latestRoundNumber, nextList), {
+      replace: true,
+    })
+  }
+
+  // Scroll the primary drill-down into view when it changes — on initial
+  // load, on round navigation, or when the first-known pubkey itself changes.
+  // Toggling a later-in-list pubkey leaves the first unchanged and does not
+  // re-scroll, so users aren't yanked around on every click.
+  useEffect(() => {
+    if (!firstKnownPubkey) return undefined
+    const raf = window.requestAnimationFrame(() => {
+      const el = document.querySelector(
+        `[data-drilldown-key="${firstKnownPubkey}"]`,
+      ) as HTMLElement | null
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    })
+    return () => window.cancelAnimationFrame(raf)
+  }, [firstKnownPubkey, viewingRound?.round.round_number])
+
+  const renderNotFound = () => (
+    <div className="unl-scoring-not-found dashboard-panel">
+      <h2>Round not found</h2>
+      <p>
+        No scoring round exists for this URL. Use the round navigation or open{' '}
+        <a href={BASE_PATH}>the latest round</a>.
+      </p>
     </div>
   )
+
+  let body: JSX.Element
+  if (isRoundNotFound) {
+    body = latestContext ? (
+      <>
+        <ScoringBanner
+          context={latestContext}
+          latestAttempt={latestAttempt}
+          health={health}
+        />
+        {renderNotFound()}
+      </>
+    ) : (
+      renderNotFound()
+    )
+  } else if (!latestContext) {
+    body = (
+      <div className="unl-scoring-empty">
+        <Loader />
+      </div>
+    )
+  } else {
+    body = (
+      <>
+        <ScoringBanner
+          context={latestContext}
+          latestAttempt={latestAttempt}
+          health={health}
+        />
+        {typeof viewingRoundNumber === 'number' &&
+          typeof latestRoundNumber === 'number' && (
+            <RoundNavigation
+              viewingRoundNumber={viewingRoundNumber}
+              latestRoundNumber={latestRoundNumber}
+              recentRounds={recentRounds}
+              onSelectRound={handleSelectRound}
+            />
+          )}
+        {viewingContext && viewingRound ? (
+          <>
+            <RankedTable
+              context={viewingContext}
+              priorScores={viewingRound.priorScores}
+              priorUnl={viewingRound.priorUnl}
+              snapshot={viewingRound.snapshot}
+              validatorMetaByKey={validatorMetaByKey}
+              expandedMasterKeys={expandedMasterKeys}
+              onToggleValidator={handleToggleValidator}
+            />
+            <AuditTrailPanel
+              round={viewingRound.round}
+              supersedingRound={supersedingRound}
+            />
+          </>
+        ) : (
+          <div className="unl-scoring-empty">
+            <Loader />
+          </div>
+        )}
+        <MethodologyExplainer config={latestContext.config} />
+      </>
+    )
+  }
 
   return (
     <div className="unl-scoring-page">

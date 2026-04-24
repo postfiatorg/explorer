@@ -88,3 +88,9 @@ export const ANALYTICS_ROUTE: RouteDefinition = {
 export const UNL_SCORING_ROUTE: RouteDefinition = {
   path: '/unl-scoring',
 }
+
+export const UNL_SCORING_ROUND_ROUTE: RouteDefinition<{
+  roundId: string
+}> = {
+  path: '/unl-scoring/rounds/:roundId',
+}
