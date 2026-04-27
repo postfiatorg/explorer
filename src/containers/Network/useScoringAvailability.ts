@@ -1,6 +1,5 @@
-import axios from 'axios'
 import { useQuery } from 'react-query'
-import { ScoringRoundMeta } from './scoringUtils'
+import { ScoringRoundMeta, fetchJsonOrNull } from './scoringUtils'
 
 const THIRTY_SECONDS_MS = 30 * 1000
 
@@ -8,15 +7,6 @@ export type ScoringAvailability = 'loading' | 'genesis' | 'available' | 'error'
 
 interface LatestRoundsResponse {
   rounds: ScoringRoundMeta[]
-}
-
-const fetchJsonOrNull = async <T>(url: string): Promise<T | null> => {
-  try {
-    const response = await axios.get<T>(url)
-    return response.data
-  } catch {
-    return null
-  }
 }
 
 export interface UseScoringAvailabilityResult {

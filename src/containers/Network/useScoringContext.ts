@@ -1,4 +1,3 @@
-import axios from 'axios'
 import { useMemo } from 'react'
 import { useQuery } from 'react-query'
 import {
@@ -10,21 +9,13 @@ import {
   ScoresJson,
   SnapshotJson,
   UnlArtifact,
+  fetchJsonOrNull,
 } from './scoringUtils'
 
 const FIVE_MINUTES_MS = 5 * 60 * 1000
 const ONE_HOUR_MS = 60 * 60 * 1000
 const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000
 const THIRTY_SECONDS_MS = 30 * 1000
-
-const fetchJsonOrNull = async <T>(url: string): Promise<T | null> => {
-  try {
-    const response = await axios.get<T>(url)
-    return response.data
-  } catch {
-    return null
-  }
-}
 
 export interface UseScoringContextResult {
   /** Full scoring context assembled from all four core fetches; null while any fetch is still pending or if the scoring service is unreachable / hasn't completed a round yet on this network. */

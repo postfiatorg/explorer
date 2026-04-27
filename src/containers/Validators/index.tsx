@@ -16,6 +16,7 @@ import { Skeleton } from '../shared/components/Skeleton/Skeleton'
 import {
   SCORING_DIMENSIONS,
   findScoreEntry,
+  getAgreementColor,
   getScoringInfoForValidator,
   getScoreColor,
   getStatusColor,
@@ -153,12 +154,6 @@ export const Validator = () => {
         ]}
       />
     )
-  }
-
-  function getAgreementColor(score: number): string {
-    if (score >= 0.99) return 'green'
-    if (score >= 0.95) return 'yellow'
-    return 'orange'
   }
 
   function renderHero() {

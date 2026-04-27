@@ -17,6 +17,7 @@ import {
   ScoringContext,
   ScoringInfo,
   STATUS_RANK,
+  getAgreementColor,
   getScoringInfoForValidator,
   getStalenessLevel,
   formatRelativeTime,
@@ -135,12 +136,6 @@ export const ValidatorsTable = (props: ValidatorsTableProps) => {
       {domain && <DomainLink domain={domain} />}
     </>
   )
-
-  const getAgreementColor = (score: number): string => {
-    if (score >= 0.99) return 'green'
-    if (score >= 0.95) return 'yellow'
-    return 'orange'
-  }
 
   const renderAgreement = (className, agreement) =>
     agreement ? (

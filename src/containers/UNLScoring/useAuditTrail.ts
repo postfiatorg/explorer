@@ -1,7 +1,6 @@
-import axios from 'axios'
 import { useContext } from 'react'
 import { useQuery } from 'react-query'
-import { ScoringRoundMeta } from '../Network/scoringUtils'
+import { ScoringRoundMeta, fetchJsonOrNull } from '../Network/scoringUtils'
 import SocketContext from '../shared/SocketContext'
 import { getTransaction } from '../../rippled'
 
@@ -34,15 +33,6 @@ export interface AuditTrailData {
   memoLedger: number | null
   memoBodyText: string | null
   vlJsonAvailable: boolean
-}
-
-const fetchJsonOrNull = async <T>(url: string): Promise<T | null> => {
-  try {
-    const response = await axios.get<T>(url)
-    return response.data
-  } catch {
-    return null
-  }
 }
 
 const decodeVlBlob = (envelope: VLJsonEnvelope): VLBlobPayload | null => {

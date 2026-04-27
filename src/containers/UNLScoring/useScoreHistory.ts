@@ -1,10 +1,10 @@
-import axios from 'axios'
 import { useQuery } from 'react-query'
 import {
   ScoresJson,
   ScoringRoundMeta,
   ScoringStatus,
   UnlArtifact,
+  fetchJsonOrNull,
 } from '../Network/scoringUtils'
 
 const THREE_MINUTES_MS = 3 * 60 * 1000
@@ -13,15 +13,6 @@ const HISTORY_LIMIT = 10
 
 interface RecentRoundsResponse {
   rounds: ScoringRoundMeta[]
-}
-
-const fetchJsonOrNull = async <T>(url: string): Promise<T | null> => {
-  try {
-    const resp = await axios.get<T>(url)
-    return resp.data
-  } catch {
-    return null
-  }
 }
 
 interface RoundArtifacts {

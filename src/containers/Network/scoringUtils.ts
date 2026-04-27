@@ -1,3 +1,14 @@
+import axios from 'axios'
+
+export const fetchJsonOrNull = async <T>(url: string): Promise<T | null> => {
+  try {
+    const response = await axios.get<T>(url)
+    return response.data
+  } catch {
+    return null
+  }
+}
+
 export type ScoringStatus = 'on_unl' | 'candidate' | 'ineligible' | 'no_data'
 
 export interface ScoringUnlResponse {
@@ -203,6 +214,12 @@ export const getStatusColor = (status: ScoringStatus): ScoreColor => {
   if (status === 'candidate') return 'yellow'
   if (status === 'ineligible') return 'orange'
   return 'neutral'
+}
+
+export const getAgreementColor = (value: number): ScoreColor => {
+  if (value >= 0.99) return 'green'
+  if (value >= 0.95) return 'yellow'
+  return 'orange'
 }
 
 export const getStatusLabel = (status: ScoringStatus): string => {

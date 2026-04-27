@@ -1,6 +1,5 @@
-import axios from 'axios'
 import { useQuery } from 'react-query'
-import { ScoringRoundMeta } from '../Network/scoringUtils'
+import { ScoringRoundMeta, fetchJsonOrNull } from '../Network/scoringUtils'
 
 const THIRTY_SECONDS_MS = 30 * 1000
 
@@ -8,15 +7,6 @@ const RECENT_ROUNDS_LIMIT = 15
 
 interface RecentRoundsResponse {
   rounds: ScoringRoundMeta[]
-}
-
-const fetchJsonOrNull = async <T>(url: string): Promise<T | null> => {
-  try {
-    const resp = await axios.get<T>(url)
-    return resp.data
-  } catch {
-    return null
-  }
 }
 
 /**
