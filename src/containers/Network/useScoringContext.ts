@@ -12,7 +12,6 @@ import {
   fetchJsonOrNull,
 } from './scoringUtils'
 
-const FIVE_MINUTES_MS = 5 * 60 * 1000
 const ONE_HOUR_MS = 60 * 60 * 1000
 const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000
 const THIRTY_SECONDS_MS = 30 * 1000
@@ -37,8 +36,8 @@ export const useScoringContext = (): UseScoringContextResult => {
     ['scoring-unl-current'],
     () => fetchJsonOrNull<ScoringUnlResponse>('/api/scoring/unl/current'),
     {
-      staleTime: FIVE_MINUTES_MS,
-      refetchInterval: FIVE_MINUTES_MS,
+      staleTime: THIRTY_SECONDS_MS,
+      refetchInterval: THIRTY_SECONDS_MS,
       retry: false,
     },
   )
