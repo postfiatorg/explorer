@@ -19,6 +19,8 @@ const THIRTY_SECONDS_MS = 30 * 1000
 export interface UseScoringContextResult {
   /** Full scoring context assembled from all four core fetches; null while any fetch is still pending or if the scoring service is unreachable / hasn't completed a round yet on this network. */
   context: ScoringContext | null
+  /** True while any of the four required context queries is still in its initial fetch and has not yet returned a settled result (data or null). Lets callers distinguish a genuine first-time load from a settled-but-empty context (e.g. partial proxy-cache failures). */
+  contextLoading: boolean
   /** Latest attempted round (may be running, failed, or complete). Used by callers that need to detect a failed-after-complete situation. */
   latestAttempt: ScoringRoundMeta | null
   /** Scores artifact for the round immediately prior to the current COMPLETE round. Used for Δ (delta vs previous round) computation on the Scoring page. */
@@ -32,25 +34,27 @@ export interface UseScoringContextResult {
 }
 
 export const useScoringContext = (): UseScoringContextResult => {
-  const { data: scoringUnl } = useQuery<ScoringUnlResponse | null>(
-    ['scoring-unl-current'],
-    () => fetchJsonOrNull<ScoringUnlResponse>('/api/scoring/unl/current'),
-    {
-      staleTime: THIRTY_SECONDS_MS,
-      refetchInterval: THIRTY_SECONDS_MS,
-      retry: false,
-    },
-  )
+  const { data: scoringUnl, isLoading: loadingUnl } =
+    useQuery<ScoringUnlResponse | null>(
+      ['scoring-unl-current'],
+      () => fetchJsonOrNull<ScoringUnlResponse>('/api/scoring/unl/current'),
+      {
+        staleTime: THIRTY_SECONDS_MS,
+        refetchInterval: THIRTY_SECONDS_MS,
+        retry: false,
+      },
+    )
 
-  const { data: scoringConfig } = useQuery<ScoringConfig | null>(
-    ['scoring-config'],
-    () => fetchJsonOrNull<ScoringConfig>('/api/scoring/config'),
-    {
-      staleTime: ONE_HOUR_MS,
-      refetchInterval: ONE_HOUR_MS,
-      retry: false,
-    },
-  )
+  const { data: scoringConfig, isLoading: loadingConfig } =
+    useQuery<ScoringConfig | null>(
+      ['scoring-config'],
+      () => fetchJsonOrNull<ScoringConfig>('/api/scoring/config'),
+      {
+        staleTime: ONE_HOUR_MS,
+        refetchInterval: ONE_HOUR_MS,
+        retry: false,
+      },
+    )
 
   const roundNumber = scoringUnl?.round_number
   const priorRoundNumber =
@@ -58,29 +62,31 @@ export const useScoringContext = (): UseScoringContextResult => {
       ? roundNumber - 1
       : undefined
 
-  const { data: scoringRound } = useQuery<ScoringRoundMeta | null>(
-    ['scoring-round', roundNumber],
-    () =>
-      fetchJsonOrNull<ScoringRoundMeta>(`/api/scoring/rounds/${roundNumber}`),
-    {
-      enabled: typeof roundNumber === 'number',
-      staleTime: TWENTY_FOUR_HOURS_MS,
-      retry: false,
-    },
-  )
+  const { data: scoringRound, isLoading: loadingRound } =
+    useQuery<ScoringRoundMeta | null>(
+      ['scoring-round', roundNumber],
+      () =>
+        fetchJsonOrNull<ScoringRoundMeta>(`/api/scoring/rounds/${roundNumber}`),
+      {
+        enabled: typeof roundNumber === 'number',
+        staleTime: TWENTY_FOUR_HOURS_MS,
+        retry: false,
+      },
+    )
 
-  const { data: scoringScores } = useQuery<ScoresJson | null>(
-    ['scoring-scores', roundNumber],
-    () =>
-      fetchJsonOrNull<ScoresJson>(
-        `/api/scoring/rounds/${roundNumber}/scores.json`,
-      ),
-    {
-      enabled: typeof roundNumber === 'number',
-      staleTime: TWENTY_FOUR_HOURS_MS,
-      retry: false,
-    },
-  )
+  const { data: scoringScores, isLoading: loadingScores } =
+    useQuery<ScoresJson | null>(
+      ['scoring-scores', roundNumber],
+      () =>
+        fetchJsonOrNull<ScoresJson>(
+          `/api/scoring/rounds/${roundNumber}/scores.json`,
+        ),
+      {
+        enabled: typeof roundNumber === 'number',
+        staleTime: TWENTY_FOUR_HOURS_MS,
+        retry: false,
+      },
+    )
 
   interface LatestRoundsResponse {
     rounds: ScoringRoundMeta[]
@@ -167,8 +173,18 @@ export const useScoringContext = (): UseScoringContextResult => {
     }
   }, [scoringUnl, scoringScores, scoringRound, scoringConfig])
 
+  // True while any of the four required queries is still in its initial fetch
+  // (no settled result yet — neither data nor null). Disabled queries report
+  // `isLoading: false`, so this naturally collapses to "settled" once the
+  // upstream `/unl/current` returns null and the round/scores queries stay
+  // disabled — exactly the partial-cache failure case the page must
+  // distinguish from a true first-time load.
+  const contextLoading =
+    loadingUnl || loadingConfig || loadingRound || loadingScores
+
   return {
     context,
+    contextLoading,
     latestAttempt,
     priorScores: priorScores ?? null,
     priorUnl: priorUnl ?? null,

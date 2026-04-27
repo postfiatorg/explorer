@@ -61,7 +61,12 @@ const parseValidatorParam = (raw: string | null): string[] => {
 export const UNLScoring = () => {
   const { t } = useTranslation()
   const network = useContext(NetworkContext)
-  const { context: latestContext, latestAttempt, health } = useScoringContext()
+  const {
+    context: latestContext,
+    contextLoading,
+    latestAttempt,
+    health,
+  } = useScoringContext()
   const { state: scoringState, refetch: refetchAvailability } =
     useScoringAvailability()
   const { isStale } = useScoringStaleness()
@@ -281,8 +286,13 @@ export const UNLScoring = () => {
     ) : (
       renderNotFound()
     )
-  } else if (!latestContext) {
+  } else if (!latestContext && contextLoading) {
     body = <ScoringPageSkeleton />
+  } else if (!latestContext) {
+    // Context queries have settled but assembly returned null — at least one
+    // required endpoint failed (proxy 502 with no warm cache). Surface the
+    // existing retry affordance rather than a perpetual skeleton.
+    body = <ScoringErrorPanel onRetry={handleRetry} isRetrying={isRetrying} />
   } else {
     body = (
       <>
@@ -334,7 +344,9 @@ export const UNLScoring = () => {
         path="/unl-scoring"
       />
       <div className="network-page-title">{t('unl_scoring')}</div>
-      {isStale && scoringState === 'available' && <ScoringStaleBanner />}
+      {isStale && scoringState === 'available' && latestContext && (
+        <ScoringStaleBanner />
+      )}
       {body}
     </div>
   )
