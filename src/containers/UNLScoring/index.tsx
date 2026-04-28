@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { useContext, useEffect, useMemo, useState } from 'react'
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery, useQueryClient } from 'react-query'
 import { useParams } from 'react-router'
@@ -33,6 +33,7 @@ interface VhsValidatorsResponse {
 }
 
 const BASE_PATH = '/unl-scoring'
+const ERROR_CONFIRMATION_DELAY_MS = 2_000
 
 const buildScoringUrl = (
   roundNumber: number | null,
@@ -79,6 +80,9 @@ export const UNLScoring = () => {
     () => parseValidatorParam(rawValidatorParam),
     [rawValidatorParam],
   )
+  const [errorConfirmationState, setErrorConfirmationState] = useState<
+    'idle' | 'checking' | 'confirmed'
+  >('idle')
 
   // Warm the score-history cache at page mount so the first drill-down opens
   // with the sparkline already rendered instead of shimmering for ~1s while
@@ -88,12 +92,9 @@ export const UNLScoring = () => {
   useScoreHistory('', scoringState === 'available')
 
   const [isRetrying, setIsRetrying] = useState(false)
-  const handleRetry = async () => {
-    setIsRetrying(true)
-    try {
-      // Invalidate everything under the scoring namespace so a click also
-      // retries `config`, `unl/current`, `health`, round details, etc.
-      await Promise.all([
+  const refetchScoringQueries = useCallback(
+    () =>
+      Promise.all([
         queryClient.invalidateQueries({
           predicate: (query) => {
             const key = query.queryKey
@@ -103,7 +104,14 @@ export const UNLScoring = () => {
           },
         }),
         refetchAvailability(),
-      ])
+      ]),
+    [queryClient, refetchAvailability],
+  )
+
+  const handleRetry = async () => {
+    setIsRetrying(true)
+    try {
+      await refetchScoringQueries()
     } finally {
       setIsRetrying(false)
     }
@@ -134,6 +142,48 @@ export const UNLScoring = () => {
 
   const isRoundNotFound =
     parsedRoundId === null || tooLarge || (isPinned && viewNotFound)
+
+  const shouldConfirmUnavailable =
+    !latestContext &&
+    !contextLoading &&
+    scoringState !== 'loading' &&
+    scoringState !== 'genesis' &&
+    !isRoundNotFound
+
+  useEffect(() => {
+    if (!shouldConfirmUnavailable) {
+      setErrorConfirmationState('idle')
+      return undefined
+    }
+
+    setErrorConfirmationState('checking')
+    let cancelled = false
+    let graceTimer: number | undefined
+    const gracePeriod = new Promise<void>((resolve) => {
+      graceTimer = window.setTimeout(resolve, ERROR_CONFIRMATION_DELAY_MS)
+    })
+
+    Promise.all([
+      refetchScoringQueries().catch(() => undefined),
+      gracePeriod,
+    ]).then(() => {
+      if (!cancelled) {
+        setErrorConfirmationState('confirmed')
+      }
+    })
+
+    return () => {
+      cancelled = true
+      if (graceTimer !== undefined) {
+        window.clearTimeout(graceTimer)
+      }
+    }
+  }, [refetchScoringQueries, shouldConfirmUnavailable])
+
+  const shouldHoldUnavailablePanel =
+    shouldConfirmUnavailable && errorConfirmationState !== 'confirmed'
+  const shouldShowUnavailablePanel =
+    shouldConfirmUnavailable && errorConfirmationState === 'confirmed'
 
   // If a later COMPLETE round exists in the recent window, this round's VL has
   // already been superseded; surface when the supersession happened. For rounds
@@ -271,7 +321,12 @@ export const UNLScoring = () => {
   let body: JSX.Element
   if (scoringState === 'genesis') {
     body = <ScoringGenesisPanel networkLabel={networkLabel} />
-  } else if (scoringState === 'error' && !latestContext) {
+  } else if (
+    !latestContext &&
+    (contextLoading || scoringState === 'loading' || shouldHoldUnavailablePanel)
+  ) {
+    body = <ScoringPageSkeleton />
+  } else if (shouldShowUnavailablePanel) {
     body = <ScoringErrorPanel onRetry={handleRetry} isRetrying={isRetrying} />
   } else if (isRoundNotFound) {
     body = latestContext ? (
@@ -286,12 +341,10 @@ export const UNLScoring = () => {
     ) : (
       renderNotFound()
     )
-  } else if (!latestContext && contextLoading) {
-    body = <ScoringPageSkeleton />
   } else if (!latestContext) {
     // Context queries have settled but assembly returned null — at least one
-    // required endpoint failed (proxy 502 with no warm cache). Surface the
-    // existing retry affordance rather than a perpetual skeleton.
+    // required endpoint failed even after the confirmation refetch. Surface
+    // the existing retry affordance rather than a perpetual skeleton.
     body = <ScoringErrorPanel onRetry={handleRetry} isRetrying={isRetrying} />
   } else {
     body = (
