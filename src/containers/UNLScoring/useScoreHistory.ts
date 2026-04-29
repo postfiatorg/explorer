@@ -5,6 +5,7 @@ import {
   ScoringStatus,
   UnlArtifact,
   fetchJsonOrNull,
+  isScoredRound,
 } from '../Network/scoringUtils'
 
 const THREE_MINUTES_MS = 3 * 60 * 1000
@@ -55,7 +56,9 @@ export const useScoreHistory = (
       },
     )
 
-  const roundNumbers = (recentRounds?.rounds ?? []).map((r) => r.round_number)
+  const roundNumbers = (recentRounds?.rounds ?? [])
+    .filter(isScoredRound)
+    .map((r) => r.round_number)
   const batchKey = roundNumbers.join(',')
 
   const { data: artifactsByRound, isLoading: loadingArtifacts } = useQuery<

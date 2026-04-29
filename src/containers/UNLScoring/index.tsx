@@ -13,7 +13,7 @@ import { useScoringContext } from '../Network/useScoringContext'
 import { useScoringAvailability } from '../Network/useScoringAvailability'
 import { useScoringStaleness } from '../shared/ScoringStaleness'
 import { ScoringBanner } from './ScoringBanner'
-import { RankedTable, ValidatorMeta } from './RankedTable'
+import { OverrideRoundTable, RankedTable, ValidatorMeta } from './RankedTable'
 import { RoundNavigation } from './RoundNavigation'
 import { AuditTrailPanel } from './AuditTrailPanel'
 import { MethodologyExplainer } from './MethodologyExplainer'
@@ -65,6 +65,9 @@ export const UNLScoring = () => {
   const {
     context: latestContext,
     contextLoading,
+    activeUnl,
+    activeRound,
+    latestScoredRound,
     latestAttempt,
     health,
   } = useScoringContext()
@@ -117,7 +120,10 @@ export const UNLScoring = () => {
     }
   }
 
-  const latestRoundNumber = latestContext?.round.round_number
+  const latestScoredRoundNumber =
+    latestContext?.round.round_number ?? latestScoredRound?.round_number
+  const latestRoundNumber =
+    latestContext?.activeRound.round_number ?? activeRound?.round_number
 
   // undefined → follow latest (bare path); null → invalid segment;
   // number → pinned to that round.
@@ -129,7 +135,9 @@ export const UNLScoring = () => {
   }, [roundIdParam])
 
   const isPinned = typeof parsedRoundId === 'number'
-  const viewingRoundNumber = isPinned ? parsedRoundId : latestRoundNumber
+  const viewingRoundNumber = isPinned
+    ? parsedRoundId
+    : (latestRoundNumber ?? latestScoredRoundNumber)
 
   const recentRounds = useRecentRounds()
   const { view: viewingRound, roundNotFound: viewNotFound } =
@@ -143,8 +151,13 @@ export const UNLScoring = () => {
   const isRoundNotFound =
     parsedRoundId === null || tooLarge || (isPinned && viewNotFound)
 
+  const hasOverrideOnlyView = Boolean(
+    !latestContext && activeRound?.override_type && activeUnl,
+  )
+
   const shouldConfirmUnavailable =
     !latestContext &&
+    !hasOverrideOnlyView &&
     !contextLoading &&
     scoringState !== 'loading' &&
     scoringState !== 'genesis' &&
@@ -240,8 +253,11 @@ export const UNLScoring = () => {
   // re-render for whatever round the user is looking at, while the banner above
   // stays bound to the latest-pipeline context.
   const viewingContext = useMemo<ScoringContext | null>(() => {
-    if (!viewingRound || !latestContext) return null
+    if (!viewingRound || viewingRound.kind !== 'scored' || !latestContext) {
+      return null
+    }
     return {
+      activeRound: latestContext.activeRound,
       unl: {
         round_number: viewingRound.round.round_number,
         unl: viewingRound.unl.unl,
@@ -257,7 +273,13 @@ export const UNLScoring = () => {
   // pubkeys are silently ignored at render time but are kept in the URL so
   // they survive round navigation to rounds where they do exist.
   const expandedMasterKeys = useMemo<Set<string>>(() => {
-    if (!viewingRound || validatorList.length === 0) return new Set()
+    if (
+      !viewingRound ||
+      viewingRound.kind !== 'scored' ||
+      validatorList.length === 0
+    ) {
+      return new Set()
+    }
     const known = new Set(
       viewingRound.scores.validator_scores.map((v) => v.master_key),
     )
@@ -267,7 +289,13 @@ export const UNLScoring = () => {
   // The first pubkey in URL order that exists in the current round — used as
   // the scroll target so a shareable link lands on the primary validator.
   const firstKnownPubkey = useMemo<string | null>(() => {
-    if (!viewingRound || validatorList.length === 0) return null
+    if (
+      !viewingRound ||
+      viewingRound.kind !== 'scored' ||
+      validatorList.length === 0
+    ) {
+      return null
+    }
     const known = new Set(
       viewingRound.scores.validator_scores.map((v) => v.master_key),
     )
@@ -315,6 +343,52 @@ export const UNLScoring = () => {
     </div>
   )
 
+  const renderViewingRoundContent = () => {
+    if (viewingRound?.kind === 'override') {
+      return (
+        <>
+          <OverrideRoundTable
+            round={viewingRound.round}
+            unl={viewingRound.unl}
+            latestScoredRound={latestContext?.round ?? latestScoredRound}
+            latestScoredScores={latestContext?.scores ?? null}
+            validatorMetaByKey={validatorMetaByKey}
+          />
+          <AuditTrailPanel
+            round={viewingRound.round}
+            supersedingRound={supersedingRound}
+          />
+        </>
+      )
+    }
+
+    if (viewingContext && viewingRound?.kind === 'scored') {
+      return (
+        <>
+          <RankedTable
+            context={viewingContext}
+            priorScores={viewingRound.priorScores}
+            priorUnl={viewingRound.priorUnl}
+            snapshot={viewingRound.snapshot}
+            validatorMetaByKey={validatorMetaByKey}
+            expandedMasterKeys={expandedMasterKeys}
+            onToggleValidator={handleToggleValidator}
+          />
+          <AuditTrailPanel
+            round={viewingRound.round}
+            supersedingRound={supersedingRound}
+          />
+        </>
+      )
+    }
+
+    return (
+      <div className="unl-scoring-empty">
+        <Loader />
+      </div>
+    )
+  }
+
   const networkLabel =
     typeof network === 'string' && network.length > 0 ? network : 'this'
 
@@ -341,6 +415,42 @@ export const UNLScoring = () => {
     ) : (
       renderNotFound()
     )
+  } else if (
+    !latestContext &&
+    activeRound &&
+    activeUnl &&
+    activeRound.override_type
+  ) {
+    const overrideRound =
+      viewingRound?.kind === 'override' ? viewingRound.round : activeRound
+    const overrideUnl =
+      viewingRound?.kind === 'override' ? viewingRound.unl : activeUnl
+
+    body = (
+      <>
+        {typeof viewingRoundNumber === 'number' &&
+          typeof latestRoundNumber === 'number' && (
+            <RoundNavigation
+              viewingRoundNumber={viewingRoundNumber}
+              latestRoundNumber={latestRoundNumber}
+              recentRounds={recentRounds}
+              onSelectRound={handleSelectRound}
+            />
+          )}
+        <OverrideRoundTable
+          round={overrideRound}
+          unl={overrideUnl}
+          latestScoredRound={latestScoredRound}
+          latestScoredScores={null}
+          validatorMetaByKey={validatorMetaByKey}
+        />
+        <AuditTrailPanel
+          round={overrideRound}
+          supersedingRound={supersedingRound}
+        />
+        <MethodologyExplainer config={null} />
+      </>
+    )
   } else if (!latestContext) {
     // Context queries have settled but assembly returned null — at least one
     // required endpoint failed even after the confirmation refetch. Surface
@@ -363,27 +473,7 @@ export const UNLScoring = () => {
               onSelectRound={handleSelectRound}
             />
           )}
-        {viewingContext && viewingRound ? (
-          <>
-            <RankedTable
-              context={viewingContext}
-              priorScores={viewingRound.priorScores}
-              priorUnl={viewingRound.priorUnl}
-              snapshot={viewingRound.snapshot}
-              validatorMetaByKey={validatorMetaByKey}
-              expandedMasterKeys={expandedMasterKeys}
-              onToggleValidator={handleToggleValidator}
-            />
-            <AuditTrailPanel
-              round={viewingRound.round}
-              supersedingRound={supersedingRound}
-            />
-          </>
-        ) : (
-          <div className="unl-scoring-empty">
-            <Loader />
-          </div>
-        )}
+        {renderViewingRoundContent()}
         <MethodologyExplainer config={latestContext.config} />
       </>
     )

@@ -289,9 +289,17 @@
   cursor: help;
   transition: background $transition-default;
 
-  &.unl-scoring-health-green { background: $green-50; }
-  &.unl-scoring-health-red { background: $orange-50; }
-  &.unl-scoring-health-neutral { background: $black-40; }
+  &.unl-scoring-health-green {
+    background: $green-50;
+  }
+
+  &.unl-scoring-health-red {
+    background: $orange-50;
+  }
+
+  &.unl-scoring-health-neutral {
+    background: $black-40;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -318,6 +326,14 @@
   letter-spacing: 0.5px;
   text-transform: uppercase;
   @include medium;
+}
+
+.ranked-subtitle {
+  max-width: 760px;
+  margin: 6px 0 0;
+  color: $black-40;
+  font-size: 13px;
+  line-height: 1.5;
 }
 
 .ranked-filter {
@@ -385,10 +401,21 @@
     line-height: 1;
     @include bold;
 
-    &.green { color: $green-50; }
-    &.yellow { color: $yellow-50; }
-    &.orange { color: $orange-50; }
-    &.neutral { color: $white; }
+    &.green {
+      color: $green-50;
+    }
+
+    &.yellow {
+      color: $yellow-50;
+    }
+
+    &.orange {
+      color: $orange-50;
+    }
+
+    &.neutral {
+      color: $white;
+    }
   }
 }
 
@@ -444,7 +471,7 @@
   }
 }
 
-.ranked-validator-pubkey--primary {
+.ranked-validator-pubkey-primary {
   color: $white;
   font-size: 13px;
   @include medium;
@@ -461,10 +488,21 @@
   font-variant-numeric: tabular-nums;
   @include medium;
 
-  &.green { color: $green-50; }
-  &.yellow { color: $yellow-50; }
-  &.orange { color: $orange-50; }
-  &.neutral { color: $white; }
+  &.green {
+    color: $green-50;
+  }
+
+  &.yellow {
+    color: $yellow-50;
+  }
+
+  &.orange {
+    color: $orange-50;
+  }
+
+  &.neutral {
+    color: $white;
+  }
 }
 
 .ranked-table .agreement-bar-track {
@@ -479,10 +517,21 @@
   border-radius: 2px;
   transition: width $transition-default;
 
-  &.green { background: $green-50; }
-  &.yellow { background: $yellow-50; }
-  &.orange { background: $orange-50; }
-  &.neutral { background: $black-40; }
+  &.green {
+    background: $green-50;
+  }
+
+  &.yellow {
+    background: $yellow-50;
+  }
+
+  &.orange {
+    background: $orange-50;
+  }
+
+  &.neutral {
+    background: $black-40;
+  }
 }
 
 .ranked-row-churn-gap {
@@ -496,10 +545,21 @@
   line-height: 1;
   @include medium;
 
-  &.delta-up { color: $green-50; }
-  &.delta-down { color: $orange-50; }
-  &.delta-new { color: $blue-40; }
-  &.delta-displaced { color: $orange-50; }
+  &.delta-up {
+    color: $green-50;
+  }
+
+  &.delta-down {
+    color: $orange-50;
+  }
+
+  &.delta-new {
+    color: $blue-40;
+  }
+
+  &.delta-displaced {
+    color: $orange-50;
+  }
 }
 
 .ranked-separator td {
@@ -565,6 +625,39 @@
     background: rgba($white, 0.08);
     box-shadow: inset 3px 0 0 $blue-40;
   }
+}
+
+.ranked-row-static {
+  cursor: default;
+}
+
+.ranked-override-pill {
+  display: inline-flex;
+  min-width: 82px;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px;
+  border: 1px solid $black-80;
+  border-radius: 999px;
+  background: $black-100;
+  color: $black-40;
+  font-size: 11px;
+  letter-spacing: 0.4px;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+  @include medium;
+}
+
+.ranked-override-pill-manual {
+  border-color: $black-60;
+  color: $white;
+}
+
+.ranked-score-unavailable {
+  color: $black-50;
+  font-size: 14px;
+  @include medium;
 }
 
 // ---------------------------------------------------------------------------
@@ -789,6 +882,11 @@
   @include medium;
 }
 
+.round-nav-meta-state-override {
+  color: $black-40;
+  @include medium;
+}
+
 .round-nav-meta-relative {
   color: $black-40;
   font-size: 13px;
@@ -865,6 +963,10 @@
   color: $black-40;
 }
 
+.round-nav-glyph-override {
+  color: $black-30;
+}
+
 .round-nav-glyph-current {
   border-color: $blue-40;
   background: rgba($blue-40, 0.1);
@@ -895,6 +997,13 @@
   color: $black-40;
   font-size: 13px;
   line-height: 1.6;
+}
+
+.audit-trail-note {
+  margin: -8px 0 0;
+  color: $black-40;
+  font-size: 13px;
+  line-height: 1.5;
 }
 
 .audit-trail-section {

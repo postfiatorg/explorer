@@ -104,6 +104,7 @@ export interface ScoringConfig {
 }
 
 export interface ScoringContext {
+  activeRound: ScoringRoundMeta
   unl: ScoringUnlResponse
   scores: ScoresJson
   round: ScoringRoundMeta
@@ -120,6 +121,36 @@ export const STATUS_RANK: Record<ScoringStatus, number> = {
   candidate: 1,
   ineligible: 2,
   no_data: 3,
+}
+
+export const isOverrideRound = (round: ScoringRoundMeta): boolean =>
+  Boolean(round.override_type)
+
+export const isScoredRound = (round: ScoringRoundMeta): boolean =>
+  round.status === 'COMPLETE' && !isOverrideRound(round)
+
+export const findLatestScoredRound = (
+  rounds: ScoringRoundMeta[] | null | undefined,
+): ScoringRoundMeta | null => {
+  if (!rounds) return null
+  return (
+    rounds
+      .filter(isScoredRound)
+      .sort((a, b) => b.round_number - a.round_number)[0] ?? null
+  )
+}
+
+export const findPreviousScoredRound = (
+  rounds: ScoringRoundMeta[] | null | undefined,
+  beforeRoundNumber: number | undefined,
+): ScoringRoundMeta | null => {
+  if (!rounds || beforeRoundNumber === undefined) return null
+  return (
+    rounds
+      .filter((round) => round.round_number < beforeRoundNumber)
+      .sort((a, b) => b.round_number - a.round_number)
+      .find(isScoredRound) ?? null
+  )
 }
 
 export const getScoringInfoForValidator = (

@@ -317,17 +317,17 @@ export const Validator = () => {
       ) : null
 
     if (scoringInfo.status === 'no_data' || !scoreEntry) {
+      const noScoreMessage =
+        scoringInfo.status === 'on_unl'
+          ? "This validator is on the active UNL but wasn't scored in the latest scored round."
+          : "This validator wasn't scored in the latest scored round. Validators appear in rounds automatically once they're active on the network — no registration required."
       return (
         <div className="detail-scoring dashboard-panel">
           <div className="detail-scoring-header">
             <span className="detail-scoring-title">Scoring</span>
             {failedRoundNote}
           </div>
-          <p className="detail-scoring-no-data">
-            This validator wasn&apos;t scored in the latest round. Validators
-            appear in rounds automatically once they&apos;re active on the
-            network — no registration required.
-          </p>
+          <p className="detail-scoring-no-data">{noScoreMessage}</p>
         </div>
       )
     }

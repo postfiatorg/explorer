@@ -6,6 +6,7 @@ import { VALIDATOR_ROUTE } from '../App/routes'
 import {
   SCORING_DIMENSIONS,
   ScoringContext,
+  ScoringRoundMeta,
   ScoringStatus,
   ScoresJson,
   SnapshotJson,
@@ -34,11 +35,24 @@ interface RankedTableProps {
   onToggleValidator: (masterKey: string) => void
 }
 
+interface OverrideRoundTableProps {
+  round: ScoringRoundMeta
+  unl: UnlArtifact
+  latestScoredRound: ScoringRoundMeta | null
+  latestScoredScores: ScoresJson | null
+  validatorMetaByKey: Map<string, ValidatorMeta>
+}
+
 interface RankedRow {
   entry: ValidatorScoreEntry
   status: ScoringStatus
   delta: ValidatorDelta
   withinChurnGap: boolean
+}
+
+interface OverrideRow {
+  masterKey: string
+  kind: 'manual' | 'not_selected'
 }
 
 const DIMENSION_COLS = SCORING_DIMENSIONS.length
@@ -98,6 +112,56 @@ const EmptyZoneRow: FC<{ message: string }> = ({ message }) => (
   </tr>
 )
 
+const RankedTableHeader: FC = () => (
+  <thead>
+    <tr>
+      <th className="ranked-col-rank">Rank</th>
+      <th className="ranked-col-validator">Validator</th>
+      <th className="ranked-col-overall">Overall</th>
+      {SCORING_DIMENSIONS.map((dim) => (
+        <th className="ranked-col-dimension" key={dim.key} title={dim.tooltip}>
+          {dim.label}
+        </th>
+      ))}
+    </tr>
+  </thead>
+)
+
+const formatPubkey = (masterKey: string): string =>
+  `${masterKey.slice(0, 10)}...${masterKey.slice(-6)}`
+
+const ValidatorIdentity: FC<{
+  masterKey: string
+  meta: ValidatorMeta | undefined
+}> = ({ masterKey, meta }) => {
+  const detailHref = buildPath(VALIDATOR_ROUTE, { identifier: masterKey })
+
+  return (
+    <div className="ranked-validator-cell">
+      {meta?.domain && (
+        <>
+          <span className="ranked-validator-domain">
+            {meta.domainVerified && (
+              <CircleCheck className="domain-verified-badge" size={12} />
+            )}
+            <DomainLink domain={meta.domain} />
+          </span>
+          <span className="ranked-validator-sep">·</span>
+        </>
+      )}
+      <a
+        className={`ranked-validator-pubkey ${meta?.domain ? '' : 'ranked-validator-pubkey-primary'}`}
+        href={detailHref}
+        target="_blank"
+        rel="noopener noreferrer"
+        title={masterKey}
+      >
+        {formatPubkey(masterKey)}
+      </a>
+    </div>
+  )
+}
+
 const RankedValidatorRow: FC<{
   row: RankedRow
   rank: number
@@ -106,10 +170,6 @@ const RankedValidatorRow: FC<{
   onToggle: () => void
 }> = ({ row, rank, meta, isExpanded, onToggle }) => {
   const { entry, status, delta, withinChurnGap } = row
-  const pubkeyTruncated = `${entry.master_key.slice(0, 10)}...${entry.master_key.slice(-6)}`
-  const detailHref = buildPath(VALIDATOR_ROUTE, {
-    identifier: entry.master_key,
-  })
   const overallColor = getStatusColor(status)
 
   const handleRowClick = (e: React.MouseEvent<HTMLTableRowElement>) => {
@@ -144,28 +204,7 @@ const RankedValidatorRow: FC<{
     >
       <td className="ranked-col-rank">{rank}</td>
       <td className="ranked-col-validator">
-        <div className="ranked-validator-cell">
-          {meta?.domain && (
-            <>
-              <span className="ranked-validator-domain">
-                {meta.domainVerified && (
-                  <CircleCheck className="domain-verified-badge" size={12} />
-                )}
-                <DomainLink domain={meta.domain} />
-              </span>
-              <span className="ranked-validator-sep">·</span>
-            </>
-          )}
-          <a
-            className={`ranked-validator-pubkey ${meta?.domain ? '' : 'ranked-validator-pubkey--primary'}`}
-            href={detailHref}
-            target="_blank"
-            rel="noopener noreferrer"
-            title={entry.master_key}
-          >
-            {pubkeyTruncated}
-          </a>
-        </div>
+        <ValidatorIdentity masterKey={entry.master_key} meta={meta} />
       </td>
       <td className="ranked-col-overall">
         <div className="ranked-overall-inline">
@@ -193,6 +232,141 @@ const useDebouncedValue = <T,>(value: T, delayMs: number): T => {
     return () => clearTimeout(handle)
   }, [value, delayMs])
   return debounced
+}
+
+const OverrideValidatorRow: FC<{
+  row: OverrideRow
+  rank: number
+  meta: ValidatorMeta | undefined
+}> = ({ row, rank, meta }) => {
+  const label = row.kind === 'manual' ? 'manual' : 'not selected'
+  return (
+    <tr className="ranked-row ranked-row-static">
+      <td className="ranked-col-rank">{rank}</td>
+      <td className="ranked-col-validator">
+        <ValidatorIdentity masterKey={row.masterKey} meta={meta} />
+      </td>
+      <td className="ranked-col-overall">
+        <span
+          className={`ranked-override-pill ${
+            row.kind === 'manual' ? 'ranked-override-pill-manual' : ''
+          }`}
+        >
+          {label}
+        </span>
+      </td>
+      {SCORING_DIMENSIONS.map((dim) => (
+        <td className="ranked-col-dimension" key={dim.key}>
+          <span className="ranked-score-unavailable">—</span>
+        </td>
+      ))}
+    </tr>
+  )
+}
+
+export const OverrideRoundTable: FC<OverrideRoundTableProps> = ({
+  round,
+  unl,
+  latestScoredRound,
+  latestScoredScores,
+  validatorMetaByKey,
+}) => {
+  const [query, setQuery] = useState('')
+  const debouncedQuery = useDebouncedValue(query.trim().toLowerCase(), 200)
+
+  const { manualRows, notSelectedRows } = useMemo(() => {
+    const manualSet = new Set(unl.unl)
+    const manual = unl.unl.map<OverrideRow>((masterKey) => ({
+      masterKey,
+      kind: 'manual',
+    }))
+    const notSelected =
+      latestScoredScores?.validator_scores
+        .filter((entry) => !manualSet.has(entry.master_key))
+        .slice()
+        .sort((a, b) => b.score - a.score)
+        .map<OverrideRow>((entry) => ({
+          masterKey: entry.master_key,
+          kind: 'not_selected',
+        })) ?? []
+    return { manualRows: manual, notSelectedRows: notSelected }
+  }, [latestScoredScores, unl.unl])
+
+  const matchesFilter = (row: OverrideRow): boolean => {
+    if (!debouncedQuery) return true
+    if (row.masterKey.toLowerCase().includes(debouncedQuery)) return true
+    const domain = validatorMetaByKey.get(row.masterKey)?.domain
+    return domain ? domain.toLowerCase().includes(debouncedQuery) : false
+  }
+
+  const visibleManualRows = manualRows.filter(matchesFilter)
+  const visibleNotSelectedRows = notSelectedRows.filter(matchesFilter)
+  const scoringContextText = latestScoredRound
+    ? `Latest scored round: #${latestScoredRound.round_number}.`
+    : 'No scored round is available for comparison.'
+
+  let rank = 0
+
+  return (
+    <div className="unl-scoring-ranked dashboard-panel">
+      <div className="ranked-header">
+        <div>
+          <h2 className="ranked-title">Manually selected validators</h2>
+          <p className="ranked-subtitle">
+            Round #{round.round_number} is a manual override; no score artifacts
+            were produced for this round. {scoringContextText}
+          </p>
+        </div>
+        <input
+          className="ranked-filter"
+          type="search"
+          placeholder="Filter by pubkey or domain…"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+      </div>
+      <div className="ranked-table-wrapper">
+        <table className="basic ranked-table">
+          <RankedTableHeader />
+          <tbody>
+            <SeparatorChip label="manually selected validators" />
+            {visibleManualRows.length === 0 ? (
+              <EmptyZoneRow message="— No manually selected validators match this filter —" />
+            ) : (
+              visibleManualRows.map((row) => {
+                rank += 1
+                return (
+                  <OverrideValidatorRow
+                    key={`manual-${row.masterKey}`}
+                    row={row}
+                    rank={rank}
+                    meta={validatorMetaByKey.get(row.masterKey)}
+                  />
+                )
+              })
+            )}
+
+            <SeparatorChip label="not selected in manual override" />
+            {visibleNotSelectedRows.length === 0 ? (
+              <EmptyZoneRow message="— No scored validators outside the manual set —" />
+            ) : (
+              visibleNotSelectedRows.map((row) => {
+                rank += 1
+                return (
+                  <OverrideValidatorRow
+                    key={`not-selected-${row.masterKey}`}
+                    row={row}
+                    rank={rank}
+                    meta={validatorMetaByKey.get(row.masterKey)}
+                  />
+                )
+              })
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
 }
 
 export const RankedTable: FC<RankedTableProps> = ({
@@ -268,25 +442,6 @@ export const RankedTable: FC<RankedTableProps> = ({
 
   let rank = 0
 
-  const renderHeader = () => (
-    <thead>
-      <tr>
-        <th className="ranked-col-rank">Rank</th>
-        <th className="ranked-col-validator">Validator</th>
-        <th className="ranked-col-overall">Overall</th>
-        {SCORING_DIMENSIONS.map((dim) => (
-          <th
-            className="ranked-col-dimension"
-            key={dim.key}
-            title={dim.tooltip}
-          >
-            {dim.label}
-          </th>
-        ))}
-      </tr>
-    </thead>
-  )
-
   // Both candidate and ineligible empty → collapse the two chips into one
   const bothEmptyCollapse =
     onUnlRows.length > 0 &&
@@ -333,7 +488,7 @@ export const RankedTable: FC<RankedTableProps> = ({
         </div>
         <div className="ranked-table-wrapper">
           <table className="basic ranked-table">
-            {renderHeader()}
+            <RankedTableHeader />
             <tbody>
               {onUnlRows.map((r) => {
                 rank += 1
@@ -361,7 +516,7 @@ export const RankedTable: FC<RankedTableProps> = ({
       </div>
       <div className="ranked-table-wrapper">
         <table className="basic ranked-table">
-          {renderHeader()}
+          <RankedTableHeader />
           <tbody>
             {onUnlRows.map((r) => {
               rank += 1

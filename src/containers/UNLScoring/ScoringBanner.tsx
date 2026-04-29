@@ -130,6 +130,10 @@ export const ScoringBanner: FC<ScoringBannerProps> = ({
   const now = useTicker(BANNER_TICK_MS)
   const { round, config } = context
   const status = latestAttempt?.status ?? round.status
+  const activeOverride = Boolean(
+    context.activeRound.override_type &&
+      context.activeRound.round_number !== round.round_number,
+  )
 
   if (
     latestAttempt &&
@@ -164,6 +168,7 @@ export const ScoringBanner: FC<ScoringBannerProps> = ({
 
   return (
     <IdleBanner
+      label={activeOverride ? 'Last scored round' : 'Last round'}
       roundNumber={round.round_number}
       completedAt={round.completed_at}
       cadenceHours={config?.cadence_hours ?? null}
@@ -174,18 +179,19 @@ export const ScoringBanner: FC<ScoringBannerProps> = ({
 }
 
 const IdleBanner: FC<{
+  label: string
   roundNumber: number
   completedAt: string | null
   cadenceHours: number | null
   health: ScoringHealth | null
   now: number
-}> = ({ roundNumber, completedAt, cadenceHours, health, now }) => {
+}> = ({ label, roundNumber, completedAt, cadenceHours, health, now }) => {
   const countdown = formatCountdown(completedAt, cadenceHours, now)
 
   return (
     <div className="network-stats">
       <MetricCard
-        label="Last round"
+        label={label}
         value={`#${roundNumber}`}
         subtitle={completedAt ? formatRelativeTime(completedAt, now) : null}
       />

@@ -10,6 +10,9 @@ import {
   SnapshotJson,
   UnlArtifact,
   fetchJsonOrNull,
+  findLatestScoredRound,
+  findPreviousScoredRound,
+  isScoredRound,
 } from './scoringUtils'
 
 const ONE_HOUR_MS = 60 * 60 * 1000
@@ -17,20 +20,30 @@ const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000
 const THIRTY_SECONDS_MS = 30 * 1000
 
 export interface UseScoringContextResult {
-  /** Full scoring context assembled from all four core fetches; null while any fetch is still pending or if the scoring service is unreachable / hasn't completed a round yet on this network. */
+  /** Full scoring context assembled from active UNL plus latest scored artifacts; null while any required fetch is pending or unavailable. */
   context: ScoringContext | null
-  /** True while any of the four required context queries is still in its initial fetch and has not yet returned a settled result (data or null). Lets callers distinguish a genuine first-time load from a settled-but-empty context (e.g. partial proxy-cache failures). */
+  /** True while any required context query is still in its initial fetch. */
   contextLoading: boolean
+  /** Active published UNL, which may come from an admin override round. */
+  activeUnl: ScoringUnlResponse | null
+  /** Round metadata for the active published UNL. */
+  activeRound: ScoringRoundMeta | null
+  /** Latest completed non-override round that has score-based surfaces. */
+  latestScoredRound: ScoringRoundMeta | null
   /** Latest attempted round (may be running, failed, or complete). Used by callers that need to detect a failed-after-complete situation. */
   latestAttempt: ScoringRoundMeta | null
-  /** Scores artifact for the round immediately prior to the current COMPLETE round. Used for Δ (delta vs previous round) computation on the Scoring page. */
+  /** Scores artifact for the previous scored round. Used for Δ (delta vs previous round) computation on the Scoring page. */
   priorScores: ScoresJson | null
-  /** UNL artifact for the round immediately prior to the current COMPLETE round. Used to detect `displaced` validators in Δ. */
+  /** UNL artifact for the previous scored round. Used to detect `displaced` validators in Δ. */
   priorUnl: UnlArtifact | null
-  /** Snapshot artifact for the current COMPLETE round — per-validator enrichment (domain, ASN, country, agreement buckets) that fed the LLM. Drives the drill-down enrichment block. */
+  /** Snapshot artifact for the latest scored round. Drives the drill-down enrichment block. */
   snapshot: SnapshotJson | null
   /** Pipeline-status health readout (scheduler, llm_endpoint, publisher_wallet) from the scoring service. Drives the Scoring page banner's health strip. */
   health: ScoringHealth | null
+}
+
+interface RoundsResponse {
+  rounds: ScoringRoundMeta[]
 }
 
 export const useScoringContext = (): UseScoringContextResult => {
@@ -56,45 +69,25 @@ export const useScoringContext = (): UseScoringContextResult => {
       },
     )
 
-  const roundNumber = scoringUnl?.round_number
-  const priorRoundNumber =
-    typeof roundNumber === 'number' && roundNumber > 1
-      ? roundNumber - 1
-      : undefined
+  const activeRoundNumber = scoringUnl?.round_number
 
-  const { data: scoringRound, isLoading: loadingRound } =
+  const { data: activeRound, isLoading: loadingActiveRound } =
     useQuery<ScoringRoundMeta | null>(
-      ['scoring-round', roundNumber],
+      ['scoring-round', activeRoundNumber],
       () =>
-        fetchJsonOrNull<ScoringRoundMeta>(`/api/scoring/rounds/${roundNumber}`),
-      {
-        enabled: typeof roundNumber === 'number',
-        staleTime: TWENTY_FOUR_HOURS_MS,
-        retry: false,
-      },
-    )
-
-  const { data: scoringScores, isLoading: loadingScores } =
-    useQuery<ScoresJson | null>(
-      ['scoring-scores', roundNumber],
-      () =>
-        fetchJsonOrNull<ScoresJson>(
-          `/api/scoring/rounds/${roundNumber}/scores.json`,
+        fetchJsonOrNull<ScoringRoundMeta>(
+          `/api/scoring/rounds/${activeRoundNumber}`,
         ),
       {
-        enabled: typeof roundNumber === 'number',
+        enabled: typeof activeRoundNumber === 'number',
         staleTime: TWENTY_FOUR_HOURS_MS,
         retry: false,
       },
     )
 
-  interface LatestRoundsResponse {
-    rounds: ScoringRoundMeta[]
-  }
-
-  const { data: latestRoundsResp } = useQuery<LatestRoundsResponse | null>(
+  const { data: latestRoundsResp } = useQuery<RoundsResponse | null>(
     ['scoring-rounds-latest'],
-    () => fetchJsonOrNull<LatestRoundsResponse>('/api/scoring/rounds?limit=1'),
+    () => fetchJsonOrNull<RoundsResponse>('/api/scoring/rounds?limit=1'),
     {
       staleTime: THIRTY_SECONDS_MS,
       refetchInterval: THIRTY_SECONDS_MS,
@@ -102,40 +95,84 @@ export const useScoringContext = (): UseScoringContextResult => {
     },
   )
 
+  const { data: scoredRoundsResp, isLoading: loadingScoredRounds } =
+    useQuery<RoundsResponse | null>(
+      ['scoring-rounds-scored-context'],
+      () => fetchJsonOrNull<RoundsResponse>('/api/scoring/rounds?limit=100'),
+      {
+        enabled: typeof activeRoundNumber === 'number',
+        staleTime: THIRTY_SECONDS_MS,
+        refetchInterval: THIRTY_SECONDS_MS,
+        retry: false,
+      },
+    )
+
+  const latestScoredRound = useMemo<ScoringRoundMeta | null>(() => {
+    const fromRecent = findLatestScoredRound(scoredRoundsResp?.rounds)
+    if (fromRecent) return fromRecent
+    return activeRound && isScoredRound(activeRound) ? activeRound : null
+  }, [activeRound, scoredRoundsResp])
+
+  const previousScoredRound = useMemo<ScoringRoundMeta | null>(
+    () =>
+      findPreviousScoredRound(
+        scoredRoundsResp?.rounds,
+        latestScoredRound?.round_number,
+      ),
+    [latestScoredRound, scoredRoundsResp],
+  )
+
+  const scoredRoundNumber = latestScoredRound?.round_number
+  const previousScoredRoundNumber = previousScoredRound?.round_number
+
+  const { data: scoringScores, isLoading: loadingScores } =
+    useQuery<ScoresJson | null>(
+      ['scoring-scores', scoredRoundNumber],
+      () =>
+        fetchJsonOrNull<ScoresJson>(
+          `/api/scoring/rounds/${scoredRoundNumber}/scores.json`,
+        ),
+      {
+        enabled: typeof scoredRoundNumber === 'number',
+        staleTime: TWENTY_FOUR_HOURS_MS,
+        retry: false,
+      },
+    )
+
   const { data: priorScores } = useQuery<ScoresJson | null>(
-    ['scoring-scores', priorRoundNumber],
+    ['scoring-scores', previousScoredRoundNumber],
     () =>
       fetchJsonOrNull<ScoresJson>(
-        `/api/scoring/rounds/${priorRoundNumber}/scores.json`,
+        `/api/scoring/rounds/${previousScoredRoundNumber}/scores.json`,
       ),
     {
-      enabled: typeof priorRoundNumber === 'number',
+      enabled: typeof previousScoredRoundNumber === 'number',
       staleTime: TWENTY_FOUR_HOURS_MS,
       retry: false,
     },
   )
 
   const { data: priorUnl } = useQuery<UnlArtifact | null>(
-    ['scoring-unl', priorRoundNumber],
+    ['scoring-unl', previousScoredRoundNumber],
     () =>
       fetchJsonOrNull<UnlArtifact>(
-        `/api/scoring/rounds/${priorRoundNumber}/unl.json`,
+        `/api/scoring/rounds/${previousScoredRoundNumber}/unl.json`,
       ),
     {
-      enabled: typeof priorRoundNumber === 'number',
+      enabled: typeof previousScoredRoundNumber === 'number',
       staleTime: TWENTY_FOUR_HOURS_MS,
       retry: false,
     },
   )
 
   const { data: scoringSnapshot } = useQuery<SnapshotJson | null>(
-    ['scoring-snapshot', roundNumber],
+    ['scoring-snapshot', scoredRoundNumber],
     () =>
       fetchJsonOrNull<SnapshotJson>(
-        `/api/scoring/rounds/${roundNumber}/snapshot.json`,
+        `/api/scoring/rounds/${scoredRoundNumber}/snapshot.json`,
       ),
     {
-      enabled: typeof roundNumber === 'number',
+      enabled: typeof scoredRoundNumber === 'number',
       staleTime: TWENTY_FOUR_HOURS_MS,
       retry: false,
     },
@@ -162,29 +199,31 @@ export const useScoringContext = (): UseScoringContextResult => {
   // failure leaves downstream surfaces (banner, methodology, ranked table)
   // rendering with `—` placeholders instead of the whole page collapsing.
   const context = useMemo<ScoringContext | null>(() => {
-    if (!scoringUnl || !scoringScores || !scoringRound) {
+    if (!activeRound || !scoringUnl || !scoringScores || !latestScoredRound) {
       return null
     }
     return {
+      activeRound,
       unl: scoringUnl,
       scores: scoringScores,
-      round: scoringRound,
+      round: latestScoredRound,
       config: scoringConfig ?? null,
     }
-  }, [scoringUnl, scoringScores, scoringRound, scoringConfig])
+  }, [activeRound, scoringUnl, scoringScores, latestScoredRound, scoringConfig])
 
-  // True while any of the four required queries is still in its initial fetch
-  // (no settled result yet — neither data nor null). Disabled queries report
-  // `isLoading: false`, so this naturally collapses to "settled" once the
-  // upstream `/unl/current` returns null and the round/scores queries stay
-  // disabled — exactly the partial-cache failure case the page must
-  // distinguish from a true first-time load.
   const contextLoading =
-    loadingUnl || loadingConfig || loadingRound || loadingScores
+    loadingUnl ||
+    loadingConfig ||
+    loadingActiveRound ||
+    loadingScoredRounds ||
+    loadingScores
 
   return {
     context,
     contextLoading,
+    activeUnl: scoringUnl ?? null,
+    activeRound: activeRound ?? null,
+    latestScoredRound,
     latestAttempt,
     priorScores: priorScores ?? null,
     priorUnl: priorUnl ?? null,

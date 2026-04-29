@@ -95,9 +95,12 @@ const GatewayLink: FC<{ label: string; href: string }> = ({ label, href }) => (
   </a>
 )
 
-const PlaceholderPanel: FC = () => (
+const auditTitleFor = (round: ScoringRoundMeta): string =>
+  round.override_type ? 'OVERRIDE AUDIT TRAIL' : 'AUDIT TRAIL'
+
+const PlaceholderPanel: FC<{ round: ScoringRoundMeta }> = ({ round }) => (
   <div className="audit-trail dashboard-panel">
-    <h2 className="audit-trail-title">AUDIT TRAIL</h2>
+    <h2 className="audit-trail-title">{auditTitleFor(round)}</h2>
     <p className="audit-trail-placeholder">
       No audit trail — round did not publish. See the Round navigation strip
       above for the failure stage, and the Header banner for the error message.
@@ -113,7 +116,7 @@ export const AuditTrailPanel: FC<AuditTrailPanelProps> = ({
     useAuditTrail(round)
 
   if (round.status === 'FAILED' || !round.ipfs_cid) {
-    return <PlaceholderPanel />
+    return <PlaceholderPanel round={round} />
   }
 
   const cid = round.ipfs_cid
@@ -126,7 +129,12 @@ export const AuditTrailPanel: FC<AuditTrailPanelProps> = ({
 
   return (
     <div className="audit-trail dashboard-panel">
-      <h2 className="audit-trail-title">AUDIT TRAIL</h2>
+      <h2 className="audit-trail-title">{auditTitleFor(round)}</h2>
+      {round.override_type && (
+        <p className="audit-trail-note">
+          Manual override round. Score artifacts are not expected.
+        </p>
+      )}
 
       <section className="audit-trail-section">
         <span className="audit-trail-label">IPFS CID</span>

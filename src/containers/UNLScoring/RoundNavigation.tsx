@@ -34,6 +34,9 @@ const tooltipFor = (round: ScoringRoundMeta): string => {
   if (when) parts.push(formatRelativeTime(when))
   const state = classifyRoundState(round.status)
   parts.push(statusLabel[state])
+  if (round.override_type) {
+    parts.push(`override: ${round.override_type}`)
+  }
   if (state === 'failed') {
     const stage = deriveFailedAtStage(round)
     if (stage) parts[parts.length - 1] = `FAILED at ${stage}`
@@ -57,6 +60,9 @@ const formatStateSegment = (round: ScoringRoundMeta): string => {
     const stage = deriveFailedAtStage(round)
     return stage ? `✕ FAILED at ${stage}` : '✕ FAILED'
   }
+  if (state === 'complete' && round.override_type) {
+    return `● COMPLETE · ${round.override_type} override`
+  }
   return STATE_SEGMENT_DEFAULTS[state]
 }
 
@@ -75,15 +81,16 @@ const CurrentRoundMeta: FC<{ round: ScoringRoundMeta }> = ({ round }) => {
   const state = classifyRoundState(round.status)
   const relative = formatRelativeSegment(round)
   const stateSegment = formatStateSegment(round)
+  const stateClass = round.override_type
+    ? 'round-nav-meta-state-override'
+    : `round-nav-meta-state-${state.replace('_', '-')}`
   return (
     <span className="round-nav-meta">
       <span className="round-nav-round-number">
         Round #{round.round_number}
       </span>
       <span className="round-nav-meta-sep">·</span>
-      <span
-        className={`round-nav-meta-state round-nav-meta-state-${state.replace('_', '-')}`}
-      >
+      <span className={`round-nav-meta-state ${stateClass}`}>
         {stateSegment}
       </span>
       {relative && (
@@ -164,11 +171,14 @@ export const RoundNavigation: FC<RoundNavigationProps> = ({
             const state = classifyRoundState(round.status)
             const isCurrent = round.round_number === viewingRoundNumber
             const symbol = state === 'failed' ? '✕' : '●'
+            const glyphToneClass = round.override_type
+              ? 'round-nav-glyph-override'
+              : toneClass[state]
             return (
               <button
                 type="button"
                 key={round.round_number}
-                className={`round-nav-glyph ${toneClass[state]} ${isCurrent ? 'round-nav-glyph-current' : ''}`}
+                className={`round-nav-glyph ${glyphToneClass} ${isCurrent ? 'round-nav-glyph-current' : ''}`}
                 onClick={() => onSelectRound(round.round_number)}
                 aria-label={tooltipFor(round)}
                 aria-current={isCurrent ? 'true' : undefined}

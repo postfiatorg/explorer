@@ -6,18 +6,35 @@ import {
   SnapshotJson,
   UnlArtifact,
   fetchJsonOrNull,
+  findPreviousScoredRound,
+  isOverrideRound,
 } from '../Network/scoringUtils'
 
 const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000
 
-export interface RoundView {
+interface RoundsResponse {
+  rounds: ScoringRoundMeta[]
+}
+
+interface BaseRoundView {
   round: ScoringRoundMeta
-  scores: ScoresJson
   unl: UnlArtifact
   snapshot: SnapshotJson | null
   priorScores: ScoresJson | null
   priorUnl: UnlArtifact | null
 }
+
+export interface ScoredRoundView extends BaseRoundView {
+  kind: 'scored'
+  scores: ScoresJson
+}
+
+export interface OverrideRoundView extends BaseRoundView {
+  kind: 'override'
+  scores: null
+}
+
+export type RoundView = ScoredRoundView | OverrideRoundView
 
 export interface UseRoundViewResult {
   view: RoundView | null
@@ -29,10 +46,6 @@ export const useRoundView = (
   roundNumber: number | undefined,
 ): UseRoundViewResult => {
   const enabled = typeof roundNumber === 'number'
-  const priorNumber =
-    enabled && roundNumber !== undefined && roundNumber > 1
-      ? roundNumber - 1
-      : undefined
 
   const { data: round, isLoading: loadingRound } =
     useQuery<ScoringRoundMeta | null>(
@@ -46,6 +59,9 @@ export const useRoundView = (
       },
     )
 
+  const isOverride = round ? isOverrideRound(round) : false
+  const shouldFetchScoredArtifacts = enabled && Boolean(round) && !isOverride
+
   const { data: scores, isLoading: loadingScores } =
     useQuery<ScoresJson | null>(
       ['scoring-scores', roundNumber],
@@ -54,7 +70,7 @@ export const useRoundView = (
           `/api/scoring/rounds/${roundNumber}/scores.json`,
         ),
       {
-        enabled,
+        enabled: shouldFetchScoredArtifacts,
         staleTime: TWENTY_FOUR_HOURS_MS,
         retry: false,
       },
@@ -80,41 +96,75 @@ export const useRoundView = (
         `/api/scoring/rounds/${roundNumber}/snapshot.json`,
       ),
     {
-      enabled,
+      enabled: shouldFetchScoredArtifacts,
       staleTime: TWENTY_FOUR_HOURS_MS,
       retry: false,
     },
   )
 
+  const { data: roundsResp } = useQuery<RoundsResponse | null>(
+    ['scoring-rounds-for-round-view'],
+    () => fetchJsonOrNull<RoundsResponse>('/api/scoring/rounds?limit=100'),
+    {
+      enabled: shouldFetchScoredArtifacts,
+      staleTime: TWENTY_FOUR_HOURS_MS,
+      retry: false,
+    },
+  )
+
+  const previousScoredRound = useMemo<ScoringRoundMeta | null>(
+    () => findPreviousScoredRound(roundsResp?.rounds, roundNumber),
+    [roundNumber, roundsResp],
+  )
+
+  const previousScoredRoundNumber = previousScoredRound?.round_number
+
   const { data: priorScores } = useQuery<ScoresJson | null>(
-    ['scoring-scores', priorNumber],
+    ['scoring-scores', previousScoredRoundNumber],
     () =>
       fetchJsonOrNull<ScoresJson>(
-        `/api/scoring/rounds/${priorNumber}/scores.json`,
+        `/api/scoring/rounds/${previousScoredRoundNumber}/scores.json`,
       ),
     {
-      enabled: typeof priorNumber === 'number',
+      enabled:
+        shouldFetchScoredArtifacts &&
+        typeof previousScoredRoundNumber === 'number',
       staleTime: TWENTY_FOUR_HOURS_MS,
       retry: false,
     },
   )
 
   const { data: priorUnl } = useQuery<UnlArtifact | null>(
-    ['scoring-unl', priorNumber],
+    ['scoring-unl', previousScoredRoundNumber],
     () =>
       fetchJsonOrNull<UnlArtifact>(
-        `/api/scoring/rounds/${priorNumber}/unl.json`,
+        `/api/scoring/rounds/${previousScoredRoundNumber}/unl.json`,
       ),
     {
-      enabled: typeof priorNumber === 'number',
+      enabled:
+        shouldFetchScoredArtifacts &&
+        typeof previousScoredRoundNumber === 'number',
       staleTime: TWENTY_FOUR_HOURS_MS,
       retry: false,
     },
   )
 
   const view = useMemo<RoundView | null>(() => {
-    if (!round || !scores || !unl) return null
+    if (!round || !unl) return null
+    if (isOverrideRound(round)) {
+      return {
+        kind: 'override',
+        round,
+        scores: null,
+        unl,
+        snapshot: null,
+        priorScores: null,
+        priorUnl: null,
+      }
+    }
+    if (!scores) return null
     return {
+      kind: 'scored',
       round,
       scores,
       unl,
@@ -128,7 +178,10 @@ export const useRoundView = (
 
   return {
     view,
-    isLoading: loadingRound || loadingScores || loadingUnl,
+    isLoading:
+      loadingRound ||
+      loadingUnl ||
+      (shouldFetchScoredArtifacts && loadingScores),
     roundNotFound,
   }
 }
