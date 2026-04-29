@@ -20,8 +20,8 @@ interface BaseRoundView {
   round: ScoringRoundMeta
   unl: UnlArtifact
   snapshot: SnapshotJson | null
-  priorScores: ScoresJson | null
-  priorUnl: UnlArtifact | null
+  priorScores: ScoresJson | null | undefined
+  priorUnl: UnlArtifact | null | undefined
 }
 
 export interface ScoredRoundView extends BaseRoundView {
@@ -149,6 +149,30 @@ export const useRoundView = (
     },
   )
 
+  const priorScoresForView = useMemo<ScoresJson | null | undefined>(() => {
+    if (!shouldFetchScoredArtifacts) return null
+    if (!roundsResp) return undefined
+    if (typeof previousScoredRoundNumber !== 'number') return null
+    return priorScores ?? undefined
+  }, [
+    priorScores,
+    previousScoredRoundNumber,
+    roundsResp,
+    shouldFetchScoredArtifacts,
+  ])
+
+  const priorUnlForView = useMemo<UnlArtifact | null | undefined>(() => {
+    if (!shouldFetchScoredArtifacts) return null
+    if (!roundsResp) return undefined
+    if (typeof previousScoredRoundNumber !== 'number') return null
+    return priorUnl ?? undefined
+  }, [
+    previousScoredRoundNumber,
+    priorUnl,
+    roundsResp,
+    shouldFetchScoredArtifacts,
+  ])
+
   const view = useMemo<RoundView | null>(() => {
     if (!round || !unl) return null
     if (isOverrideRound(round)) {
@@ -169,10 +193,10 @@ export const useRoundView = (
       scores,
       unl,
       snapshot: snapshot ?? null,
-      priorScores: priorScores ?? null,
-      priorUnl: priorUnl ?? null,
+      priorScores: priorScoresForView,
+      priorUnl: priorUnlForView,
     }
-  }, [round, scores, unl, snapshot, priorScores, priorUnl])
+  }, [round, scores, unl, snapshot, priorScoresForView, priorUnlForView])
 
   const roundNotFound = enabled && !loadingRound && round === null
 

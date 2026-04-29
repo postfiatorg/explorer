@@ -32,10 +32,10 @@ export interface UseScoringContextResult {
   latestScoredRound: ScoringRoundMeta | null
   /** Latest attempted round (may be running, failed, or complete). Used by callers that need to detect a failed-after-complete situation. */
   latestAttempt: ScoringRoundMeta | null
-  /** Scores artifact for the previous scored round. Used for Δ (delta vs previous round) computation on the Scoring page. */
-  priorScores: ScoresJson | null
-  /** UNL artifact for the previous scored round. Used to detect `displaced` validators in Δ. */
-  priorUnl: UnlArtifact | null
+  /** Scores artifact for the previous scored round. Undefined means the prior artifact state is still unresolved. */
+  priorScores: ScoresJson | null | undefined
+  /** UNL artifact for the previous scored round. Undefined means the prior artifact state is still unresolved. */
+  priorUnl: UnlArtifact | null | undefined
   /** Snapshot artifact for the latest scored round. Drives the drill-down enrichment block. */
   snapshot: SnapshotJson | null
   /** Pipeline-status health readout (scheduler, llm_endpoint, publisher_wallet) from the scoring service. Drives the Scoring page banner's health strip. */
@@ -165,6 +165,18 @@ export const useScoringContext = (): UseScoringContextResult => {
     },
   )
 
+  const priorScoresForContext = useMemo<ScoresJson | null | undefined>(() => {
+    if (!scoredRoundsResp) return undefined
+    if (typeof previousScoredRoundNumber !== 'number') return null
+    return priorScores ?? undefined
+  }, [previousScoredRoundNumber, priorScores, scoredRoundsResp])
+
+  const priorUnlForContext = useMemo<UnlArtifact | null | undefined>(() => {
+    if (!scoredRoundsResp) return undefined
+    if (typeof previousScoredRoundNumber !== 'number') return null
+    return priorUnl ?? undefined
+  }, [previousScoredRoundNumber, priorUnl, scoredRoundsResp])
+
   const { data: scoringSnapshot } = useQuery<SnapshotJson | null>(
     ['scoring-snapshot', scoredRoundNumber],
     () =>
@@ -225,8 +237,8 @@ export const useScoringContext = (): UseScoringContextResult => {
     activeRound: activeRound ?? null,
     latestScoredRound,
     latestAttempt,
-    priorScores: priorScores ?? null,
-    priorUnl: priorUnl ?? null,
+    priorScores: priorScoresForContext,
+    priorUnl: priorUnlForContext,
     snapshot: scoringSnapshot ?? null,
     health: health ?? null,
   }

@@ -27,8 +27,8 @@ export interface ValidatorMeta {
 
 interface RankedTableProps {
   context: ScoringContext
-  priorScores: ScoresJson | null
-  priorUnl: UnlArtifact | null
+  priorScores: ScoresJson | null | undefined
+  priorUnl: UnlArtifact | null | undefined
   snapshot: SnapshotJson | null
   validatorMetaByKey: Map<string, ValidatorMeta>
   expandedMasterKeys: Set<string>
@@ -65,7 +65,7 @@ const statusOf = (masterKey: string, unl: UnlArtifact): ScoringStatus => {
 }
 
 const DeltaTag: FC<{ delta: ValidatorDelta }> = ({ delta }) => {
-  if (delta.kind === 'same') return null
+  if (delta.kind === 'same' || delta.kind === 'unresolved') return null
   if (delta.kind === 'new') return <span className="delta delta-new">new</span>
   if (delta.kind === 'displaced')
     return <span className="delta delta-displaced">displaced</span>

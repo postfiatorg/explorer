@@ -1,4 +1,5 @@
 import {
+  computeValidatorDelta,
   findLatestScoredRound,
   findPreviousScoredRound,
   getScoringInfoForValidator,
@@ -71,5 +72,25 @@ describe('scoringUtils override handling', () => {
     })
 
     expect(info).toEqual({ status: 'on_unl', score: null })
+  })
+})
+
+describe('computeValidatorDelta', () => {
+  it('keeps delta unresolved while previous scores have not loaded', () => {
+    expect(
+      computeValidatorDelta('validator-a', 80, 'on_unl', undefined, undefined),
+    ).toEqual({ kind: 'unresolved' })
+  })
+
+  it('marks a validator as new when previous scores resolved without it', () => {
+    expect(
+      computeValidatorDelta(
+        'validator-a',
+        80,
+        'on_unl',
+        { validator_scores: [] },
+        { unl: [], alternates: [] },
+      ),
+    ).toEqual({ kind: 'new' })
   })
 })

@@ -315,7 +315,13 @@ export interface ScoringHealth {
   publisher_wallet: HealthSignal
 }
 
-export type DeltaKind = 'up' | 'down' | 'same' | 'new' | 'displaced'
+export type DeltaKind =
+  | 'up'
+  | 'down'
+  | 'same'
+  | 'new'
+  | 'displaced'
+  | 'unresolved'
 
 export interface ValidatorDelta {
   kind: DeltaKind
@@ -329,7 +335,8 @@ export const computeValidatorDelta = (
   priorScores: ScoresJson | null | undefined,
   priorUnl: UnlArtifact | null | undefined,
 ): ValidatorDelta => {
-  if (!priorScores) return { kind: 'new' }
+  if (priorScores === undefined) return { kind: 'unresolved' }
+  if (priorScores === null) return { kind: 'new' }
 
   const priorEntry = priorScores.validator_scores.find(
     (e) => e.master_key === masterKey,
