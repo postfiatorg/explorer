@@ -18,6 +18,17 @@ const round = (
   override_type: overrideType,
 })
 
+const scoreEntry = (masterKey: string, score: number) => ({
+  master_key: masterKey,
+  score,
+  consensus: score,
+  reliability: score,
+  software: score,
+  diversity: score,
+  identity: score,
+  reasoning: 'Validator score',
+})
+
 describe('scoringUtils override handling', () => {
   it('treats completed override rounds as unscored rounds', () => {
     expect(isScoredRound(round(10, 'COMPLETE', 'custom'))).toBe(false)
@@ -92,5 +103,53 @@ describe('computeValidatorDelta', () => {
         { unl: [], alternates: [] },
       ),
     ).toEqual({ kind: 'new' })
+  })
+
+  it('combines promoted membership movement with score movement', () => {
+    expect(
+      computeValidatorDelta(
+        'validator-a',
+        86,
+        'on_unl',
+        { validator_scores: [scoreEntry('validator-a', 80)] },
+        { unl: [], alternates: ['validator-a'] },
+      ),
+    ).toEqual({ kind: 'up', value: 6, membership: 'promoted' })
+  })
+
+  it('combines displaced membership movement with score movement', () => {
+    expect(
+      computeValidatorDelta(
+        'validator-a',
+        77,
+        'candidate',
+        { validator_scores: [scoreEntry('validator-a', 80)] },
+        { unl: ['validator-a'], alternates: [] },
+      ),
+    ).toEqual({ kind: 'down', value: 3, membership: 'displaced' })
+  })
+
+  it('keeps score-only movement separate from membership movement', () => {
+    expect(
+      computeValidatorDelta(
+        'validator-a',
+        86,
+        'on_unl',
+        { validator_scores: [scoreEntry('validator-a', 80)] },
+        { unl: ['validator-a'], alternates: [] },
+      ),
+    ).toEqual({ kind: 'up', value: 6 })
+  })
+
+  it('returns no visible movement when score and membership are unchanged', () => {
+    expect(
+      computeValidatorDelta(
+        'validator-a',
+        80,
+        'on_unl',
+        { validator_scores: [scoreEntry('validator-a', 80)] },
+        { unl: ['validator-a'], alternates: [] },
+      ),
+    ).toEqual({ kind: 'same' })
   })
 })

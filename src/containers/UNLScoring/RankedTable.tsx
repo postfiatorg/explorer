@@ -65,17 +65,27 @@ const statusOf = (masterKey: string, unl: UnlArtifact): ScoringStatus => {
 }
 
 const DeltaTag: FC<{ delta: ValidatorDelta }> = ({ delta }) => {
-  if (delta.kind === 'same' || delta.kind === 'unresolved') return null
+  if (delta.kind === 'unresolved') return null
   if (delta.kind === 'new') return <span className="delta delta-new">new</span>
-  if (delta.kind === 'displaced')
-    return <span className="delta delta-displaced">displaced</span>
+  const scoreChanged = delta.kind === 'up' || delta.kind === 'down'
+  if (!delta.membership && !scoreChanged) return null
+
   const arrow = delta.kind === 'up' ? '↑' : '↓'
   const cls = delta.kind === 'up' ? 'delta-up' : 'delta-down'
   return (
-    <span className={`delta ${cls}`}>
-      {arrow}
-      {delta.value ?? 0}
-    </span>
+    <>
+      {delta.membership && (
+        <span className={`delta delta-${delta.membership}`}>
+          {delta.membership}
+        </span>
+      )}
+      {scoreChanged && (
+        <span className={`delta ${cls}`}>
+          {arrow}
+          {delta.value ?? 0}
+        </span>
+      )}
+    </>
   )
 }
 

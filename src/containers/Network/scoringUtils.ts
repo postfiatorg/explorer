@@ -315,17 +315,14 @@ export interface ScoringHealth {
   publisher_wallet: HealthSignal
 }
 
-export type DeltaKind =
-  | 'up'
-  | 'down'
-  | 'same'
-  | 'new'
-  | 'displaced'
-  | 'unresolved'
+export type DeltaKind = 'up' | 'down' | 'same' | 'new' | 'unresolved'
+
+export type MembershipDeltaKind = 'promoted' | 'displaced'
 
 export interface ValidatorDelta {
   kind: DeltaKind
   value?: number
+  membership?: MembershipDeltaKind
 }
 
 export const computeValidatorDelta = (
@@ -343,15 +340,28 @@ export const computeValidatorDelta = (
   )
   if (!priorEntry) return { kind: 'new' }
 
-  const priorWasOnUnl = priorUnl ? priorUnl.unl.includes(masterKey) : false
-  if (priorWasOnUnl && currentStatus !== 'on_unl') {
-    return { kind: 'displaced' }
+  const diff = currentScore - priorEntry.score
+  let membership: MembershipDeltaKind | undefined
+  if (priorUnl) {
+    const priorWasOnUnl = priorUnl.unl.includes(masterKey)
+    if (priorWasOnUnl && currentStatus !== 'on_unl') {
+      membership = 'displaced'
+    } else if (!priorWasOnUnl && currentStatus === 'on_unl') {
+      membership = 'promoted'
+    }
   }
 
-  const diff = currentScore - priorEntry.score
-  if (diff > 0) return { kind: 'up', value: diff }
-  if (diff < 0) return { kind: 'down', value: -diff }
-  return { kind: 'same' }
+  if (diff > 0) {
+    return membership
+      ? { kind: 'up', value: diff, membership }
+      : { kind: 'up', value: diff }
+  }
+  if (diff < 0) {
+    return membership
+      ? { kind: 'down', value: -diff, membership }
+      : { kind: 'down', value: -diff }
+  }
+  return membership ? { kind: 'same', membership } : { kind: 'same' }
 }
 
 export type StalenessLevel = 'neutral' | 'amber' | 'red'

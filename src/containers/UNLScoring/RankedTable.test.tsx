@@ -41,30 +41,40 @@ const scores: ScoresJson = {
   ],
 }
 
-const rankedContext: ScoringContext = {
+const rankedMasterKey = 'nRanked1111111111111111111111111111111111111111'
+
+const rankedScoreEntry = (score: number) => ({
+  master_key: rankedMasterKey,
+  score,
+  consensus: score,
+  reliability: score,
+  software: score,
+  diversity: score,
+  identity: score,
+  reasoning: 'Current scored validator',
+})
+
+const rankedContextFor = ({
+  currentScore = 91,
+  unl = [rankedMasterKey],
+  alternates = [],
+}: {
+  currentScore?: number
+  unl?: string[]
+  alternates?: string[]
+} = {}): ScoringContext => ({
   activeRound: round(202, 'custom'),
   round: round(201),
   unl: {
     round_number: 201,
-    unl: ['nRanked1111111111111111111111111111111111111111'],
-    alternates: [],
+    unl,
+    alternates,
   },
   scores: {
-    validator_scores: [
-      {
-        master_key: 'nRanked1111111111111111111111111111111111111111',
-        score: 91,
-        consensus: 91,
-        reliability: 91,
-        software: 91,
-        diversity: 91,
-        identity: 91,
-        reasoning: 'Current scored validator',
-      },
-    ],
+    validator_scores: [rankedScoreEntry(currentScore)],
   },
   config: null,
-}
+})
 
 describe('OverrideRoundTable', () => {
   it('renders manual override rounds without numeric score cells', () => {
@@ -100,7 +110,7 @@ describe('RankedTable deltas', () => {
   it('does not render NEW while prior scores are unresolved', () => {
     const wrapper = mount(
       <RankedTable
-        context={rankedContext}
+        context={rankedContextFor()}
         priorScores={undefined}
         priorUnl={undefined}
         snapshot={null}
@@ -118,7 +128,7 @@ describe('RankedTable deltas', () => {
   it('renders NEW when prior scores resolve without the validator', () => {
     const wrapper = mount(
       <RankedTable
-        context={rankedContext}
+        context={rankedContextFor()}
         priorScores={{ validator_scores: [] }}
         priorUnl={{ unl: [], alternates: [] }}
         snapshot={null}
@@ -129,6 +139,88 @@ describe('RankedTable deltas', () => {
     )
 
     expect(wrapper.find('.delta-new').text()).toBe('new')
+
+    wrapper.unmount()
+  })
+
+  it('renders promoted membership movement with score movement', () => {
+    const wrapper = mount(
+      <RankedTable
+        context={rankedContextFor({ currentScore: 91 })}
+        priorScores={{ validator_scores: [rankedScoreEntry(85)] }}
+        priorUnl={{ unl: [], alternates: [rankedMasterKey] }}
+        snapshot={null}
+        validatorMetaByKey={new Map()}
+        expandedMasterKeys={new Set()}
+        onToggleValidator={jest.fn()}
+      />,
+    )
+
+    expect(wrapper.find('.delta-promoted').text()).toBe('promoted')
+    expect(wrapper.find('.delta-up').text()).toBe('↑6')
+
+    wrapper.unmount()
+  })
+
+  it('renders displaced membership movement with score movement', () => {
+    const wrapper = mount(
+      <RankedTable
+        context={rankedContextFor({
+          currentScore: 82,
+          unl: [],
+          alternates: [rankedMasterKey],
+        })}
+        priorScores={{ validator_scores: [rankedScoreEntry(85)] }}
+        priorUnl={{ unl: [rankedMasterKey], alternates: [] }}
+        snapshot={null}
+        validatorMetaByKey={new Map()}
+        expandedMasterKeys={new Set()}
+        onToggleValidator={jest.fn()}
+      />,
+    )
+
+    expect(wrapper.find('.delta-displaced').text()).toBe('displaced')
+    expect(wrapper.find('.delta-down').text()).toBe('↓3')
+
+    wrapper.unmount()
+  })
+
+  it('renders score-only movement without membership movement', () => {
+    const wrapper = mount(
+      <RankedTable
+        context={rankedContextFor({ currentScore: 91 })}
+        priorScores={{ validator_scores: [rankedScoreEntry(85)] }}
+        priorUnl={{ unl: [rankedMasterKey], alternates: [] }}
+        snapshot={null}
+        validatorMetaByKey={new Map()}
+        expandedMasterKeys={new Set()}
+        onToggleValidator={jest.fn()}
+      />,
+    )
+
+    expect(wrapper.find('.delta-promoted').exists()).toBe(false)
+    expect(wrapper.find('.delta-displaced').exists()).toBe(false)
+    expect(wrapper.find('.delta-up').text()).toBe('↑6')
+
+    wrapper.unmount()
+  })
+
+  it('renders no delta label when score and membership do not change', () => {
+    const wrapper = mount(
+      <RankedTable
+        context={rankedContextFor({ currentScore: 91 })}
+        priorScores={{ validator_scores: [rankedScoreEntry(91)] }}
+        priorUnl={{ unl: [rankedMasterKey], alternates: [] }}
+        snapshot={null}
+        validatorMetaByKey={new Map()}
+        expandedMasterKeys={new Set()}
+        onToggleValidator={jest.fn()}
+      />,
+    )
+
+    expect(wrapper.find('.delta').exists()).toBe(false)
+    expect(wrapper.text()).not.toContain('same')
+    expect(wrapper.text()).not.toContain('unchanged')
 
     wrapper.unmount()
   })

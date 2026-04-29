@@ -557,6 +557,10 @@
     color: $blue-40;
   }
 
+  &.delta-promoted {
+    color: $green-50;
+  }
+
   &.delta-displaced {
     color: $orange-50;
   }
