@@ -80,6 +80,9 @@ export const classifyRoundState = (status: string): RoundStateKind => {
   return 'running'
 }
 
+export const isInProgressRound = (round: ScoringRoundMeta): boolean =>
+  classifyRoundState(round.status) === 'running'
+
 export interface ValidatorScoreEntry {
   master_key: string
   score: number

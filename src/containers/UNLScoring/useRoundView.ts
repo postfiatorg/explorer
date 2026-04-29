@@ -7,9 +7,11 @@ import {
   UnlArtifact,
   fetchJsonOrNull,
   findPreviousScoredRound,
+  isInProgressRound,
   isOverrideRound,
 } from '../Network/scoringUtils'
 
+const THIRTY_SECONDS_MS = 30 * 1000
 const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000
 
 interface RoundsResponse {
@@ -34,10 +36,16 @@ export interface OverrideRoundView extends BaseRoundView {
   scores: null
 }
 
-export type RoundView = ScoredRoundView | OverrideRoundView
+export interface RunningRoundView {
+  kind: 'running'
+  round: ScoringRoundMeta
+}
+
+export type RoundView = ScoredRoundView | OverrideRoundView | RunningRoundView
 
 export interface UseRoundViewResult {
   view: RoundView | null
+  roundMeta: ScoringRoundMeta | null
   isLoading: boolean
   roundNotFound: boolean
 }
@@ -55,12 +63,18 @@ export const useRoundView = (
       {
         enabled,
         staleTime: TWENTY_FOUR_HOURS_MS,
+        refetchInterval: (returnedData) =>
+          returnedData && isInProgressRound(returnedData)
+            ? THIRTY_SECONDS_MS
+            : false,
         retry: false,
       },
     )
 
   const isOverride = round ? isOverrideRound(round) : false
-  const shouldFetchScoredArtifacts = enabled && Boolean(round) && !isOverride
+  const isRunning = round ? isInProgressRound(round) : false
+  const shouldFetchRoundArtifacts = enabled && Boolean(round) && !isRunning
+  const shouldFetchScoredArtifacts = shouldFetchRoundArtifacts && !isOverride
 
   const { data: scores, isLoading: loadingScores } =
     useQuery<ScoresJson | null>(
@@ -83,7 +97,7 @@ export const useRoundView = (
         `/api/scoring/rounds/${roundNumber}/unl.json`,
       ),
     {
-      enabled,
+      enabled: shouldFetchRoundArtifacts,
       staleTime: TWENTY_FOUR_HOURS_MS,
       retry: false,
     },
@@ -174,7 +188,14 @@ export const useRoundView = (
   ])
 
   const view = useMemo<RoundView | null>(() => {
-    if (!round || !unl) return null
+    if (!round) return null
+    if (isInProgressRound(round)) {
+      return {
+        kind: 'running',
+        round,
+      }
+    }
+    if (!unl) return null
     if (isOverrideRound(round)) {
       return {
         kind: 'override',
@@ -202,9 +223,10 @@ export const useRoundView = (
 
   return {
     view,
+    roundMeta: round ?? null,
     isLoading:
       loadingRound ||
-      loadingUnl ||
+      (shouldFetchRoundArtifacts && loadingUnl) ||
       (shouldFetchScoredArtifacts && loadingScores),
     roundNotFound,
   }

@@ -1,7 +1,24 @@
-import { FC } from 'react'
+import { FC, useEffect, useState } from 'react'
 import { RefreshCw } from 'lucide-react'
 import { Skeleton } from '../shared/components/Skeleton/Skeleton'
-import { SCORING_DIMENSIONS } from '../Network/scoringUtils'
+import {
+  SCORING_DIMENSIONS,
+  ScoringRoundMeta,
+  formatRelativeTime,
+} from '../Network/scoringUtils'
+
+const RUNNING_ROUND_TICK_MS = 1000
+
+const useTicker = (intervalMs: number): number => {
+  const [tick, setTick] = useState(() => Date.now())
+
+  useEffect(() => {
+    const id = window.setInterval(() => setTick(Date.now()), intervalMs)
+    return () => window.clearInterval(id)
+  }, [intervalMs])
+
+  return tick
+}
 
 export const ScoringPageSkeleton: FC = () => (
   <div className="unl-scoring-skeleton">
@@ -79,5 +96,41 @@ export const ScoringErrorPanel: FC<ScoringErrorPanelProps> = ({
 export const ScoringStaleBanner: FC = () => (
   <div className="unl-scoring-stale-banner">
     Showing cached data — scoring service unreachable.
+  </div>
+)
+
+export const ScoringRunningRoundPanel: FC<{ round: ScoringRoundMeta }> = ({
+  round,
+}) => {
+  const now = useTicker(RUNNING_ROUND_TICK_MS)
+  const startedAt = round.started_at ?? round.created_at ?? null
+
+  return (
+    <div className="unl-scoring-running-round dashboard-panel">
+      <h2>Round #{round.round_number} is running</h2>
+      <p>
+        Scoring artifacts are not available yet. This round will be available
+        after the scoring service completes it.
+      </p>
+      <div className="unl-scoring-running-round-meta">
+        <span>{round.status}</span>
+        {startedAt && <span>started {formatRelativeTime(startedAt, now)}</span>}
+      </div>
+    </div>
+  )
+}
+
+export const ScoringFinalizingRoundPanel: FC<{ round: ScoringRoundMeta }> = ({
+  round,
+}) => (
+  <div className="unl-scoring-finalizing-round dashboard-panel">
+    <h2>Round #{round.round_number} completed</h2>
+    <p>Loading scoring artifacts. Ranked validators will appear shortly.</p>
+    <div className="unl-scoring-finalizing-round-meta">
+      <span>{round.status}</span>
+      {round.completed_at && (
+        <span>completed {formatRelativeTime(round.completed_at)}</span>
+      )}
+    </div>
   </div>
 )

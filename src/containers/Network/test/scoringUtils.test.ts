@@ -3,6 +3,7 @@ import {
   findLatestScoredRound,
   findPreviousScoredRound,
   getScoringInfoForValidator,
+  isInProgressRound,
   isScoredRound,
 } from '../scoringUtils'
 import type { ScoringRoundMeta } from '../scoringUtils'
@@ -83,6 +84,15 @@ describe('scoringUtils override handling', () => {
     })
 
     expect(info).toEqual({ status: 'on_unl', score: null })
+  })
+})
+
+describe('round state helpers', () => {
+  it('identifies in-progress rounds separately from terminal rounds', () => {
+    expect(isInProgressRound(round(11, 'COLLECTING'))).toBe(true)
+    expect(isInProgressRound(round(10, 'COMPLETE'))).toBe(false)
+    expect(isInProgressRound(round(9, 'FAILED'))).toBe(false)
+    expect(isInProgressRound(round(8, 'DRY_RUN_COMPLETE'))).toBe(false)
   })
 })
 

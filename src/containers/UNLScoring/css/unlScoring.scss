@@ -34,6 +34,53 @@
   }
 }
 
+.unl-scoring-running-round,
+.unl-scoring-finalizing-round {
+  padding: 32px;
+
+  h2 {
+    margin: 0 0 8px;
+    color: $white;
+    font-size: 18px;
+  }
+
+  p {
+    max-width: 620px;
+    margin: 0;
+    color: $black-40;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+}
+
+.unl-scoring-running-round {
+  border-left: 3px solid $yellow-50;
+}
+
+.unl-scoring-finalizing-round {
+  border-left: 3px solid $green-50;
+}
+
+.unl-scoring-running-round-meta,
+.unl-scoring-finalizing-round-meta {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 16px;
+  font-size: 12px;
+  gap: 12px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  @include medium;
+}
+
+.unl-scoring-running-round-meta {
+  color: $yellow-50;
+}
+
+.unl-scoring-finalizing-round-meta {
+  color: $green-50;
+}
+
 .unl-scoring-genesis,
 .unl-scoring-error {
   padding: 40px 32px;

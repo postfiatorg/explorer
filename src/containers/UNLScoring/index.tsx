@@ -8,7 +8,7 @@ import { SEOHelmet } from '../shared/components/SEOHelmet'
 import { Loader } from '../shared/components/Loader'
 import NetworkContext from '../shared/NetworkContext'
 import { ValidatorResponse } from '../shared/vhsTypes'
-import { ScoringContext } from '../Network/scoringUtils'
+import { ScoringContext, isInProgressRound } from '../Network/scoringUtils'
 import { useScoringContext } from '../Network/useScoringContext'
 import { useScoringAvailability } from '../Network/useScoringAvailability'
 import { useScoringStaleness } from '../shared/ScoringStaleness'
@@ -22,8 +22,10 @@ import { useRecentRounds } from './useRecentRounds'
 import { useScoreHistory } from './useScoreHistory'
 import {
   ScoringErrorPanel,
+  ScoringFinalizingRoundPanel,
   ScoringGenesisPanel,
   ScoringPageSkeleton,
+  ScoringRunningRoundPanel,
   ScoringStaleBanner,
 } from './ScoringStatePanels'
 import './css/unlScoring.scss'
@@ -140,24 +142,55 @@ export const UNLScoring = () => {
     : (latestRoundNumber ?? latestScoredRoundNumber)
 
   const recentRounds = useRecentRounds()
-  const { view: viewingRound, roundNotFound: viewNotFound } =
-    useRoundView(viewingRoundNumber)
+  const {
+    view: viewingRound,
+    roundMeta: viewingRoundMeta,
+    roundNotFound: viewNotFound,
+  } = useRoundView(viewingRoundNumber)
+  const selectedRecentRound = recentRounds.find(
+    (round) => round.round_number === viewingRoundNumber,
+  )
+  const selectedRecentCompletedRound =
+    selectedRecentRound?.status === 'COMPLETE' &&
+    !selectedRecentRound.override_type
+      ? selectedRecentRound
+      : null
+  const viewingCompletedRound =
+    viewingRoundMeta?.status === 'COMPLETE' && !viewingRoundMeta.override_type
+      ? viewingRoundMeta
+      : null
+  const selectedCompletedRound =
+    selectedRecentCompletedRound ?? viewingCompletedRound
+  const selectedFinalizingRound =
+    selectedCompletedRound &&
+    viewingRound?.kind !== 'scored' &&
+    viewingRound?.kind !== 'override'
+      ? selectedCompletedRound
+      : null
+  const selectedRecentRunningRound =
+    !selectedFinalizingRound &&
+    selectedRecentRound &&
+    isInProgressRound(selectedRecentRound)
+      ? selectedRecentRound
+      : null
+  const selectedRunningRound =
+    !selectedFinalizingRound && viewingRound?.kind === 'running'
+      ? viewingRound.round
+      : selectedRecentRunningRound
 
-  const tooLarge =
-    isPinned &&
-    typeof latestRoundNumber === 'number' &&
-    (parsedRoundId as number) > latestRoundNumber
-
-  const isRoundNotFound =
-    parsedRoundId === null || tooLarge || (isPinned && viewNotFound)
+  const isRoundNotFound = parsedRoundId === null || (isPinned && viewNotFound)
 
   const hasOverrideOnlyView = Boolean(
     !latestContext && activeRound?.override_type && activeUnl,
+  )
+  const hasTransientRoundView = Boolean(
+    selectedRunningRound || selectedFinalizingRound,
   )
 
   const shouldConfirmUnavailable =
     !latestContext &&
     !hasOverrideOnlyView &&
+    !hasTransientRoundView &&
     !contextLoading &&
     scoringState !== 'loading' &&
     scoringState !== 'genesis' &&
@@ -344,6 +377,13 @@ export const UNLScoring = () => {
   )
 
   const renderViewingRoundContent = () => {
+    if (selectedRunningRound) {
+      return <ScoringRunningRoundPanel round={selectedRunningRound} />
+    }
+    if (selectedFinalizingRound) {
+      return <ScoringFinalizingRoundPanel round={selectedFinalizingRound} />
+    }
+
     if (viewingRound?.kind === 'override') {
       return (
         <>
@@ -448,6 +488,30 @@ export const UNLScoring = () => {
           round={overrideRound}
           supersedingRound={supersedingRound}
         />
+        <MethodologyExplainer config={null} />
+      </>
+    )
+  } else if (
+    !latestContext &&
+    (selectedRunningRound || selectedFinalizingRound)
+  ) {
+    body = (
+      <>
+        {typeof viewingRoundNumber === 'number' &&
+          typeof latestRoundNumber === 'number' && (
+            <RoundNavigation
+              viewingRoundNumber={viewingRoundNumber}
+              latestRoundNumber={latestRoundNumber}
+              recentRounds={recentRounds}
+              onSelectRound={handleSelectRound}
+            />
+          )}
+        {selectedRunningRound && (
+          <ScoringRunningRoundPanel round={selectedRunningRound} />
+        )}
+        {selectedFinalizingRound && (
+          <ScoringFinalizingRoundPanel round={selectedFinalizingRound} />
+        )}
         <MethodologyExplainer config={null} />
       </>
     )
