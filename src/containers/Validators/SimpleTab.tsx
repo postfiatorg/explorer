@@ -7,7 +7,6 @@ import { ValidatorSupplemented } from '../shared/vhsTypes'
 import { LEDGER_ROUTE } from '../App/routes'
 import DomainLink from '../shared/components/DomainLink'
 import SuccessIcon from '../shared/images/success.svg'
-import successIcon from '../shared/images/success.png'
 import './simpleTab.scss'
 
 const TIME_ZONE = 'UTC'
@@ -86,14 +85,6 @@ export const SimpleTab: FC<{
               language,
               DATE_OPTIONS,
             )}
-          </span>
-        </div>
-      )}
-      {data.unl && (
-        <div className="validator-detail-row">
-          <span className="validator-detail-label">UNL</span>
-          <span className="validator-detail-value validator-detail-unl">
-            <img src={successIcon} alt={data.unl.toString()} /> {data.unl}
           </span>
         </div>
       )}

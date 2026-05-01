@@ -160,7 +160,6 @@ export const Validator = () => {
     const domain = data?.domain
     const masterKey = data?.master_key
     const signingKey = data?.signing_key
-    const isUnl = Boolean(data?.unl)
 
     return (
       <div className="validator-hero detail-summary dashboard-panel">
@@ -172,7 +171,6 @@ export const Validator = () => {
               : 'Unknown Validator')}
         </div>
         <div className="validator-hero-badges">
-          {isUnl && <StatusBadge status="verified" label="UNL" />}
           {data?.domain_verified && (
             <StatusBadge status="verified" label="Domain Verified" />
           )}
@@ -292,16 +290,13 @@ export const Validator = () => {
 
     if (!scoringContext) return null
 
-    const masterKey = data?.master_key ?? data?.signing_key
-    const scoringInfo = getScoringInfoForValidator(
-      data?.master_key,
-      scoringContext,
-    )
-    const scoreEntry = findScoreEntry(data?.master_key, scoringContext.scores)
+    const scoringKey = data?.master_key ?? data?.signing_key
+    const scoringInfo = getScoringInfoForValidator(scoringKey, scoringContext)
+    const scoreEntry = findScoreEntry(scoringKey, scoringContext.scores)
     const { round } = scoringContext
 
-    const scoringLink = masterKey
-      ? `/unl-scoring/rounds/${round.round_number}?validator=${masterKey}`
+    const scoringLink = scoringKey
+      ? `/unl-scoring/rounds/${round.round_number}?validator=${scoringKey}`
       : '/unl-scoring'
 
     const failedRoundNote =

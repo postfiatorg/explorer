@@ -18,6 +18,8 @@
 .validator-hero {
   .validator-hero-badges {
     display: flex;
+    flex-wrap: wrap;
+    align-items: center;
     margin-bottom: 16px;
     gap: 8px;
   }
