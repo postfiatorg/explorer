@@ -17,6 +17,7 @@ import {
   SCORING_DIMENSIONS,
   findScoreEntry,
   getAgreementColor,
+  getExcludedScoringServerVersion,
   getScoringInfoForValidator,
   getScoreColor,
   getStatusColor,
@@ -294,6 +295,10 @@ export const Validator = () => {
     const scoringInfo = getScoringInfoForValidator(scoringKey, scoringContext)
     const scoreEntry = findScoreEntry(scoringKey, scoringContext.scores)
     const { round } = scoringContext
+    const excludedServerVersion = getExcludedScoringServerVersion(
+      data?.server_version,
+      scoringContext.roundConfig,
+    )
 
     const scoringLink = scoringKey
       ? `/unl-scoring/rounds/${round.round_number}?validator=${scoringKey}`
@@ -312,10 +317,16 @@ export const Validator = () => {
       ) : null
 
     if (scoringInfo.status === 'no_data' || !scoreEntry) {
-      const noScoreMessage =
-        scoringInfo.status === 'on_unl'
-          ? "This validator is on the active UNL but wasn't scored in the latest scored round."
-          : "This validator wasn't scored in the latest scored round. Validators appear in rounds automatically once they're active on the network — no registration required."
+      let noScoreMessage: string
+      if (excludedServerVersion != null) {
+        noScoreMessage = `This validator was intentionally excluded from the latest scored round because it is running server version ${excludedServerVersion}, which is not eligible for Dynamic UNL scoring.`
+      } else if (scoringInfo.status === 'on_unl') {
+        noScoreMessage =
+          "This validator is on the active UNL but wasn't scored in the latest scored round."
+      } else {
+        noScoreMessage =
+          "This validator wasn't scored in the latest scored round. Validators appear in rounds automatically once they're active on the network — no registration required."
+      }
       return (
         <div className="detail-scoring dashboard-panel">
           <div className="detail-scoring-header">

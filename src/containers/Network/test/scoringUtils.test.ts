@@ -2,6 +2,7 @@ import {
   computeValidatorDelta,
   findLatestScoredRound,
   findPreviousScoredRound,
+  getExcludedScoringServerVersion,
   getScoringInfoForValidator,
   isInProgressRound,
   isScoredRound,
@@ -81,6 +82,7 @@ describe('scoringUtils override handling', () => {
       },
       round: round(11),
       config: null,
+      roundConfig: null,
     })
 
     expect(info).toEqual({ status: 'on_unl', score: null })
@@ -93,6 +95,33 @@ describe('round state helpers', () => {
     expect(isInProgressRound(round(10, 'COMPLETE'))).toBe(false)
     expect(isInProgressRound(round(9, 'FAILED'))).toBe(false)
     expect(isInProgressRound(round(8, 'DRY_RUN_COMPLETE'))).toBe(false)
+  })
+})
+
+describe('excluded scoring server versions', () => {
+  it('matches excluded validator server versions exactly after trimming', () => {
+    expect(
+      getExcludedScoringServerVersion(' 3.0.0 ', {
+        excluded_validator_server_versions: ['2.9.0', '3.0.0'],
+      }),
+    ).toBe('3.0.0')
+  })
+
+  it('does not match partial server versions', () => {
+    expect(
+      getExcludedScoringServerVersion('3.0.0-beta', {
+        excluded_validator_server_versions: ['3.0.0'],
+      }),
+    ).toBeNull()
+  })
+
+  it('falls back when the scoring config has no usable policy', () => {
+    expect(getExcludedScoringServerVersion('3.0.0', null)).toBeNull()
+    expect(
+      getExcludedScoringServerVersion('3.0.0', {
+        excluded_validator_server_versions: undefined,
+      }),
+    ).toBeNull()
   })
 })
 

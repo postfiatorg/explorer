@@ -113,12 +113,17 @@ export interface ScoringConfig {
   unl_min_score_gap: number
 }
 
+export interface RoundScoringConfig {
+  excluded_validator_server_versions?: string[]
+}
+
 export interface ScoringContext {
   activeRound: ScoringRoundMeta
   unl: ScoringUnlResponse
   scores: ScoresJson
   round: ScoringRoundMeta
   config: ScoringConfig | null
+  roundConfig: RoundScoringConfig | null
 }
 
 export interface ScoringInfo {
@@ -185,6 +190,27 @@ export const getScoringInfoForValidator = (
     return { status: 'ineligible', score: scoreByKey.get(masterKey) ?? null }
   }
   return { status: 'no_data', score: null }
+}
+
+const normalizeServerVersion = (serverVersion: unknown): string =>
+  serverVersion == null ? '' : String(serverVersion).trim()
+
+export const getExcludedScoringServerVersion = (
+  serverVersion: unknown,
+  roundConfig: RoundScoringConfig | null | undefined,
+): string | null => {
+  const normalizedVersion = normalizeServerVersion(serverVersion)
+  if (!normalizedVersion) return null
+
+  const excludedVersions = roundConfig?.excluded_validator_server_versions
+  if (!Array.isArray(excludedVersions)) return null
+
+  return (
+    excludedVersions
+      .filter((version): version is string => typeof version === 'string')
+      .map(normalizeServerVersion)
+      .find((version) => version === normalizedVersion) ?? null
+  )
 }
 
 export type ScoringDimension =

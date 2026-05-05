@@ -6,6 +6,7 @@ import {
   ScoringHealth,
   ScoringRoundMeta,
   ScoringUnlResponse,
+  RoundScoringConfig,
   ScoresJson,
   SnapshotJson,
   UnlArtifact,
@@ -139,6 +140,19 @@ export const useScoringContext = (): UseScoringContextResult => {
       },
     )
 
+  const { data: roundScoringConfig } = useQuery<RoundScoringConfig | null>(
+    ['scoring-round-config', scoredRoundNumber],
+    () =>
+      fetchJsonOrNull<RoundScoringConfig>(
+        `/api/scoring/rounds/${scoredRoundNumber}/scoring_config.json`,
+      ),
+    {
+      enabled: typeof scoredRoundNumber === 'number',
+      staleTime: TWENTY_FOUR_HOURS_MS,
+      retry: false,
+    },
+  )
+
   const { data: priorScores } = useQuery<ScoresJson | null>(
     ['scoring-scores', previousScoredRoundNumber],
     () =>
@@ -220,8 +234,16 @@ export const useScoringContext = (): UseScoringContextResult => {
       scores: scoringScores,
       round: latestScoredRound,
       config: scoringConfig ?? null,
+      roundConfig: roundScoringConfig ?? null,
     }
-  }, [activeRound, scoringUnl, scoringScores, latestScoredRound, scoringConfig])
+  }, [
+    activeRound,
+    scoringUnl,
+    scoringScores,
+    latestScoredRound,
+    scoringConfig,
+    roundScoringConfig,
+  ])
 
   const contextLoading =
     loadingUnl ||

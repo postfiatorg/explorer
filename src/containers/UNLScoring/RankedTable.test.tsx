@@ -74,6 +74,7 @@ const rankedContextFor = ({
     validator_scores: [rankedScoreEntry(currentScore)],
   },
   config: null,
+  roundConfig: null,
 })
 
 describe('OverrideRoundTable', () => {
