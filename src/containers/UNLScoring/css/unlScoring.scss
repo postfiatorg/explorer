@@ -398,6 +398,28 @@
 // Ranked table
 // ---------------------------------------------------------------------------
 
+.round-reasoning {
+  padding: 16px 20px;
+}
+
+.round-reasoning-title {
+  align-self: flex-start;
+  margin: 0 0 8px;
+  color: $white;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  @include medium;
+}
+
+.round-reasoning-text {
+  width: 100%;
+  margin: 0;
+  color: $white;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
 .unl-scoring-ranked {
   padding: 16px 20px 20px;
 }

@@ -19,7 +19,10 @@ import {
   getScoreColor,
   getStatusColor,
 } from '../Network/scoringUtils'
-import { ValidatorDrillDown } from './ValidatorDrillDown'
+import {
+  ValidatorDrillDown,
+  renderReasoningWithValidatorLinks,
+} from './ValidatorDrillDown'
 
 export interface ValidatorMeta {
   domain: string | null
@@ -234,6 +237,32 @@ const RankedValidatorRow: FC<{
         </td>
       ))}
     </tr>
+  )
+}
+
+const RoundReasoningPanel: FC<{
+  summary?: string
+  validatorIdMap?: ValidatorIdMap | null
+}> = ({ summary, validatorIdMap = null }) => {
+  const trimmedSummary = summary?.trim()
+  const renderedSummary = useMemo(
+    () =>
+      trimmedSummary
+        ? renderReasoningWithValidatorLinks(trimmedSummary, validatorIdMap)
+        : null,
+    [trimmedSummary, validatorIdMap],
+  )
+
+  if (!trimmedSummary) return null
+
+  return (
+    <section
+      className="round-reasoning dashboard-panel"
+      aria-label="Round reasoning"
+    >
+      <h2 className="round-reasoning-title">Round reasoning</h2>
+      <p className="round-reasoning-text">{renderedSummary}</p>
+    </section>
   )
 }
 
@@ -489,6 +518,45 @@ export const RankedTable: FC<RankedTableProps> = ({
 
   if (bothEmptyCollapse) {
     return (
+      <>
+        <RoundReasoningPanel
+          summary={scores.network_summary}
+          validatorIdMap={validatorIdMap}
+        />
+        <div className="unl-scoring-ranked dashboard-panel">
+          <div className="ranked-header">
+            <h2 className="ranked-title">Ranked validators</h2>
+            <input
+              className="ranked-filter"
+              type="search"
+              placeholder="Filter by pubkey or domain…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+          </div>
+          <div className="ranked-table-wrapper">
+            <table className="basic ranked-table">
+              <RankedTableHeader />
+              <tbody>
+                {onUnlRows.map((r) => {
+                  rank += 1
+                  return renderRowWithDrillDown(r, rank)
+                })}
+                <SeparatorChip label="all on UNL" />
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </>
+    )
+  }
+
+  return (
+    <>
+      <RoundReasoningPanel
+        summary={scores.network_summary}
+        validatorIdMap={validatorIdMap}
+      />
       <div className="unl-scoring-ranked dashboard-panel">
         <div className="ranked-header">
           <h2 className="ranked-title">Ranked validators</h2>
@@ -508,71 +576,44 @@ export const RankedTable: FC<RankedTableProps> = ({
                 rank += 1
                 return renderRowWithDrillDown(r, rank)
               })}
-              <SeparatorChip label="all on UNL" />
+
+              <SeparatorChip
+                label={
+                  config
+                    ? `candidate · +${config.unl_min_score_gap} to displace`
+                    : 'candidate · +— to displace'
+                }
+              />
+
+              {candidateRows.length === 0 ? (
+                <EmptyZoneRow message="— No candidates this round —" />
+              ) : (
+                candidateRows.map((r) => {
+                  rank += 1
+                  return renderRowWithDrillDown(r, rank)
+                })
+              )}
+
+              <SeparatorChip
+                label={
+                  config
+                    ? `ineligible · below ${config.unl_score_cutoff}`
+                    : 'ineligible · below —'
+                }
+              />
+
+              {ineligibleRows.length === 0 ? (
+                <EmptyZoneRow message="— No ineligible validators this round —" />
+              ) : (
+                ineligibleRows.map((r) => {
+                  rank += 1
+                  return renderRowWithDrillDown(r, rank)
+                })
+              )}
             </tbody>
           </table>
         </div>
       </div>
-    )
-  }
-
-  return (
-    <div className="unl-scoring-ranked dashboard-panel">
-      <div className="ranked-header">
-        <h2 className="ranked-title">Ranked validators</h2>
-        <input
-          className="ranked-filter"
-          type="search"
-          placeholder="Filter by pubkey or domain…"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
-      </div>
-      <div className="ranked-table-wrapper">
-        <table className="basic ranked-table">
-          <RankedTableHeader />
-          <tbody>
-            {onUnlRows.map((r) => {
-              rank += 1
-              return renderRowWithDrillDown(r, rank)
-            })}
-
-            <SeparatorChip
-              label={
-                config
-                  ? `candidate · +${config.unl_min_score_gap} to displace`
-                  : 'candidate · +— to displace'
-              }
-            />
-
-            {candidateRows.length === 0 ? (
-              <EmptyZoneRow message="— No candidates this round —" />
-            ) : (
-              candidateRows.map((r) => {
-                rank += 1
-                return renderRowWithDrillDown(r, rank)
-              })
-            )}
-
-            <SeparatorChip
-              label={
-                config
-                  ? `ineligible · below ${config.unl_score_cutoff}`
-                  : 'ineligible · below —'
-              }
-            />
-
-            {ineligibleRows.length === 0 ? (
-              <EmptyZoneRow message="— No ineligible validators this round —" />
-            ) : (
-              ineligibleRows.map((r) => {
-                rank += 1
-                return renderRowWithDrillDown(r, rank)
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
-    </div>
+    </>
   )
 }

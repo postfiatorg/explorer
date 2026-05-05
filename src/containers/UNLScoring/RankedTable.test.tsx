@@ -4,6 +4,7 @@ import type {
   ScoresJson,
   ScoringContext,
   ScoringRoundMeta,
+  ValidatorIdMap,
 } from '../Network/scoringUtils'
 
 const round = (
@@ -42,6 +43,20 @@ const scores: ScoresJson = {
 }
 
 const rankedMasterKey = 'nRanked1111111111111111111111111111111111111111'
+const mappedMasterKey = 'nHBXSCTwVUbvZg5EAZsXXTtads2ZVd8UwLsuniGcLBgH9pP8EeBc'
+const secondMappedMasterKey =
+  'nHBg5iGpnvmbckhEUkY1oTnNqr8RbzRwKyW8x5NoGJYPVT4iS7um'
+
+const validatorIdMap: ValidatorIdMap = {
+  v001: {
+    master_key: mappedMasterKey,
+    signing_key: 'n9MappedSigningKey',
+  },
+  v002: {
+    master_key: secondMappedMasterKey,
+    signing_key: 'n9SecondSigningKey',
+  },
+}
 
 const rankedScoreEntry = (score: number) => ({
   master_key: rankedMasterKey,
@@ -58,10 +73,12 @@ const rankedContextFor = ({
   currentScore = 91,
   unl = [rankedMasterKey],
   alternates = [],
+  networkSummary,
 }: {
   currentScore?: number
   unl?: string[]
   alternates?: string[]
+  networkSummary?: string
 } = {}): ScoringContext => ({
   activeRound: round(202, 'custom'),
   round: round(201),
@@ -71,11 +88,31 @@ const rankedContextFor = ({
     alternates,
   },
   scores: {
+    ...(networkSummary === undefined
+      ? {}
+      : { network_summary: networkSummary }),
     validator_scores: [rankedScoreEntry(currentScore)],
   },
   config: null,
   roundConfig: null,
 })
+
+const mountRankedTable = (
+  context: ScoringContext,
+  map: ValidatorIdMap | null = null,
+) =>
+  mount(
+    <RankedTable
+      context={context}
+      priorScores={undefined}
+      priorUnl={undefined}
+      snapshot={null}
+      validatorIdMap={map}
+      validatorMetaByKey={new Map()}
+      expandedMasterKeys={new Set()}
+      onToggleValidator={jest.fn()}
+    />,
+  )
 
 describe('OverrideRoundTable', () => {
   it('renders manual override rounds without numeric score cells', () => {
@@ -102,6 +139,89 @@ describe('OverrideRoundTable', () => {
     )
     expect(wrapper.text()).not.toContain('97')
     expect(wrapper.text()).not.toContain('88')
+
+    wrapper.unmount()
+  })
+})
+
+describe('RankedTable round reasoning', () => {
+  it('renders round reasoning before ranked validators when a network summary is present', () => {
+    const wrapper = mountRankedTable(
+      rankedContextFor({
+        networkSummary:
+          'Network concentration is low and high-agreement validators lead the round.',
+      }),
+    )
+
+    const reasoning = wrapper.find('.round-reasoning')
+    expect(reasoning.exists()).toBe(true)
+    expect(reasoning.find('.round-reasoning-title').text()).toBe(
+      'Round reasoning',
+    )
+    expect(reasoning.text()).toContain('Network concentration is low')
+
+    const pageText = wrapper.text()
+    expect(pageText.indexOf('Round reasoning')).toBeLessThan(
+      pageText.indexOf('Ranked validators'),
+    )
+
+    wrapper.unmount()
+  })
+
+  it('omits round reasoning when the network summary is absent', () => {
+    const wrapper = mountRankedTable(rankedContextFor())
+
+    expect(wrapper.find('.round-reasoning').exists()).toBe(false)
+
+    wrapper.unmount()
+  })
+
+  it('omits round reasoning when the network summary is blank', () => {
+    const wrapper = mountRankedTable(
+      rankedContextFor({ networkSummary: '   ' }),
+    )
+
+    expect(wrapper.find('.round-reasoning').exists()).toBe(false)
+
+    wrapper.unmount()
+  })
+
+  it('maps anonymous validator IDs in round reasoning with exact-token boundaries', () => {
+    const wrapper = mountRankedTable(
+      rankedContextFor({
+        networkSummary:
+          'v001, and v002 are close calls; v0012 and validator_v001 stay literal.',
+      }),
+      validatorIdMap,
+    )
+
+    const links = wrapper.find(
+      '.round-reasoning .drill-down-reasoning-validator-link',
+    )
+    expect(links).toHaveLength(2)
+    expect(links.at(0).text()).toBe('nHBXSCTwVU...P8EeBc')
+    expect(links.at(0).prop('href')).toBe(`/validators/${mappedMasterKey}`)
+    expect(links.at(0).prop('target')).toBe('_blank')
+    expect(links.at(1).text()).toBe('nHBg5iGpnv...4iS7um')
+    expect(links.at(1).prop('href')).toBe(
+      `/validators/${secondMappedMasterKey}`,
+    )
+    expect(wrapper.find('.round-reasoning').text()).toContain(
+      'v0012 and validator_v001 stay literal.',
+    )
+
+    wrapper.unmount()
+  })
+
+  it('does not mutate the raw network summary value', () => {
+    const rawSummary = 'Similar profile to v001.'
+    const context = rankedContextFor({ networkSummary: rawSummary })
+    const wrapper = mountRankedTable(context, validatorIdMap)
+
+    expect(
+      wrapper.find('.round-reasoning .drill-down-reasoning-validator-link'),
+    ).toHaveLength(1)
+    expect(context.scores.network_summary).toBe(rawSummary)
 
     wrapper.unmount()
   })

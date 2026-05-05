@@ -33,7 +33,7 @@ const escapeRegExp = (value: string): string =>
 const isIdentifierChar = (value: string | undefined): boolean =>
   Boolean(value && /[A-Za-z0-9_]/.test(value))
 
-const renderReasoningWithValidatorLinks = (
+export const renderReasoningWithValidatorLinks = (
   reasoning: string,
   validatorIdMap?: ValidatorIdMap | null,
 ): ReactNode => {
