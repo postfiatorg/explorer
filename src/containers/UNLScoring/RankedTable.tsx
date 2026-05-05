@@ -13,6 +13,7 @@ import {
   SnapshotValidator,
   UnlArtifact,
   ValidatorDelta,
+  ValidatorIdMap,
   ValidatorScoreEntry,
   computeValidatorDelta,
   getScoreColor,
@@ -30,6 +31,7 @@ interface RankedTableProps {
   priorScores: ScoresJson | null | undefined
   priorUnl: UnlArtifact | null | undefined
   snapshot: SnapshotJson | null
+  validatorIdMap?: ValidatorIdMap | null
   validatorMetaByKey: Map<string, ValidatorMeta>
   expandedMasterKeys: Set<string>
   onToggleValidator: (masterKey: string) => void
@@ -384,6 +386,7 @@ export const RankedTable: FC<RankedTableProps> = ({
   priorScores,
   priorUnl,
   snapshot,
+  validatorIdMap = null,
   validatorMetaByKey,
   expandedMasterKeys,
   onToggleValidator,
@@ -476,6 +479,7 @@ export const RankedTable: FC<RankedTableProps> = ({
             currentRoundNumber={round.round_number}
             scoreEntry={r.entry}
             snapshotEntry={snapshotByKey.get(r.entry.master_key) ?? null}
+            validatorIdMap={validatorIdMap}
             colspan={TOTAL_COLS}
           />
         )}

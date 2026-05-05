@@ -809,6 +809,27 @@
   line-height: 1.5;
 }
 
+.drill-down-reasoning-validator-link {
+  border-bottom: 1px solid transparent;
+  color: $blue-40;
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    border-color $transition-default,
+    color $transition-default;
+  @include medium;
+
+  &:focus-visible {
+    outline: 2px solid $blue-40;
+    outline-offset: 2px;
+  }
+
+  &:hover {
+    border-color: $blue-40;
+    color: $blue-30;
+  }
+}
+
 .drill-down-actions {
   display: flex;
   flex-wrap: wrap;

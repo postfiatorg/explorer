@@ -5,6 +5,7 @@ import {
   ScoringRoundMeta,
   SnapshotJson,
   UnlArtifact,
+  ValidatorIdMap,
   fetchJsonOrNull,
   findPreviousScoredRound,
   isInProgressRound,
@@ -24,6 +25,7 @@ interface BaseRoundView {
   snapshot: SnapshotJson | null
   priorScores: ScoresJson | null | undefined
   priorUnl: UnlArtifact | null | undefined
+  validatorIdMap: ValidatorIdMap | null
 }
 
 export interface ScoredRoundView extends BaseRoundView {
@@ -108,6 +110,19 @@ export const useRoundView = (
     () =>
       fetchJsonOrNull<SnapshotJson>(
         `/api/scoring/rounds/${roundNumber}/snapshot.json`,
+      ),
+    {
+      enabled: shouldFetchScoredArtifacts,
+      staleTime: TWENTY_FOUR_HOURS_MS,
+      retry: false,
+    },
+  )
+
+  const { data: validatorIdMap } = useQuery<ValidatorIdMap | null>(
+    ['scoring-validator-id-map', roundNumber],
+    () =>
+      fetchJsonOrNull<ValidatorIdMap>(
+        `/api/scoring/rounds/${roundNumber}/validator_id_map.json`,
       ),
     {
       enabled: shouldFetchScoredArtifacts,
@@ -205,6 +220,7 @@ export const useRoundView = (
         snapshot: null,
         priorScores: null,
         priorUnl: null,
+        validatorIdMap: null,
       }
     }
     if (!scores) return null
@@ -216,8 +232,17 @@ export const useRoundView = (
       snapshot: snapshot ?? null,
       priorScores: priorScoresForView,
       priorUnl: priorUnlForView,
+      validatorIdMap: validatorIdMap ?? null,
     }
-  }, [round, scores, unl, snapshot, priorScoresForView, priorUnlForView])
+  }, [
+    round,
+    scores,
+    unl,
+    snapshot,
+    priorScoresForView,
+    priorUnlForView,
+    validatorIdMap,
+  ])
 
   const roundNotFound = enabled && !loadingRound && round === null
 

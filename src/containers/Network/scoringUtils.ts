@@ -94,6 +94,13 @@ export interface ValidatorScoreEntry {
   reasoning: string
 }
 
+export interface ValidatorIdMapEntry {
+  master_key: string
+  signing_key?: string | null
+}
+
+export type ValidatorIdMap = Record<string, ValidatorIdMapEntry>
+
 export interface ScoresJson {
   network_summary?: string
   validator_scores: ValidatorScoreEntry[]

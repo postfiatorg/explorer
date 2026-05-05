@@ -1,4 +1,4 @@
-import { FC } from 'react'
+import { FC, ReactNode, useMemo } from 'react'
 import { buildPath } from '../shared/routing'
 import { VALIDATOR_ROUTE } from '../App/routes'
 import { ScoreSparkline } from '../Network/ScoreSparkline'
@@ -6,6 +6,7 @@ import { ASN_DISPLAY_NAMES } from '../Network/asnDisplayNames'
 import {
   SCORING_DIMENSIONS,
   SnapshotValidator,
+  ValidatorIdMap,
   ValidatorScoreEntry,
   getScoreColor,
 } from '../Network/scoringUtils'
@@ -16,11 +17,83 @@ interface ValidatorDrillDownProps {
   currentRoundNumber: number
   scoreEntry: ValidatorScoreEntry
   snapshotEntry: SnapshotValidator | null
+  validatorIdMap?: ValidatorIdMap | null
   colspan: number
 }
 
 const filenamePubkey = (masterKey: string): string =>
   `${masterKey.slice(0, 10)}${masterKey.slice(-6)}`
+
+const formatPubkey = (masterKey: string): string =>
+  `${masterKey.slice(0, 10)}...${masterKey.slice(-6)}`
+
+const escapeRegExp = (value: string): string =>
+  value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+const isIdentifierChar = (value: string | undefined): boolean =>
+  Boolean(value && /[A-Za-z0-9_]/.test(value))
+
+const renderReasoningWithValidatorLinks = (
+  reasoning: string,
+  validatorIdMap?: ValidatorIdMap | null,
+): ReactNode => {
+  if (!reasoning) return 'No reasoning available'
+
+  const validatorIds = Object.keys(validatorIdMap ?? {})
+    .filter((validatorId) => validatorIdMap?.[validatorId]?.master_key)
+    .sort((a, b) => b.length - a.length)
+
+  if (validatorIds.length === 0) return reasoning
+
+  const matcher = new RegExp(validatorIds.map(escapeRegExp).join('|'), 'g')
+  const parts: ReactNode[] = []
+  let lastIndex = 0
+  let replacementCount = 0
+  let match: RegExpExecArray | null
+
+  while ((match = matcher.exec(reasoning)) !== null) {
+    const token = match[0]
+    const start = match.index
+    const end = start + token.length
+    const before = start > 0 ? reasoning[start - 1] : undefined
+    const after = end < reasoning.length ? reasoning[end] : undefined
+
+    const masterKey = validatorIdMap?.[token]?.master_key
+    const isExactToken =
+      !isIdentifierChar(before) &&
+      !isIdentifierChar(after) &&
+      Boolean(masterKey)
+
+    if (isExactToken && masterKey) {
+      if (start > lastIndex) {
+        parts.push(reasoning.slice(lastIndex, start))
+      }
+
+      parts.push(
+        <a
+          className="drill-down-reasoning-validator-link"
+          href={buildPath(VALIDATOR_ROUTE, { identifier: masterKey })}
+          key={`${token}-${start}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          title={masterKey}
+        >
+          {formatPubkey(masterKey)}
+        </a>,
+      )
+      replacementCount += 1
+      lastIndex = end
+    }
+  }
+
+  if (replacementCount === 0) return reasoning
+
+  if (lastIndex < reasoning.length) {
+    parts.push(reasoning.slice(lastIndex))
+  }
+
+  return parts
+}
 
 const downloadJson = (data: unknown, filename: string): void => {
   const blob = new Blob([JSON.stringify(data, null, 2)], {
@@ -55,12 +128,18 @@ export const ValidatorDrillDown: FC<ValidatorDrillDownProps> = ({
   currentRoundNumber,
   scoreEntry,
   snapshotEntry,
+  validatorIdMap = null,
   colspan,
 }) => {
   const { points } = useScoreHistory(masterKey, true)
 
   const pubkeyFile = filenamePubkey(masterKey)
   const detailHref = buildPath(VALIDATOR_ROUTE, { identifier: masterKey })
+  const renderedReasoning = useMemo(
+    () =>
+      renderReasoningWithValidatorLinks(scoreEntry.reasoning, validatorIdMap),
+    [scoreEntry.reasoning, validatorIdMap],
+  )
 
   const handleDownloadSnapshot = () => {
     if (!snapshotEntry) return
@@ -146,9 +225,7 @@ export const ValidatorDrillDown: FC<ValidatorDrillDownProps> = ({
 
           <div className="drill-down-reasoning">
             <span className="drill-down-label">Reasoning</span>
-            <p className="drill-down-reasoning-text">
-              {scoreEntry.reasoning || 'No reasoning available'}
-            </p>
+            <p className="drill-down-reasoning-text">{renderedReasoning}</p>
           </div>
 
           <div className="drill-down-actions">

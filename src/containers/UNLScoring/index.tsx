@@ -410,6 +410,7 @@ export const UNLScoring = () => {
             priorScores={viewingRound.priorScores}
             priorUnl={viewingRound.priorUnl}
             snapshot={viewingRound.snapshot}
+            validatorIdMap={viewingRound.validatorIdMap}
             validatorMetaByKey={validatorMetaByKey}
             expandedMasterKeys={expandedMasterKeys}
             onToggleValidator={handleToggleValidator}
