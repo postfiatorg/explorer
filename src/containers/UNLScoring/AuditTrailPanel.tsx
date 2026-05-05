@@ -1,7 +1,10 @@
 import { FC, useCallback, useMemo, useState } from 'react'
 import { Check, Copy } from 'lucide-react'
 import { CopyableAddress } from '../shared/components/CopyableAddress/CopyableAddress'
-import { ScoringRoundMeta } from '../Network/scoringUtils'
+import {
+  ScoringRoundMeta,
+  isMemoFailedPublishedRound,
+} from '../Network/scoringUtils'
 import { useAuditTrail } from './useAuditTrail'
 
 interface AuditTrailPanelProps {
@@ -126,6 +129,8 @@ export const AuditTrailPanel: FC<AuditTrailPanelProps> = ({
   const memoTxLink = round.memo_tx_hash
     ? `/transactions/${round.memo_tx_hash}`
     : null
+  const showMemoFailure =
+    isMemoFailedPublishedRound(round) && !round.memo_tx_hash
 
   return (
     <div className="audit-trail dashboard-panel">
@@ -220,6 +225,21 @@ export const AuditTrailPanel: FC<AuditTrailPanelProps> = ({
               )}
             </dd>
           </dl>
+        </section>
+      )}
+
+      {showMemoFailure && (
+        <section className="audit-trail-section">
+          <span className="audit-trail-label">On-chain memo</span>
+          <p className="audit-trail-memo-warning">
+            Memo publication failed after the VL was published. No memo
+            transaction was anchored for this round.
+          </p>
+          {round.error_message && (
+            <p className="audit-trail-memo-warning-error">
+              {round.error_message}
+            </p>
+          )}
         </section>
       )}
 

@@ -8,7 +8,12 @@ import { SEOHelmet } from '../shared/components/SEOHelmet'
 import { Loader } from '../shared/components/Loader'
 import NetworkContext from '../shared/NetworkContext'
 import { ValidatorResponse } from '../shared/vhsTypes'
-import { ScoringContext, isInProgressRound } from '../Network/scoringUtils'
+import {
+  ScoringContext,
+  isInProgressRound,
+  isOperationallyPublishedRound,
+  isScoredRound,
+} from '../Network/scoringUtils'
 import { useScoringContext } from '../Network/useScoringContext'
 import { useScoringAvailability } from '../Network/useScoringAvailability'
 import { useScoringStaleness } from '../shared/ScoringStaleness'
@@ -151,12 +156,11 @@ export const UNLScoring = () => {
     (round) => round.round_number === viewingRoundNumber,
   )
   const selectedRecentCompletedRound =
-    selectedRecentRound?.status === 'COMPLETE' &&
-    !selectedRecentRound.override_type
+    selectedRecentRound && isScoredRound(selectedRecentRound)
       ? selectedRecentRound
       : null
   const viewingCompletedRound =
-    viewingRoundMeta?.status === 'COMPLETE' && !viewingRoundMeta.override_type
+    viewingRoundMeta && isScoredRound(viewingRoundMeta)
       ? viewingRoundMeta
       : null
   const selectedCompletedRound =
@@ -231,17 +235,17 @@ export const UNLScoring = () => {
   const shouldShowUnavailablePanel =
     shouldConfirmUnavailable && errorConfirmationState === 'confirmed'
 
-  // If a later COMPLETE round exists in the recent window, this round's VL has
-  // already been superseded; surface when the supersession happened. For rounds
-  // older than the 15-round window, the matched successor may not be the direct
-  // one — the date is then a conservative upper bound rather than exact.
+  // If a later operationally published round exists in the recent window, this
+  // round's VL has already been superseded; surface when the supersession
+  // happened. For rounds older than the 15-round window, the matched successor
+  // may not be the direct one — the date is then a conservative upper bound.
   const supersedingRound = useMemo(() => {
     if (!viewingRound) return null
     const candidates = recentRounds
       .filter(
         (r) =>
           r.round_number > viewingRound.round.round_number &&
-          r.status === 'COMPLETE' &&
+          isOperationallyPublishedRound(r) &&
           r.completed_at,
       )
       .sort((a, b) => a.round_number - b.round_number)

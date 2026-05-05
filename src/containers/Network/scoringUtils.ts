@@ -13,8 +13,10 @@ export type ScoringStatus = 'on_unl' | 'candidate' | 'ineligible' | 'no_data'
 
 export interface ScoringUnlResponse {
   round_number: number
+  status?: string
   unl: string[]
   alternates: string[]
+  memo_warning?: boolean
 }
 
 export interface ScoringRoundMeta {
@@ -67,15 +69,19 @@ export const IN_PROGRESS_STATUSES = new Set([
   'VL_DISTRIBUTED',
 ])
 
+export const VL_PUBLISHED_MEMO_FAILED_STATUS = 'VL_PUBLISHED_MEMO_FAILED'
+
 export type RoundStateKind =
   | 'complete'
   | 'failed'
   | 'running'
+  | 'published_warning'
   | 'dry_run_complete'
 
 export const classifyRoundState = (status: string): RoundStateKind => {
   if (status === 'COMPLETE') return 'complete'
   if (status === 'FAILED') return 'failed'
+  if (status === VL_PUBLISHED_MEMO_FAILED_STATUS) return 'published_warning'
   if (status === 'DRY_RUN_COMPLETE') return 'dry_run_complete'
   return 'running'
 }
@@ -141,8 +147,17 @@ export const STATUS_RANK: Record<ScoringStatus, number> = {
 export const isOverrideRound = (round: ScoringRoundMeta): boolean =>
   Boolean(round.override_type)
 
+export const isMemoFailedPublishedRound = (round: ScoringRoundMeta): boolean =>
+  round.status === VL_PUBLISHED_MEMO_FAILED_STATUS
+
+export const isOperationallyPublishedRound = (
+  round: ScoringRoundMeta,
+): boolean =>
+  round.status === 'COMPLETE' ||
+  round.status === VL_PUBLISHED_MEMO_FAILED_STATUS
+
 export const isScoredRound = (round: ScoringRoundMeta): boolean =>
-  round.status === 'COMPLETE' && !isOverrideRound(round)
+  isOperationallyPublishedRound(round) && !isOverrideRound(round)
 
 export const findLatestScoredRound = (
   rounds: ScoringRoundMeta[] | null | undefined,

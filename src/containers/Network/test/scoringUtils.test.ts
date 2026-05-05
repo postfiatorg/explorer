@@ -1,10 +1,12 @@
 import {
+  classifyRoundState,
   computeValidatorDelta,
   findLatestScoredRound,
   findPreviousScoredRound,
   getExcludedScoringServerVersion,
   getScoringInfoForValidator,
   isInProgressRound,
+  isOperationallyPublishedRound,
   isScoredRound,
 } from '../scoringUtils'
 import type { ScoringRoundMeta } from '../scoringUtils'
@@ -35,18 +37,23 @@ describe('scoringUtils override handling', () => {
   it('treats completed override rounds as unscored rounds', () => {
     expect(isScoredRound(round(10, 'COMPLETE', 'custom'))).toBe(false)
     expect(isScoredRound(round(9))).toBe(true)
+    expect(isScoredRound(round(11, 'VL_PUBLISHED_MEMO_FAILED'))).toBe(true)
+    expect(isScoredRound(round(12, 'VL_PUBLISHED_MEMO_FAILED', 'custom'))).toBe(
+      false,
+    )
     expect(isScoredRound(round(8, 'FAILED'))).toBe(false)
   })
 
   it('finds the latest completed non-override scored round', () => {
     expect(
       findLatestScoredRound([
-        round(10, 'COMPLETE', 'custom'),
+        round(11, 'COMPLETE', 'custom'),
+        round(10, 'VL_PUBLISHED_MEMO_FAILED'),
         round(9),
         round(8, 'FAILED'),
         round(7),
       ])?.round_number,
-    ).toBe(9)
+    ).toBe(10)
   })
 
   it('finds the previous scored round while skipping overrides', () => {
@@ -91,10 +98,25 @@ describe('scoringUtils override handling', () => {
 
 describe('round state helpers', () => {
   it('identifies in-progress rounds separately from terminal rounds', () => {
+    expect(classifyRoundState('VL_PUBLISHED_MEMO_FAILED')).toBe(
+      'published_warning',
+    )
     expect(isInProgressRound(round(11, 'COLLECTING'))).toBe(true)
     expect(isInProgressRound(round(10, 'COMPLETE'))).toBe(false)
     expect(isInProgressRound(round(9, 'FAILED'))).toBe(false)
     expect(isInProgressRound(round(8, 'DRY_RUN_COMPLETE'))).toBe(false)
+    expect(isInProgressRound(round(7, 'VL_PUBLISHED_MEMO_FAILED'))).toBe(false)
+  })
+
+  it('treats memo-failed VL rounds as operationally published', () => {
+    expect(isOperationallyPublishedRound(round(12))).toBe(true)
+    expect(
+      isOperationallyPublishedRound(round(11, 'VL_PUBLISHED_MEMO_FAILED')),
+    ).toBe(true)
+    expect(isOperationallyPublishedRound(round(10, 'FAILED'))).toBe(false)
+    expect(isOperationallyPublishedRound(round(9, 'DRY_RUN_COMPLETE'))).toBe(
+      false,
+    )
   })
 })
 

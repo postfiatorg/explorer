@@ -18,6 +18,7 @@ const toneClass: Record<ReturnType<typeof classifyRoundState>, string> = {
   complete: 'round-nav-glyph-complete',
   failed: 'round-nav-glyph-failed',
   running: 'round-nav-glyph-running',
+  published_warning: 'round-nav-glyph-published-warning',
   dry_run_complete: 'round-nav-glyph-dry-run',
 }
 
@@ -25,6 +26,7 @@ const statusLabel: Record<ReturnType<typeof classifyRoundState>, string> = {
   complete: 'COMPLETE',
   failed: 'FAILED',
   running: 'RUNNING',
+  published_warning: 'VL PUBLISHED · MEMO FAILED',
   dry_run_complete: 'DRY_RUN_COMPLETE',
 }
 
@@ -51,6 +53,7 @@ const STATE_SEGMENT_DEFAULTS: Record<
   complete: '● COMPLETE',
   failed: '✕ FAILED',
   running: '● RUNNING',
+  published_warning: '! VL published, memo failed',
   dry_run_complete: '● DRY_RUN_COMPLETE',
 }
 
@@ -68,7 +71,10 @@ const formatStateSegment = (round: ScoringRoundMeta): string => {
 
 const formatRelativeSegment = (round: ScoringRoundMeta): string => {
   const state = classifyRoundState(round.status)
-  if (state === 'complete' && round.completed_at) {
+  if (
+    (state === 'complete' || state === 'published_warning') &&
+    round.completed_at
+  ) {
     return `completed ${formatRelativeTime(round.completed_at)}`
   }
   if (round.started_at) {
@@ -81,9 +87,10 @@ const CurrentRoundMeta: FC<{ round: ScoringRoundMeta }> = ({ round }) => {
   const state = classifyRoundState(round.status)
   const relative = formatRelativeSegment(round)
   const stateSegment = formatStateSegment(round)
-  const stateClass = round.override_type
-    ? 'round-nav-meta-state-override'
-    : `round-nav-meta-state-${state.replace('_', '-')}`
+  const stateClass =
+    round.override_type && state === 'complete'
+      ? 'round-nav-meta-state-override'
+      : `round-nav-meta-state-${state.replace(/_/g, '-')}`
   return (
     <span className="round-nav-meta">
       <span className="round-nav-round-number">
@@ -170,10 +177,13 @@ export const RoundNavigation: FC<RoundNavigationProps> = ({
           {glyphRounds.map((round) => {
             const state = classifyRoundState(round.status)
             const isCurrent = round.round_number === viewingRoundNumber
-            const symbol = state === 'failed' ? '✕' : '●'
-            const glyphToneClass = round.override_type
-              ? 'round-nav-glyph-override'
-              : toneClass[state]
+            let symbol = '●'
+            if (state === 'failed') symbol = '✕'
+            else if (state === 'published_warning') symbol = '!'
+            const glyphToneClass =
+              round.override_type && state === 'complete'
+                ? 'round-nav-glyph-override'
+                : toneClass[state]
             return (
               <button
                 type="button"

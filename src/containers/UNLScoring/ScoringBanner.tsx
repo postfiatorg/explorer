@@ -7,6 +7,8 @@ import {
   ScoringRoundMeta,
   formatCadence,
   formatRelativeTime,
+  isInProgressRound,
+  isMemoFailedPublishedRound,
 } from '../Network/scoringUtils'
 
 interface ScoringBannerProps {
@@ -129,15 +131,22 @@ export const ScoringBanner: FC<ScoringBannerProps> = ({
 }) => {
   const now = useTicker(BANNER_TICK_MS)
   const { round, config } = context
-  const status = latestAttempt?.status ?? round.status
   const activeOverride = Boolean(
     context.activeRound.override_type &&
       context.activeRound.round_number !== round.round_number,
   )
+  const memoWarningRound = [latestAttempt, context.activeRound, round].find(
+    (candidate): candidate is ScoringRoundMeta =>
+      Boolean(
+        candidate &&
+          isMemoFailedPublishedRound(candidate) &&
+          candidate.round_number >= round.round_number,
+      ),
+  )
 
   if (
     latestAttempt &&
-    status === 'FAILED' &&
+    latestAttempt.status === 'FAILED' &&
     latestAttempt.round_number > round.round_number
   ) {
     return (
@@ -153,8 +162,7 @@ export const ScoringBanner: FC<ScoringBannerProps> = ({
 
   if (
     latestAttempt &&
-    latestAttempt.status !== 'COMPLETE' &&
-    latestAttempt.status !== 'FAILED' &&
+    isInProgressRound(latestAttempt) &&
     latestAttempt.round_number > round.round_number
   ) {
     return (
@@ -163,6 +171,22 @@ export const ScoringBanner: FC<ScoringBannerProps> = ({
         health={health}
         now={now}
       />
+    )
+  }
+
+  if (memoWarningRound) {
+    return (
+      <>
+        <MemoFailedBanner round={memoWarningRound} />
+        <IdleBanner
+          label={activeOverride ? 'Last scored round' : 'Last round'}
+          roundNumber={round.round_number}
+          completedAt={round.completed_at}
+          cadenceHours={config?.cadence_hours ?? null}
+          health={health}
+          now={now}
+        />
+      </>
     )
   }
 
@@ -177,6 +201,31 @@ export const ScoringBanner: FC<ScoringBannerProps> = ({
     />
   )
 }
+
+const MemoFailedBanner: FC<{ round: ScoringRoundMeta }> = ({ round }) => (
+  <div className="unl-scoring-banner unl-scoring-banner-memo-warning dashboard-panel">
+    <div className="unl-scoring-banner-memo-warning-header">
+      <span className="unl-scoring-banner-memo-warning-title">
+        Round #{round.round_number} VL published, memo failed
+      </span>
+      <a
+        className="unl-scoring-banner-memo-warning-link"
+        href={`/unl-scoring/rounds/${round.round_number}`}
+      >
+        View round #{round.round_number} details →
+      </a>
+    </div>
+    <p className="unl-scoring-banner-memo-warning-copy">
+      Validators can still load the published VL; the audit bundle is available,
+      but no memo transaction was anchored for this round.
+    </p>
+    {round.error_message && (
+      <p className="unl-scoring-banner-memo-warning-error">
+        {round.error_message}
+      </p>
+    )}
+  </div>
+)
 
 const IdleBanner: FC<{
   label: string

@@ -230,6 +230,51 @@
   @include bold;
 }
 
+.unl-scoring-banner-memo-warning {
+  border-left: 3px solid $yellow-50;
+}
+
+.unl-scoring-banner-memo-warning-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  gap: 16px;
+}
+
+.unl-scoring-banner-memo-warning-title {
+  color: $yellow-50;
+  font-size: 16px;
+  @include bold;
+}
+
+.unl-scoring-banner-memo-warning-link {
+  color: $blue-40;
+  font-size: 13px;
+  text-decoration: none;
+  @include medium;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.unl-scoring-banner-memo-warning-copy,
+.unl-scoring-banner-memo-warning-error {
+  margin: 0;
+  color: $black-40;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.unl-scoring-banner-memo-warning-error {
+  margin-top: 8px;
+  color: $yellow-50;
+  font-family: monospace;
+  font-size: 12px;
+}
+
 .banner-countdown {
   &.banner-countdown-neutral {
     color: $white;
@@ -949,6 +994,11 @@
   @include medium;
 }
 
+.round-nav-meta-state-published-warning {
+  color: $yellow-50;
+  @include medium;
+}
+
 .round-nav-meta-state-dry-run-complete {
   color: $black-40;
   @include medium;
@@ -1028,6 +1078,10 @@
 }
 
 .round-nav-glyph-running {
+  color: $yellow-50;
+}
+
+.round-nav-glyph-published-warning {
   color: $yellow-50;
 }
 
@@ -1267,6 +1321,26 @@
 
 .audit-trail-muted {
   color: $black-40;
+  font-size: 12px;
+}
+
+.audit-trail-memo-warning,
+.audit-trail-memo-warning-error {
+  margin: 0;
+  color: $black-40;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.audit-trail-memo-warning {
+  padding: 8px 10px;
+  border-left: 3px solid $yellow-50;
+  background: rgba($yellow-50, 0.08);
+}
+
+.audit-trail-memo-warning-error {
+  color: $yellow-50;
+  font-family: monospace;
   font-size: 12px;
 }
 
