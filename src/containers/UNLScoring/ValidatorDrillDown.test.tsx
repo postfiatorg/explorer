@@ -12,6 +12,10 @@ const currentMasterKey = 'nHCurrent11111111111111111111111111111111111111'
 const mappedMasterKey = 'nHBXSCTwVUbvZg5EAZsXXTtads2ZVd8UwLsuniGcLBgH9pP8EeBc'
 const secondMappedMasterKey =
   'nHBg5iGpnvmbckhEUkY1oTnNqr8RbzRwKyW8x5NoGJYPVT4iS7um'
+const seventeenthMappedMasterKey =
+  'nHDUciGWrK9tmBBeq9wjSBiy1WhHXizH7nZDAF8MdbhRqQvwpeEL'
+const twentyEighthMappedMasterKey =
+  'nHUc7VSYA6xvFakSvuTojJQucBNukKwmtguUG2HMT9Xp9dKzkpvJ'
 
 const scoreEntryFor = (reasoning: string): ValidatorScoreEntry => ({
   master_key: currentMasterKey,
@@ -32,6 +36,14 @@ const validatorIdMap: ValidatorIdMap = {
   v002: {
     master_key: secondMappedMasterKey,
     signing_key: 'n9SecondSigningKey',
+  },
+  v017: {
+    master_key: seventeenthMappedMasterKey,
+    signing_key: 'n9SeventeenthSigningKey',
+  },
+  v028: {
+    master_key: twentyEighthMappedMasterKey,
+    signing_key: 'n9TwentyEighthSigningKey',
   },
 }
 
@@ -113,6 +125,28 @@ describe('ValidatorDrillDown reasoning validator ID mapping', () => {
     expect(links).toHaveLength(1)
     expect(links.at(0).text()).toBe('nHBXSCTwVU...P8EeBc')
     expect(wrapper.text()).toContain('av001, v001a, and validator_v001')
+
+    wrapper.unmount()
+  })
+
+  it('normalizes over-padded slash-separated validator IDs', () => {
+    const wrapper = mountDrillDown(
+      scoreEntryFor(
+        'Identical profile to v001/v0017/v0028: excellent consensus.',
+      ),
+    )
+
+    const links = wrapper.find('.drill-down-reasoning-validator-link')
+    expect(links).toHaveLength(3)
+    expect(links.at(0).prop('href')).toBe(`/validators/${mappedMasterKey}`)
+    expect(links.at(1).prop('href')).toBe(
+      `/validators/${seventeenthMappedMasterKey}`,
+    )
+    expect(links.at(2).prop('href')).toBe(
+      `/validators/${twentyEighthMappedMasterKey}`,
+    )
+    expect(wrapper.text()).not.toContain('v0017')
+    expect(wrapper.text()).not.toContain('v0028')
 
     wrapper.unmount()
   })

@@ -27,11 +27,16 @@ const filenamePubkey = (masterKey: string): string =>
 const formatPubkey = (masterKey: string): string =>
   `${masterKey.slice(0, 10)}...${masterKey.slice(-6)}`
 
-const escapeRegExp = (value: string): string =>
-  value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-
 const isIdentifierChar = (value: string | undefined): boolean =>
   Boolean(value && /[A-Za-z0-9_]/.test(value))
+
+const validatorIdTokenMatcher = /v\d+/g
+
+const parseValidatorIdNumber = (validatorId: string): number | null => {
+  if (!/^v\d+$/.test(validatorId)) return null
+  const n = Number(validatorId.slice(1))
+  return Number.isSafeInteger(n) ? n : null
+}
 
 export const renderReasoningWithValidatorLinks = (
   reasoning: string,
@@ -45,7 +50,35 @@ export const renderReasoningWithValidatorLinks = (
 
   if (validatorIds.length === 0) return reasoning
 
-  const matcher = new RegExp(validatorIds.map(escapeRegExp).join('|'), 'g')
+  const validatorIdByNumber = new Map<number, string | null>()
+  validatorIds.forEach((validatorId) => {
+    const n = parseValidatorIdNumber(validatorId)
+    if (n == null) return
+    validatorIdByNumber.set(n, validatorIdByNumber.has(n) ? null : validatorId)
+  })
+
+  const resolveValidatorId = (token: string): string | null => {
+    if (validatorIdMap?.[token]?.master_key) return token
+
+    const n = parseValidatorIdNumber(token)
+    if (n == null) return null
+
+    const normalizedValidatorId = validatorIdByNumber.get(n)
+    if (!normalizedValidatorId) return null
+
+    const tokenDigits = token.slice(1)
+    const normalizedDigitCount = normalizedValidatorId.length - 1
+    if (
+      tokenDigits.length <= normalizedDigitCount ||
+      !tokenDigits.startsWith('0')
+    ) {
+      return null
+    }
+
+    return normalizedValidatorId
+  }
+
+  const matcher = validatorIdTokenMatcher
   const parts: ReactNode[] = []
   let lastIndex = 0
   let replacementCount = 0
@@ -58,7 +91,10 @@ export const renderReasoningWithValidatorLinks = (
     const before = start > 0 ? reasoning[start - 1] : undefined
     const after = end < reasoning.length ? reasoning[end] : undefined
 
-    const masterKey = validatorIdMap?.[token]?.master_key
+    const validatorId = resolveValidatorId(token)
+    const masterKey = validatorId
+      ? validatorIdMap?.[validatorId]?.master_key
+      : null
     const isExactToken =
       !isIdentifierChar(before) &&
       !isIdentifierChar(after) &&
