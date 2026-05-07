@@ -1,6 +1,7 @@
 import { mount } from 'enzyme'
 import { act } from 'react-dom/test-utils'
 import {
+  ScoringFailedRoundPanel,
   ScoringFinalizingRoundPanel,
   ScoringRunningRoundPanel,
 } from './ScoringStatePanels'
@@ -93,6 +94,74 @@ describe('ScoringFinalizingRoundPanel', () => {
     expect(wrapper.text()).toContain('COMPLETE')
     expect(wrapper.text()).toContain('5s ago')
     expect(wrapper.text()).not.toContain('Round not found')
+
+    wrapper.unmount()
+  })
+})
+
+describe('ScoringFailedRoundPanel', () => {
+  beforeEach(() => {
+    jest.useFakeTimers()
+    jest.setSystemTime(new Date('2026-04-29T12:01:10Z'))
+  })
+
+  afterEach(() => {
+    jest.useRealTimers()
+  })
+
+  it('renders a failed round as a terminal state without loading output', () => {
+    const wrapper = mount(
+      <ScoringFailedRoundPanel
+        round={{
+          round_number: 207,
+          status: 'FAILED',
+          created_at: '2026-04-29T12:00:00Z',
+          started_at: '2026-04-29T12:01:00Z',
+          completed_at: null,
+          snapshot_hash: null,
+          error_message: 'collector timed out while querying validators',
+        }}
+      />,
+    )
+
+    expect(wrapper.find('.unl-scoring-failed-round').exists()).toBe(true)
+    expect(wrapper.text()).toContain('Round #207 failed')
+    expect(wrapper.text()).toContain(
+      'This scoring round failed during collecting',
+    )
+    expect(wrapper.text()).toContain('FAILED at COLLECTING')
+    expect(wrapper.text()).toContain('started 10s ago')
+    expect(wrapper.text()).toContain('Technical detail')
+    expect(wrapper.text()).toContain(
+      'collector timed out while querying validators',
+    )
+    expect(wrapper.find('.unl-scoring-empty').exists()).toBe(false)
+    expect(wrapper.text()).not.toContain('Ranked validators')
+    expect(wrapper.text()).not.toContain('Loading scoring artifacts')
+
+    wrapper.unmount()
+  })
+
+  it('omits technical detail when no error message is present', () => {
+    const wrapper = mount(
+      <ScoringFailedRoundPanel
+        round={{
+          round_number: 208,
+          status: 'FAILED',
+          created_at: '2026-04-29T12:00:00Z',
+          started_at: '2026-04-29T12:01:00Z',
+          completed_at: null,
+          snapshot_hash: 'snapshot-hash',
+          scores_hash: null,
+        }}
+      />,
+    )
+
+    expect(wrapper.text()).toContain('Round #208 failed')
+    expect(wrapper.text()).toContain('FAILED at SCORED')
+    expect(wrapper.find('.unl-scoring-failed-round-detail').exists()).toBe(
+      false,
+    )
 
     wrapper.unmount()
   })

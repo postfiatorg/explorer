@@ -4,6 +4,7 @@ import { Skeleton } from '../shared/components/Skeleton/Skeleton'
 import {
   SCORING_DIMENSIONS,
   ScoringRoundMeta,
+  deriveFailedAtStage,
   formatRelativeTime,
 } from '../Network/scoringUtils'
 
@@ -134,3 +135,54 @@ export const ScoringFinalizingRoundPanel: FC<{ round: ScoringRoundMeta }> = ({
     </div>
   </div>
 )
+
+const formatFailedStage = (round: ScoringRoundMeta): string | null => {
+  const stage = deriveFailedAtStage(round)
+  if (stage === 'COLLECTING') return 'collecting'
+  if (stage === 'SCORED') return 'scoring'
+  if (stage === 'SELECTED_OR_VL_SIGNED') return 'selection or VL signing'
+  if (stage === 'IPFS_PUBLISHED') return 'IPFS publishing'
+  if (stage === 'VL_DISTRIBUTED') return 'VL distribution'
+  if (stage === 'ONCHAIN_PUBLISHED') return 'on-chain publishing'
+  return null
+}
+
+export const ScoringFailedRoundPanel: FC<{ round: ScoringRoundMeta }> = ({
+  round,
+}) => {
+  const failedStage = formatFailedStage(round)
+  const failedState = deriveFailedAtStage(round)
+  const relativeTime =
+    round.completed_at ?? round.started_at ?? round.created_at
+  let relativeLabel = 'created'
+  if (round.completed_at) {
+    relativeLabel = 'completed'
+  } else if (round.started_at) {
+    relativeLabel = 'started'
+  }
+
+  return (
+    <div className="unl-scoring-failed-round dashboard-panel">
+      <h2>Round #{round.round_number} failed</h2>
+      <p>
+        This scoring round failed
+        {failedStage ? ` during ${failedStage}` : ''}, so no validator scores
+        were produced.
+      </p>
+      <div className="unl-scoring-failed-round-meta">
+        <span>{failedState ? `FAILED at ${failedState}` : 'FAILED'}</span>
+        {relativeTime && (
+          <span>
+            {relativeLabel} {formatRelativeTime(relativeTime)}
+          </span>
+        )}
+      </div>
+      {round.error_message && (
+        <div className="unl-scoring-failed-round-detail">
+          <span>Technical detail</span>
+          <p>{round.error_message}</p>
+        </div>
+      )}
+    </div>
+  )
+}

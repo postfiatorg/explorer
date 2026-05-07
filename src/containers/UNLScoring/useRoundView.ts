@@ -8,6 +8,7 @@ import {
   ValidatorIdMap,
   fetchJsonOrNull,
   findPreviousScoredRound,
+  isFailedRound,
   isInProgressRound,
   isOverrideRound,
 } from '../Network/scoringUtils'
@@ -43,7 +44,16 @@ export interface RunningRoundView {
   round: ScoringRoundMeta
 }
 
-export type RoundView = ScoredRoundView | OverrideRoundView | RunningRoundView
+export interface FailedRoundView {
+  kind: 'failed'
+  round: ScoringRoundMeta
+}
+
+export type RoundView =
+  | ScoredRoundView
+  | OverrideRoundView
+  | RunningRoundView
+  | FailedRoundView
 
 export interface UseRoundViewResult {
   view: RoundView | null
@@ -75,7 +85,9 @@ export const useRoundView = (
 
   const isOverride = round ? isOverrideRound(round) : false
   const isRunning = round ? isInProgressRound(round) : false
-  const shouldFetchRoundArtifacts = enabled && Boolean(round) && !isRunning
+  const isFailed = round ? isFailedRound(round) : false
+  const shouldFetchRoundArtifacts =
+    enabled && Boolean(round) && !isRunning && !isFailed
   const shouldFetchScoredArtifacts = shouldFetchRoundArtifacts && !isOverride
 
   const { data: scores, isLoading: loadingScores } =
@@ -204,6 +216,12 @@ export const useRoundView = (
 
   const view = useMemo<RoundView | null>(() => {
     if (!round) return null
+    if (isFailedRound(round)) {
+      return {
+        kind: 'failed',
+        round,
+      }
+    }
     if (isInProgressRound(round)) {
       return {
         kind: 'running',

@@ -35,7 +35,8 @@
 }
 
 .unl-scoring-running-round,
-.unl-scoring-finalizing-round {
+.unl-scoring-finalizing-round,
+.unl-scoring-failed-round {
   padding: 32px;
 
   h2 {
@@ -61,8 +62,13 @@
   border-left: 3px solid $green-50;
 }
 
+.unl-scoring-failed-round {
+  border-left: 3px solid $red;
+}
+
 .unl-scoring-running-round-meta,
-.unl-scoring-finalizing-round-meta {
+.unl-scoring-finalizing-round-meta,
+.unl-scoring-failed-round-meta {
   display: flex;
   flex-wrap: wrap;
   margin-top: 16px;
@@ -79,6 +85,36 @@
 
 .unl-scoring-finalizing-round-meta {
   color: $green-50;
+}
+
+.unl-scoring-failed-round-meta {
+  color: $red;
+}
+
+.unl-scoring-failed-round-detail {
+  padding: 12px 14px;
+  border: 1px solid $black-60;
+  border-radius: 6px;
+  margin-top: 20px;
+  background: $black-90;
+
+  span {
+    display: block;
+    margin-bottom: 6px;
+    color: $black-40;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    @include medium;
+  }
+
+  p {
+    max-width: none;
+    color: $black-30;
+    font-family: monospace;
+    font-size: 12px;
+    overflow-wrap: anywhere;
+  }
 }
 
 .unl-scoring-genesis,

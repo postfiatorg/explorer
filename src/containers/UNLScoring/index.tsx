@@ -10,6 +10,7 @@ import NetworkContext from '../shared/NetworkContext'
 import { ValidatorResponse } from '../shared/vhsTypes'
 import {
   ScoringContext,
+  isFailedRound,
   isInProgressRound,
   isOperationallyPublishedRound,
   isScoredRound,
@@ -27,6 +28,7 @@ import { useRecentRounds } from './useRecentRounds'
 import { useScoreHistory } from './useScoreHistory'
 import {
   ScoringErrorPanel,
+  ScoringFailedRoundPanel,
   ScoringFinalizingRoundPanel,
   ScoringGenesisPanel,
   ScoringPageSkeleton,
@@ -181,20 +183,27 @@ export const UNLScoring = () => {
     !selectedFinalizingRound && viewingRound?.kind === 'running'
       ? viewingRound.round
       : selectedRecentRunningRound
+  const selectedFailedRound = useMemo(() => {
+    if (viewingRound?.kind === 'failed') return viewingRound.round
+    if (viewingRoundMeta && isFailedRound(viewingRoundMeta)) {
+      return viewingRoundMeta
+    }
+    return null
+  }, [viewingRound, viewingRoundMeta])
 
   const isRoundNotFound = parsedRoundId === null || (isPinned && viewNotFound)
 
   const hasOverrideOnlyView = Boolean(
     !latestContext && activeRound?.override_type && activeUnl,
   )
-  const hasTransientRoundView = Boolean(
-    selectedRunningRound || selectedFinalizingRound,
+  const hasSelectedRoundStateView = Boolean(
+    selectedRunningRound || selectedFinalizingRound || selectedFailedRound,
   )
 
   const shouldConfirmUnavailable =
     !latestContext &&
     !hasOverrideOnlyView &&
-    !hasTransientRoundView &&
+    !hasSelectedRoundStateView &&
     !contextLoading &&
     scoringState !== 'loading' &&
     scoringState !== 'genesis' &&
@@ -388,6 +397,9 @@ export const UNLScoring = () => {
     if (selectedFinalizingRound) {
       return <ScoringFinalizingRoundPanel round={selectedFinalizingRound} />
     }
+    if (selectedFailedRound) {
+      return <ScoringFailedRoundPanel round={selectedFailedRound} />
+    }
 
     if (viewingRound?.kind === 'override') {
       return (
@@ -499,7 +511,7 @@ export const UNLScoring = () => {
     )
   } else if (
     !latestContext &&
-    (selectedRunningRound || selectedFinalizingRound)
+    (selectedRunningRound || selectedFinalizingRound || selectedFailedRound)
   ) {
     body = (
       <>
@@ -517,6 +529,9 @@ export const UNLScoring = () => {
         )}
         {selectedFinalizingRound && (
           <ScoringFinalizingRoundPanel round={selectedFinalizingRound} />
+        )}
+        {selectedFailedRound && (
+          <ScoringFailedRoundPanel round={selectedFailedRound} />
         )}
         <MethodologyExplainer config={null} />
       </>
