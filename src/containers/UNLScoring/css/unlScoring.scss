@@ -417,7 +417,7 @@
   margin: 0;
   color: $white;
   font-size: 13px;
-  line-height: 1.55;
+  line-height: 1.6;
 }
 
 .unl-scoring-ranked {
@@ -873,20 +873,47 @@
   margin: 0;
   color: $white;
   font-size: 13px;
-  line-height: 1.5;
+  line-height: 1.58;
 }
 
 .drill-down-reasoning-validator-link {
   border-bottom: 1px solid transparent;
-  color: $blue-40;
+  color: rgb(var(--blue-30-rgb) / 82%);
   cursor: pointer;
   text-decoration: none;
   transition:
     border-color $transition-default,
     color $transition-default;
-  @include medium;
 
   &:focus-visible {
+    outline: 2px solid $blue-40;
+    outline-offset: 2px;
+  }
+
+  &:hover {
+    border-color: $blue-40;
+    color: $blue-30;
+  }
+}
+
+.drill-down-reasoning-validator-group {
+  white-space: normal;
+}
+
+.drill-down-reasoning-validator-more {
+  padding: 0;
+  border: 0;
+  border-bottom: 1px dotted transparent;
+  background: transparent;
+  color: rgb(var(--blue-30-rgb) / 82%);
+  cursor: pointer;
+  font: inherit;
+  transition:
+    border-color $transition-default,
+    color $transition-default;
+
+  &:focus-visible {
+    border-radius: 2px;
     outline: 2px solid $blue-40;
     outline-offset: 2px;
   }

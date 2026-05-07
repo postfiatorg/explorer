@@ -46,6 +46,10 @@ const rankedMasterKey = 'nRanked1111111111111111111111111111111111111111'
 const mappedMasterKey = 'nHBXSCTwVUbvZg5EAZsXXTtads2ZVd8UwLsuniGcLBgH9pP8EeBc'
 const secondMappedMasterKey =
   'nHBg5iGpnvmbckhEUkY1oTnNqr8RbzRwKyW8x5NoGJYPVT4iS7um'
+const thirdMappedMasterKey =
+  'nHDUciGWrK9tmBBeq9wjSBiy1WhHXizH7nZDAF8MdbhRqQvwpeEL'
+const fourthMappedMasterKey =
+  'nHUc7VSYA6xvFakSvuTojJQucBNukKwmtguUG2HMT9Xp9dKzkpvJ'
 
 const validatorIdMap: ValidatorIdMap = {
   v001: {
@@ -55,6 +59,14 @@ const validatorIdMap: ValidatorIdMap = {
   v002: {
     master_key: secondMappedMasterKey,
     signing_key: 'n9SecondSigningKey',
+  },
+  v017: {
+    master_key: thirdMappedMasterKey,
+    signing_key: 'n9ThirdSigningKey',
+  },
+  v028: {
+    master_key: fourthMappedMasterKey,
+    signing_key: 'n9FourthSigningKey',
   },
 }
 
@@ -199,16 +211,88 @@ describe('RankedTable round reasoning', () => {
       '.round-reasoning .drill-down-reasoning-validator-link',
     )
     expect(links).toHaveLength(2)
-    expect(links.at(0).text()).toBe('nHBXSCTwVU...P8EeBc')
+    expect(links.at(0).text()).toBe('nHBXS...')
     expect(links.at(0).prop('href')).toBe(`/validators/${mappedMasterKey}`)
     expect(links.at(0).prop('target')).toBe('_blank')
-    expect(links.at(1).text()).toBe('nHBg5iGpnv...4iS7um')
+    expect(links.at(0).prop('title')).toBe(mappedMasterKey)
+    expect(links.at(1).text()).toBe('nHBg5...')
     expect(links.at(1).prop('href')).toBe(
       `/validators/${secondMappedMasterKey}`,
     )
     expect(wrapper.find('.round-reasoning').text()).toContain(
       'v0012 and validator_v001 stay literal.',
     )
+
+    wrapper.unmount()
+  })
+
+  it('collapses and expands contiguous validator references', () => {
+    const wrapper = mountRankedTable(
+      rankedContextFor({
+        networkSummary:
+          'Critical failures affected v001, v002, v017, and v028 during the round.',
+      }),
+      validatorIdMap,
+    )
+
+    let links = wrapper.find(
+      '.round-reasoning .drill-down-reasoning-validator-link',
+    )
+    expect(links).toHaveLength(2)
+    expect(links.at(0).prop('href')).toBe(`/validators/${mappedMasterKey}`)
+    expect(links.at(1).prop('href')).toBe(
+      `/validators/${secondMappedMasterKey}`,
+    )
+
+    const moreButton = wrapper.find(
+      '.round-reasoning .drill-down-reasoning-validator-more',
+    )
+    expect(wrapper.find('.round-reasoning').text()).toContain(
+      'nHBXS..., nHBg5... and 2 more validators',
+    )
+    expect(moreButton.text()).toBe('2 more validators')
+    expect(moreButton.prop('aria-expanded')).toBe(false)
+
+    moreButton.simulate('click')
+    wrapper.update()
+
+    links = wrapper.find(
+      '.round-reasoning .drill-down-reasoning-validator-link',
+    )
+    expect(links).toHaveLength(4)
+    expect(links.at(2).prop('href')).toBe(`/validators/${thirdMappedMasterKey}`)
+    expect(links.at(3).prop('href')).toBe(
+      `/validators/${fourthMappedMasterKey}`,
+    )
+    expect(wrapper.find('.round-reasoning').text()).toContain(
+      'nHBXS..., nHBg5..., nHDUc..., and nHUc7...',
+    )
+    expect(
+      wrapper
+        .find('.round-reasoning .drill-down-reasoning-validator-more')
+        .exists(),
+    ).toBe(false)
+
+    wrapper.unmount()
+  })
+
+  it('does not collapse validator references across sentence boundaries', () => {
+    const wrapper = mountRankedTable(
+      rankedContextFor({
+        networkSummary:
+          'v001 passed consensus checks. v002 improved identity. v017 improved diversity.',
+      }),
+      validatorIdMap,
+    )
+
+    expect(
+      wrapper.find('.round-reasoning .drill-down-reasoning-validator-link'),
+    ).toHaveLength(3)
+    expect(
+      wrapper
+        .find('.round-reasoning .drill-down-reasoning-validator-more')
+        .exists(),
+    ).toBe(false)
 
     wrapper.unmount()
   })

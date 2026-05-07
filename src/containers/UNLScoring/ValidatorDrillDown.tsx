@@ -1,4 +1,4 @@
-import { FC, ReactNode, useMemo } from 'react'
+import { FC, ReactNode, useMemo, useState } from 'react'
 import { buildPath } from '../shared/routing'
 import { VALIDATOR_ROUTE } from '../App/routes'
 import { ScoreSparkline } from '../Network/ScoreSparkline'
@@ -24,8 +24,12 @@ interface ValidatorDrillDownProps {
 const filenamePubkey = (masterKey: string): string =>
   `${masterKey.slice(0, 10)}${masterKey.slice(-6)}`
 
-const formatPubkey = (masterKey: string): string =>
-  `${masterKey.slice(0, 10)}...${masterKey.slice(-6)}`
+const REASONING_PUBKEY_PREFIX_LENGTH = 5
+const COLLAPSED_VALIDATOR_REFERENCE_COUNT = 2
+const MIN_COLLAPSIBLE_VALIDATOR_REFERENCE_COUNT = 4
+
+const formatReasoningPubkey = (masterKey: string): string =>
+  `${masterKey.slice(0, REASONING_PUBKEY_PREFIX_LENGTH)}...`
 
 const isIdentifierChar = (value: string | undefined): boolean =>
   Boolean(value && /[A-Za-z0-9_]/.test(value))
@@ -36,6 +40,153 @@ const parseValidatorIdNumber = (validatorId: string): number | null => {
   if (!/^v\d+$/.test(validatorId)) return null
   const n = Number(validatorId.slice(1))
   return Number.isSafeInteger(n) ? n : null
+}
+
+interface ValidatorReferenceSegment {
+  kind: 'validator'
+  token: string
+  masterKey: string
+  start: number
+}
+
+type ReasoningSegment = string | ValidatorReferenceSegment
+
+const isValidatorReferenceSegment = (
+  segment: ReasoningSegment,
+): segment is ValidatorReferenceSegment =>
+  typeof segment !== 'string' && segment.kind === 'validator'
+
+const isLightweightValidatorSeparator = (value: string): boolean => {
+  const remaining = value
+    .toLowerCase()
+    .replace(/\band\b/g, '')
+    .replace(/[,\s/]/g, '')
+
+  return remaining.length === 0
+}
+
+const ValidatorReferenceLink: FC<{
+  reference: ValidatorReferenceSegment
+}> = ({ reference }) => (
+  <a
+    className="drill-down-reasoning-validator-link"
+    href={buildPath(VALIDATOR_ROUTE, { identifier: reference.masterKey })}
+    target="_blank"
+    rel="noopener noreferrer"
+    title={reference.masterKey}
+  >
+    {formatReasoningPubkey(reference.masterKey)}
+  </a>
+)
+
+const validatorReferenceSeparator = (
+  index: number,
+  referenceCount: number,
+): string | null => {
+  if (index === 0) return null
+  if (index === referenceCount - 1) {
+    return referenceCount === 2 ? ' and ' : ', and '
+  }
+  return ', '
+}
+
+const renderValidatorReferenceList = (
+  references: ValidatorReferenceSegment[],
+): ReactNode[] =>
+  references.map((reference, index) => {
+    const separator = validatorReferenceSeparator(index, references.length)
+
+    return (
+      <span key={`${reference.token}-${reference.start}`}>
+        {separator}
+        <ValidatorReferenceLink reference={reference} />
+      </span>
+    )
+  })
+
+const renderCommaSeparatedValidatorReferenceList = (
+  references: ValidatorReferenceSegment[],
+): ReactNode[] =>
+  references.map((reference, index) => (
+    <span key={`${reference.token}-${reference.start}`}>
+      {index > 0 ? ', ' : null}
+      <ValidatorReferenceLink reference={reference} />
+    </span>
+  ))
+
+const ValidatorReferenceGroup: FC<{
+  references: ValidatorReferenceSegment[]
+}> = ({ references }) => {
+  const [expanded, setExpanded] = useState(false)
+  const visibleReferences = expanded
+    ? references
+    : references.slice(0, COLLAPSED_VALIDATOR_REFERENCE_COUNT)
+  const hiddenCount = references.length - visibleReferences.length
+
+  return (
+    <span className="drill-down-reasoning-validator-group">
+      {hiddenCount > 0 ? (
+        <>
+          {renderCommaSeparatedValidatorReferenceList(visibleReferences)}
+          {' and '}
+          <button
+            type="button"
+            className="drill-down-reasoning-validator-more"
+            aria-expanded={expanded}
+            onClick={() => setExpanded(true)}
+            title={`Show ${hiddenCount} more validator${
+              hiddenCount === 1 ? '' : 's'
+            }`}
+          >
+            {hiddenCount} more validator{hiddenCount === 1 ? '' : 's'}
+          </button>
+        </>
+      ) : (
+        renderValidatorReferenceList(visibleReferences)
+      )}
+    </span>
+  )
+}
+
+const renderReasoningSegments = (segments: ReasoningSegment[]): ReactNode[] => {
+  const parts: ReactNode[] = []
+  let index = 0
+
+  while (index < segments.length) {
+    const segment = segments[index]
+
+    if (!isValidatorReferenceSegment(segment)) {
+      parts.push(segment)
+      index += 1
+    } else {
+      const referenceRun = [segment]
+      let cursor = index + 1
+      while (
+        cursor + 1 < segments.length &&
+        typeof segments[cursor] === 'string' &&
+        isLightweightValidatorSeparator(segments[cursor] as string) &&
+        isValidatorReferenceSegment(segments[cursor + 1])
+      ) {
+        referenceRun.push(segments[cursor + 1] as ValidatorReferenceSegment)
+        cursor += 2
+      }
+
+      if (referenceRun.length >= MIN_COLLAPSIBLE_VALIDATOR_REFERENCE_COUNT) {
+        parts.push(
+          <ValidatorReferenceGroup
+            key={`validator-group-${segment.start}`}
+            references={referenceRun}
+          />,
+        )
+        index = cursor
+      } else {
+        parts.push(...renderValidatorReferenceList(referenceRun))
+        index = cursor
+      }
+    }
+  }
+
+  return parts
 }
 
 export const renderReasoningWithValidatorLinks = (
@@ -79,7 +230,7 @@ export const renderReasoningWithValidatorLinks = (
   }
 
   const matcher = validatorIdTokenMatcher
-  const parts: ReactNode[] = []
+  const segments: ReasoningSegment[] = []
   let lastIndex = 0
   let replacementCount = 0
   let match: RegExpExecArray | null
@@ -102,21 +253,10 @@ export const renderReasoningWithValidatorLinks = (
 
     if (isExactToken && masterKey) {
       if (start > lastIndex) {
-        parts.push(reasoning.slice(lastIndex, start))
+        segments.push(reasoning.slice(lastIndex, start))
       }
 
-      parts.push(
-        <a
-          className="drill-down-reasoning-validator-link"
-          href={buildPath(VALIDATOR_ROUTE, { identifier: masterKey })}
-          key={`${token}-${start}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          title={masterKey}
-        >
-          {formatPubkey(masterKey)}
-        </a>,
-      )
+      segments.push({ kind: 'validator', token, masterKey, start })
       replacementCount += 1
       lastIndex = end
     }
@@ -125,10 +265,10 @@ export const renderReasoningWithValidatorLinks = (
   if (replacementCount === 0) return reasoning
 
   if (lastIndex < reasoning.length) {
-    parts.push(reasoning.slice(lastIndex))
+    segments.push(reasoning.slice(lastIndex))
   }
 
-  return parts
+  return renderReasoningSegments(segments)
 }
 
 const downloadJson = (data: unknown, filename: string): void => {

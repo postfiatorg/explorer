@@ -109,10 +109,11 @@ describe('ValidatorDrillDown reasoning validator ID mapping', () => {
 
     const links = wrapper.find('.drill-down-reasoning-validator-link')
     expect(links).toHaveLength(2)
-    expect(links.at(0).text()).toBe('nHBXSCTwVU...P8EeBc')
+    expect(links.at(0).text()).toBe('nHBXS...')
     expect(links.at(0).prop('href')).toBe(`/validators/${mappedMasterKey}`)
     expect(links.at(0).prop('target')).toBe('_blank')
-    expect(links.at(1).text()).toBe('nHBg5iGpnv...4iS7um')
+    expect(links.at(0).prop('title')).toBe(mappedMasterKey)
+    expect(links.at(1).text()).toBe('nHBg5...')
     expect(links.at(1).prop('href')).toBe(
       `/validators/${secondMappedMasterKey}`,
     )
@@ -154,7 +155,7 @@ describe('ValidatorDrillDown reasoning validator ID mapping', () => {
 
     const links = wrapper.find('.drill-down-reasoning-validator-link')
     expect(links).toHaveLength(1)
-    expect(links.at(0).text()).toBe('nHBXSCTwVU...P8EeBc')
+    expect(links.at(0).text()).toBe('nHBXS...')
     expect(wrapper.text()).toContain('av001, v001a, and validator_v001')
 
     wrapper.unmount()
@@ -173,11 +174,31 @@ describe('ValidatorDrillDown reasoning validator ID mapping', () => {
     expect(links.at(1).prop('href')).toBe(
       `/validators/${seventeenthMappedMasterKey}`,
     )
+    expect(links.at(2).text()).toBe('nHUc7...')
     expect(links.at(2).prop('href')).toBe(
       `/validators/${twentyEighthMappedMasterKey}`,
     )
+    expect(wrapper.find('.drill-down-reasoning-validator-more').exists()).toBe(
+      false,
+    )
+    expect(wrapper.find('.drill-down-reasoning-text').text()).toContain(
+      'nHBXS..., nHDUc..., and nHUc7...',
+    )
     expect(wrapper.text()).not.toContain('v0017')
     expect(wrapper.text()).not.toContain('v0028')
+
+    wrapper.unmount()
+  })
+
+  it('keeps separated validator references inline', () => {
+    const wrapper = mountDrillDown(
+      scoreEntryFor('v001 is strong. v002 is stable. v017 improves diversity.'),
+    )
+
+    expect(wrapper.find('.drill-down-reasoning-validator-link')).toHaveLength(3)
+    expect(wrapper.find('.drill-down-reasoning-validator-more').exists()).toBe(
+      false,
+    )
 
     wrapper.unmount()
   })
