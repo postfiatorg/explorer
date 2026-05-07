@@ -7,8 +7,9 @@
 // Each entry below was validated against PeeringDB
 // (https://www.peeringdb.com/api/net?asn=<n>) before inclusion so the mapping
 // reflects the provider's registered identity rather than a guess. When a
-// validator's ASN is not present in this map, the drill-down falls back to the
-// raw pyasn-emitted string prefixed with the AS number.
+// validator's ASN is not present in this map, provider-specific aliases are
+// matched against the raw registry name before the drill-down falls back to the
+// raw pyasn-emitted string.
 //
 // Providers that operate multiple regional ASNs (Leaseweb, Tencent) are mapped
 // to the same display name across all their ASNs on purpose — the distinction
@@ -47,4 +48,78 @@ export const ASN_DISPLAY_NAMES: Record<number, string> = {
   132203: 'Tencent Cloud',
   202053: 'UpCloud',
   394380: 'Leaseweb',
+}
+
+interface ASNDisplayInfo {
+  asn: number
+  as_name?: string | null
+}
+
+interface ProviderAlias {
+  displayName: string
+  normalizedAlias: string
+}
+
+const MIN_ALIAS_LENGTH = 5
+
+const ADDITIONAL_PROVIDER_ALIASES: Record<string, string[]> = {
+  'Cherry Servers': ['CherryServers'],
+  HOSTKEY: [],
+}
+
+const normalizeProviderAlias = (value: string): string =>
+  value.toLowerCase().replace(/[^a-z0-9]/g, '')
+
+const buildProviderAliases = (): ProviderAlias[] => {
+  const aliasByNormalizedValue = new Map<string, string>()
+
+  const addProviderAlias = (displayName: string, alias: string) => {
+    const normalizedAlias = normalizeProviderAlias(alias)
+    if (normalizedAlias.length < MIN_ALIAS_LENGTH) return
+    aliasByNormalizedValue.set(normalizedAlias, displayName)
+  }
+
+  Object.values(ASN_DISPLAY_NAMES).forEach((displayName) => {
+    addProviderAlias(displayName, displayName)
+  })
+
+  Object.entries(ADDITIONAL_PROVIDER_ALIASES).forEach(
+    ([displayName, aliases]) => {
+      addProviderAlias(displayName, displayName)
+      aliases.forEach((alias) => addProviderAlias(displayName, alias))
+    },
+  )
+
+  return Array.from(
+    aliasByNormalizedValue,
+    ([normalizedAlias, displayName]) => ({
+      displayName,
+      normalizedAlias,
+    }),
+  ).sort((a, b) => b.normalizedAlias.length - a.normalizedAlias.length)
+}
+
+const PROVIDER_ALIASES = buildProviderAliases()
+
+const getProviderDisplayNameFromRegistryName = (
+  asName: string,
+): string | null => {
+  const normalizedAsName = normalizeProviderAlias(asName)
+  const match = PROVIDER_ALIASES.find(({ normalizedAlias }) =>
+    normalizedAsName.includes(normalizedAlias),
+  )
+
+  return match?.displayName ?? null
+}
+
+export const formatASNDisplayName = (asn: ASNDisplayInfo | null): string => {
+  if (!asn) return '—'
+
+  const friendly = ASN_DISPLAY_NAMES[asn.asn]
+  if (friendly) return friendly
+
+  const rawName = asn.as_name?.trim()
+  if (!rawName) return `AS${asn.asn}`
+
+  return getProviderDisplayNameFromRegistryName(rawName) ?? rawName
 }

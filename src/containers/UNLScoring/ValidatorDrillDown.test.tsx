@@ -2,6 +2,7 @@ import { mount } from 'enzyme'
 import { ValidatorDrillDown } from './ValidatorDrillDown'
 import { useScoreHistory } from './useScoreHistory'
 import type {
+  SnapshotValidator,
   ValidatorIdMap,
   ValidatorScoreEntry,
 } from '../Network/scoringUtils'
@@ -47,9 +48,29 @@ const validatorIdMap: ValidatorIdMap = {
   },
 }
 
+const snapshotEntryFor = (
+  asn: SnapshotValidator['asn'],
+): SnapshotValidator => ({
+  master_key: currentMasterKey,
+  domain: null,
+  domain_verified: false,
+  asn,
+  geolocation: null,
+  agreement_1h: null,
+  agreement_24h: null,
+  agreement_30d: null,
+  server_version: null,
+  unl: false,
+  base_fee: null,
+  identity: null,
+  signing_key: null,
+  ip: '192.0.2.1',
+})
+
 const mountDrillDown = (
   scoreEntry: ValidatorScoreEntry,
   map: ValidatorIdMap | null = validatorIdMap,
+  snapshotEntry: SnapshotValidator | null = null,
 ) =>
   mount(
     <table>
@@ -58,13 +79,23 @@ const mountDrillDown = (
           masterKey={currentMasterKey}
           currentRoundNumber={42}
           scoreEntry={scoreEntry}
-          snapshotEntry={null}
+          snapshotEntry={snapshotEntry}
           validatorIdMap={map}
           colspan={8}
         />
       </tbody>
     </table>,
   )
+
+const networkProviderText = (wrapper: ReturnType<typeof mount>): string =>
+  wrapper
+    .find('.drill-down-field')
+    .filterWhere(
+      (node) => node.find('.drill-down-label').text() === 'Network provider',
+    )
+    .first()
+    .find('.drill-down-value')
+    .text()
 
 describe('ValidatorDrillDown reasoning validator ID mapping', () => {
   beforeEach(() => {
@@ -158,6 +189,80 @@ describe('ValidatorDrillDown reasoning validator ID mapping', () => {
 
     expect(wrapper.find('.drill-down-reasoning-validator-link')).toHaveLength(1)
     expect(scoreEntry.reasoning).toBe(rawReasoning)
+
+    wrapper.unmount()
+  })
+})
+
+describe('ValidatorDrillDown network provider display', () => {
+  beforeEach(() => {
+    ;(useScoreHistory as jest.Mock).mockReturnValue({ points: [] })
+  })
+
+  it('uses exact ASN display names before registry-name matching', () => {
+    const wrapper = mountDrillDown(
+      scoreEntryFor('No reasoning available.'),
+      validatorIdMap,
+      snapshotEntryFor({
+        asn: 20473,
+        as_name: 'AS-VULTR - The Constant Company, LLC, US',
+      }),
+    )
+
+    expect(networkProviderText(wrapper)).toBe('Vultr')
+
+    wrapper.unmount()
+  })
+
+  it('matches known provider aliases inside unknown registry names', () => {
+    const cases = [
+      {
+        asn: 213230,
+        asName: 'HETZNER-CLOUD2-AS, DE',
+        expected: 'Hetzner',
+      },
+      {
+        asn: 40021,
+        asName: 'CONTABO-40021 - Contabo Inc., US',
+        expected: 'Contabo',
+      },
+      {
+        asn: 204770,
+        asName: 'CHERRYSERVERS3-AS, LT',
+        expected: 'Cherry Servers',
+      },
+      {
+        asn: 395839,
+        asName: 'HOSTKEY-USA - HOSTKEY, US',
+        expected: 'HOSTKEY',
+      },
+    ]
+
+    cases.forEach(({ asn, asName, expected }) => {
+      const wrapper = mountDrillDown(
+        scoreEntryFor('No reasoning available.'),
+        validatorIdMap,
+        snapshotEntryFor({ asn, as_name: asName }),
+      )
+
+      expect(networkProviderText(wrapper)).toBe(expected)
+
+      wrapper.unmount()
+    })
+  })
+
+  it('shows unmatched registry names without prefixing the AS number', () => {
+    const rawAsName = 'EXAMPLE-NETWORK-42-AS, US'
+    const wrapper = mountDrillDown(
+      scoreEntryFor('No reasoning available.'),
+      validatorIdMap,
+      snapshotEntryFor({
+        asn: 64500,
+        as_name: rawAsName,
+      }),
+    )
+
+    expect(networkProviderText(wrapper)).toBe(rawAsName)
 
     wrapper.unmount()
   })

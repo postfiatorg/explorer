@@ -2,7 +2,7 @@ import { FC, ReactNode, useMemo } from 'react'
 import { buildPath } from '../shared/routing'
 import { VALIDATOR_ROUTE } from '../App/routes'
 import { ScoreSparkline } from '../Network/ScoreSparkline'
-import { ASN_DISPLAY_NAMES } from '../Network/asnDisplayNames'
+import { formatASNDisplayName } from '../Network/asnDisplayNames'
 import {
   SCORING_DIMENSIONS,
   SnapshotValidator,
@@ -150,15 +150,6 @@ const formatAgreement30d = (entry: SnapshotValidator | null): string => {
   return `${(entry.agreement_30d.score * 100).toFixed(2)}%`
 }
 
-const formatASN = (entry: SnapshotValidator | null): string => {
-  if (!entry?.asn) return '—'
-  const friendly = ASN_DISPLAY_NAMES[entry.asn.asn]
-  if (friendly) return friendly
-  return entry.asn.as_name
-    ? `AS${entry.asn.asn} — ${entry.asn.as_name}`
-    : `AS${entry.asn.asn}`
-}
-
 export const ValidatorDrillDown: FC<ValidatorDrillDownProps> = ({
   masterKey,
   currentRoundNumber,
@@ -231,7 +222,7 @@ export const ValidatorDrillDown: FC<ValidatorDrillDownProps> = ({
             <div className="drill-down-field">
               <span className="drill-down-label">Network provider</span>
               <span className="drill-down-value">
-                {formatASN(snapshotEntry)}
+                {formatASNDisplayName(snapshotEntry?.asn ?? null)}
               </span>
             </div>
             <div className="drill-down-field">
