@@ -16,6 +16,9 @@ export interface SidebarItem {
   icon: typeof LayoutDashboard
   path?: string
   href?: string
+  badge?: {
+    label: string
+  }
 }
 
 export const sidebarConfig: SidebarItem[] = [
@@ -23,7 +26,14 @@ export const sidebarConfig: SidebarItem[] = [
   { label: 'Transactions', icon: ArrowLeftRight, path: '/transactions' },
   { label: 'Nodes', icon: Cpu, path: '/network/nodes' },
   { label: 'Validators', icon: Shield, path: '/network/validators' },
-  { label: 'UNL Scoring', icon: Gauge, path: '/unl-scoring' },
+  {
+    label: 'UNL Scoring',
+    icon: Gauge,
+    path: '/unl-scoring',
+    badge: {
+      label: 'NEW',
+    },
+  },
   { label: 'Amendments', icon: FileText, path: '/amendments' },
   {
     label: 'Upgrade Status',

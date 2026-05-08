@@ -12,9 +12,14 @@ import { buildPath, RouteLink, RouteDefinition } from '../../shared/routing'
 
 import './NavigationMenu.scss'
 
+export interface NavigationMenuBadge {
+  label: string
+}
+
 export interface NavigationMenuRoute {
   title: defaultTranslationsKey
   current?: (path: string) => boolean
+  badge?: NavigationMenuBadge
 }
 
 export interface NavigationMenuParentRoute extends NavigationMenuRoute {
@@ -34,6 +39,19 @@ export type NavigationMenuAnyRoute =
   | NavigationMenuParentRoute
   | NavigationMenuExternalRoute
   | NavigationMenuInternalRoute
+
+const renderNavigationLabel = (title: string, badge?: NavigationMenuBadge) => {
+  if (!badge) {
+    return title
+  }
+
+  return (
+    <span className="nav-label">
+      <span className="nav-label-text">{title}</span>
+      <span className="nav-badge">{badge.label}</span>
+    </span>
+  )
+}
 
 export const NavigationMenu = ({
   routes,
@@ -90,7 +108,7 @@ export const NavigationMenu = ({
               return (
                 <Dropdown
                   key={nav.title}
-                  title={title}
+                  title={renderNavigationLabel(title, nav.badge)}
                   className="nav-item dropdown-right"
                   tagName="li"
                 >
@@ -101,7 +119,7 @@ export const NavigationMenu = ({
                       className="nav-link"
                       key={child.title}
                     >
-                      {t(child.title)}
+                      {renderNavigationLabel(t(child.title), child.badge)}
                     </DropdownItem>
                   ))}
                 </Dropdown>
@@ -117,7 +135,7 @@ export const NavigationMenu = ({
                     data-title={title}
                     className="nav-link"
                   >
-                    {title}
+                    {renderNavigationLabel(title, nav.badge)}
                   </a>
                 </li>
               )
@@ -137,7 +155,7 @@ export const NavigationMenu = ({
                   onClick={forceClose}
                   params={nav.params || {}}
                 >
-                  {t(nav.title)}
+                  {renderNavigationLabel(title, nav.badge)}
                 </RouteLink>
                 <div className="dot" />
               </li>

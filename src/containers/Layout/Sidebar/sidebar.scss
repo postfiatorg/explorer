@@ -27,35 +27,34 @@ $sidebar-collapsed: 64px;
 
 .sidebar-nav {
   display: flex;
+  overflow: hidden auto;
   height: 100%;
   flex-direction: column;
   justify-content: space-between;
   padding: 8px 0;
-  overflow-y: auto;
-  overflow-x: hidden;
 }
 
 .sidebar-main {
   display: flex;
   flex-direction: column;
-  gap: 2px;
   padding: 0 8px;
+  gap: 2px;
 }
 
 .sidebar-footer {
   display: flex;
   flex-direction: column;
-  gap: 2px;
   padding: 0 8px;
+  padding-top: 8px;
   border-top: 1px solid $black-80;
   margin-top: auto;
-  padding-top: 8px;
+  gap: 2px;
 }
 
 .sidebar-item {
   display: flex;
+  width: 100%;
   align-items: center;
-  gap: 12px;
   padding: 10px 12px;
   border: none;
   border-radius: 8px;
@@ -63,11 +62,13 @@ $sidebar-collapsed: 64px;
   color: $black-40;
   cursor: pointer;
   font-size: 14px;
-  text-decoration: none;
-  transition: color 150ms ease, background-color 150ms ease;
-  white-space: nowrap;
-  width: 100%;
+  gap: 12px;
   text-align: left;
+  text-decoration: none;
+  transition:
+    color 150ms ease,
+    background-color 150ms ease;
+  white-space: nowrap;
 
   @include medium;
 
@@ -88,8 +89,33 @@ $sidebar-collapsed: 64px;
 
 .sidebar-item-label {
   overflow: hidden;
+  min-width: 0;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.sidebar-item-content {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.sidebar-item-badge {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  padding: 1px 5px;
+  border: 1px solid rgb(var(--green-50-rgb) / 35%);
+  border-radius: 999px;
+  background: rgb(var(--green-90-rgb) / 35%);
+  color: $green-30;
+  font-size: 9px;
+  line-height: 1.2;
+  text-transform: uppercase;
+  white-space: nowrap;
+
+  @include medium;
 }
 
 .sidebar-link {
@@ -101,31 +127,28 @@ $sidebar-collapsed: 64px;
 }
 
 .sidebar-collapse-toggle {
-  color: $black-50;
   margin-top: 4px;
+  color: $black-50;
 }
 
 // Mobile hamburger overlay
 .sidebar-overlay {
   position: fixed;
   z-index: 14;
-  inset: 0;
-  background: rgba(var(--black-100-rgb), 0.6);
   backdrop-filter: blur(4px);
+  background: rgb(var(--black-100-rgb) / 60%);
+  inset: 0;
 }
 
 .sidebar-mobile {
   position: fixed;
   z-index: 15;
-  top: var(--topbar-height);
-  bottom: 0;
-  left: 0;
-  right: 0;
   background: $black-100;
+  inset: var(--topbar-height) 0 0 0;
 
   .sidebar {
-    display: flex;
     position: static;
+    display: flex;
     width: 100%;
     height: 100%;
     border-right: none;
@@ -136,20 +159,20 @@ $sidebar-collapsed: 64px;
   }
 
   .sidebar-main {
-    gap: 4px;
     padding: 0 16px;
+    gap: 4px;
   }
 
   .sidebar-item {
     padding: 14px 16px;
-    font-size: 16px;
     border-radius: 12px;
+    font-size: 16px;
   }
 
   .sidebar-footer {
-    gap: 4px;
     padding: 0 16px;
     padding-top: 12px;
+    gap: 4px;
   }
 
   .sidebar-collapse-toggle {

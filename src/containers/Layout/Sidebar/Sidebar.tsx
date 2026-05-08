@@ -15,6 +15,15 @@ interface SidebarNavItemProps {
   onNavigate?: () => void
 }
 
+const SidebarItemLabel: FC<{ item: SidebarItem }> = ({ item }) => (
+  <span className="sidebar-item-content">
+    <span className="sidebar-item-label">{item.label}</span>
+    {item.badge && (
+      <span className="sidebar-item-badge">{item.badge.label}</span>
+    )}
+  </span>
+)
+
 const SidebarNavItem: FC<SidebarNavItemProps> = ({
   item,
   collapsed,
@@ -38,7 +47,7 @@ const SidebarNavItem: FC<SidebarNavItemProps> = ({
         title={collapsed ? item.label : undefined}
       >
         <Icon size={20} />
-        {!collapsed && <span className="sidebar-item-label">{item.label}</span>}
+        {!collapsed && <SidebarItemLabel item={item} />}
       </a>
     )
   }
@@ -51,7 +60,7 @@ const SidebarNavItem: FC<SidebarNavItemProps> = ({
       onClick={onNavigate}
     >
       <Icon size={20} />
-      {!collapsed && <span className="sidebar-item-label">{item.label}</span>}
+      {!collapsed && <SidebarItemLabel item={item} />}
     </Link>
   )
 }

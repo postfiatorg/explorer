@@ -38,6 +38,9 @@ export const navigationConfig: NavigationMenuAnyRoute[] = [
       {
         route: UNL_SCORING_ROUTE,
         title: 'unl_scoring',
+        badge: {
+          label: 'NEW',
+        },
       },
       {
         route: UPGRADE_STATUS_ROUTE,
