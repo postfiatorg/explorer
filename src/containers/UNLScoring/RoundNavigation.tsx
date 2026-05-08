@@ -19,7 +19,6 @@ const toneClass: Record<ReturnType<typeof classifyRoundState>, string> = {
   failed: 'round-nav-glyph-failed',
   running: 'round-nav-glyph-running',
   published_warning: 'round-nav-glyph-published-warning',
-  dry_run_complete: 'round-nav-glyph-dry-run',
 }
 
 const statusLabel: Record<ReturnType<typeof classifyRoundState>, string> = {
@@ -27,7 +26,6 @@ const statusLabel: Record<ReturnType<typeof classifyRoundState>, string> = {
   failed: 'FAILED',
   running: 'RUNNING',
   published_warning: 'VL PUBLISHED · MEMO FAILED',
-  dry_run_complete: 'DRY_RUN_COMPLETE',
 }
 
 const tooltipFor = (round: ScoringRoundMeta): string => {
@@ -54,7 +52,6 @@ const STATE_SEGMENT_DEFAULTS: Record<
   failed: '✕ FAILED',
   running: '● RUNNING',
   published_warning: '! VL published, memo failed',
-  dry_run_complete: '● DRY_RUN_COMPLETE',
 }
 
 const formatStateSegment = (round: ScoringRoundMeta): string => {

@@ -98,14 +98,18 @@ describe('scoringUtils override handling', () => {
 
 describe('round state helpers', () => {
   it('identifies in-progress rounds separately from terminal rounds', () => {
+    expect(classifyRoundState('COMPLETE')).toBe('complete')
+    expect(classifyRoundState('FAILED')).toBe('failed')
     expect(classifyRoundState('VL_PUBLISHED_MEMO_FAILED')).toBe(
       'published_warning',
     )
+    expect(classifyRoundState('ONCHAIN_PUBLISHED')).toBe('running')
     expect(isInProgressRound(round(11, 'COLLECTING'))).toBe(true)
+    expect(isInProgressRound(round(12, 'ONCHAIN_PUBLISHED'))).toBe(true)
     expect(isInProgressRound(round(10, 'COMPLETE'))).toBe(false)
     expect(isInProgressRound(round(9, 'FAILED'))).toBe(false)
-    expect(isInProgressRound(round(8, 'DRY_RUN_COMPLETE'))).toBe(false)
     expect(isInProgressRound(round(7, 'VL_PUBLISHED_MEMO_FAILED'))).toBe(false)
+    expect(isInProgressRound(round(6, 'UNEXPECTED_PRIVATE_STATUS'))).toBe(true)
   })
 
   it('treats memo-failed VL rounds as operationally published', () => {
@@ -114,9 +118,9 @@ describe('round state helpers', () => {
       isOperationallyPublishedRound(round(11, 'VL_PUBLISHED_MEMO_FAILED')),
     ).toBe(true)
     expect(isOperationallyPublishedRound(round(10, 'FAILED'))).toBe(false)
-    expect(isOperationallyPublishedRound(round(9, 'DRY_RUN_COMPLETE'))).toBe(
-      false,
-    )
+    expect(
+      isOperationallyPublishedRound(round(9, 'UNEXPECTED_PRIVATE_STATUS')),
+    ).toBe(false)
   })
 })
 

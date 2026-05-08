@@ -67,6 +67,7 @@ export const IN_PROGRESS_STATUSES = new Set([
   'VL_SIGNED',
   'IPFS_PUBLISHED',
   'VL_DISTRIBUTED',
+  'ONCHAIN_PUBLISHED',
 ])
 
 export const VL_PUBLISHED_MEMO_FAILED_STATUS = 'VL_PUBLISHED_MEMO_FAILED'
@@ -76,13 +77,11 @@ export type RoundStateKind =
   | 'failed'
   | 'running'
   | 'published_warning'
-  | 'dry_run_complete'
 
 export const classifyRoundState = (status: string): RoundStateKind => {
   if (status === 'COMPLETE') return 'complete'
   if (status === 'FAILED') return 'failed'
   if (status === VL_PUBLISHED_MEMO_FAILED_STATUS) return 'published_warning'
-  if (status === 'DRY_RUN_COMPLETE') return 'dry_run_complete'
   return 'running'
 }
 

@@ -18,6 +18,24 @@ const memoFailedRound = (roundNumber: number): ScoringRoundMeta => ({
   completed_at: '2026-04-29T12:00:00Z',
 })
 
+const runningRound = (
+  roundNumber: number,
+  status = 'ONCHAIN_PUBLISHED',
+): ScoringRoundMeta => ({
+  round_number: roundNumber,
+  status,
+  completed_at: null,
+  started_at: '2026-04-29T12:00:00Z',
+})
+
+const failedRound = (roundNumber: number): ScoringRoundMeta => ({
+  round_number: roundNumber,
+  status: 'FAILED',
+  completed_at: null,
+  started_at: '2026-04-29T12:00:00Z',
+  snapshot_hash: null,
+})
+
 describe('RoundNavigation', () => {
   it('labels completed override rounds distinctly', () => {
     const wrapper = mount(
@@ -41,6 +59,35 @@ describe('RoundNavigation', () => {
         .at(1)
         .hasClass('round-nav-glyph-override'),
     ).toBe(true)
+
+    wrapper.unmount()
+  })
+
+  it('labels public in-progress rounds as running', () => {
+    const wrapper = mount(
+      <RoundNavigation
+        viewingRoundNumber={14}
+        latestRoundNumber={14}
+        recentRounds={[runningRound(14), completeRound(13)]}
+        onSelectRound={jest.fn()}
+      />,
+    )
+
+    expect(wrapper.find('.round-nav-meta').text()).toContain('RUNNING')
+    expect(
+      wrapper
+        .find('.round-nav-meta-state')
+        .hasClass('round-nav-meta-state-running'),
+    ).toBe(true)
+    expect(
+      wrapper
+        .find('.round-nav-glyph')
+        .at(1)
+        .hasClass('round-nav-glyph-running'),
+    ).toBe(true)
+    expect(wrapper.find('.round-nav-glyph').at(1).prop('title')).toContain(
+      'RUNNING',
+    )
 
     wrapper.unmount()
   })
@@ -74,6 +121,32 @@ describe('RoundNavigation', () => {
     expect(wrapper.find('.round-nav-glyph').at(1).prop('title')).toContain(
       'VL PUBLISHED · MEMO FAILED',
     )
+
+    wrapper.unmount()
+  })
+
+  it('labels failed rounds as terminal failures', () => {
+    const wrapper = mount(
+      <RoundNavigation
+        viewingRoundNumber={15}
+        latestRoundNumber={15}
+        recentRounds={[failedRound(15), completeRound(14)]}
+        onSelectRound={jest.fn()}
+      />,
+    )
+
+    expect(wrapper.find('.round-nav-meta').text()).toContain(
+      'FAILED at COLLECTING',
+    )
+    expect(
+      wrapper
+        .find('.round-nav-meta-state')
+        .hasClass('round-nav-meta-state-failed'),
+    ).toBe(true)
+    expect(wrapper.find('.round-nav-glyph').at(1).text()).toBe('✕')
+    expect(
+      wrapper.find('.round-nav-glyph').at(1).hasClass('round-nav-glyph-failed'),
+    ).toBe(true)
 
     wrapper.unmount()
   })

@@ -1084,11 +1084,6 @@
   @include medium;
 }
 
-.round-nav-meta-state-dry-run-complete {
-  color: $black-40;
-  @include medium;
-}
-
 .round-nav-meta-state-override {
   color: $black-40;
   @include medium;
@@ -1168,10 +1163,6 @@
 
 .round-nav-glyph-published-warning {
   color: $yellow-50;
-}
-
-.round-nav-glyph-dry-run {
-  color: $black-40;
 }
 
 .round-nav-glyph-override {
