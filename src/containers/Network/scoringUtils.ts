@@ -109,8 +109,34 @@ export interface ValidatorIdMapEntry {
 
 export type ValidatorIdMap = Record<string, ValidatorIdMapEntry>
 
+export type NetworkReportTone =
+  | 'positive'
+  | 'mixed'
+  | 'warning'
+  | 'negative'
+  | 'neutral'
+
+export interface NetworkReportCategory {
+  tone?: NetworkReportTone | string
+  body?: string
+}
+
+export type NetworkReportCategoryKey =
+  | 'consensus'
+  | 'reliability'
+  | 'software'
+  | 'diversity'
+  | 'identity'
+
+export interface NetworkReport {
+  headline?: string
+  summary?: string
+  categories?: Partial<Record<NetworkReportCategoryKey, NetworkReportCategory>>
+}
+
 export interface ScoresJson {
   network_summary?: string
+  network_report?: NetworkReport
   validator_scores: ValidatorScoreEntry[]
 }
 

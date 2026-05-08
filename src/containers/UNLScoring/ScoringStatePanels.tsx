@@ -107,7 +107,7 @@ export const ScoringRunningRoundPanel: FC<{ round: ScoringRoundMeta }> = ({
   const startedAt = round.started_at ?? round.created_at ?? null
 
   return (
-    <div className="unl-scoring-running-round dashboard-panel">
+    <div className="unl-scoring-running-round unl-scoring-accent-panel unl-scoring-accent-warning dashboard-panel">
       <h2>Round #{round.round_number} is running</h2>
       <p>
         Scoring artifacts are not available yet. This round will be available
@@ -124,7 +124,7 @@ export const ScoringRunningRoundPanel: FC<{ round: ScoringRoundMeta }> = ({
 export const ScoringFinalizingRoundPanel: FC<{ round: ScoringRoundMeta }> = ({
   round,
 }) => (
-  <div className="unl-scoring-finalizing-round dashboard-panel">
+  <div className="unl-scoring-finalizing-round unl-scoring-accent-panel unl-scoring-accent-positive dashboard-panel">
     <h2>Round #{round.round_number} completed</h2>
     <p>Loading scoring artifacts. Ranked validators will appear shortly.</p>
     <div className="unl-scoring-finalizing-round-meta">
@@ -162,7 +162,7 @@ export const ScoringFailedRoundPanel: FC<{ round: ScoringRoundMeta }> = ({
   }
 
   return (
-    <div className="unl-scoring-failed-round dashboard-panel">
+    <div className="unl-scoring-failed-round unl-scoring-accent-panel unl-scoring-accent-negative dashboard-panel">
       <h2>Round #{round.round_number} failed</h2>
       <p>
         This scoring round failed

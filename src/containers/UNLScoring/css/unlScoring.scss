@@ -34,10 +34,11 @@
   }
 }
 
-.unl-scoring-running-round,
-.unl-scoring-finalizing-round,
-.unl-scoring-failed-round {
+.unl-scoring-accent-panel {
+  --unl-scoring-accent-color: #{$black-40};
+
   padding: 32px;
+  border-left: 3px solid var(--unl-scoring-accent-color);
 
   h2 {
     margin: 0 0 8px;
@@ -54,16 +55,47 @@
   }
 }
 
-.unl-scoring-running-round {
-  border-left: 3px solid $yellow-50;
+.unl-scoring-accent-title {
+  margin: 0;
+  color: $white;
+  font-size: 14px;
+  line-height: 1.3;
+  @include semibold;
 }
 
-.unl-scoring-finalizing-round {
-  border-left: 3px solid $green-50;
+.unl-scoring-accent-body {
+  margin: 0;
+  color: $black-40;
+  font-size: 14px;
+  line-height: 1.5;
 }
 
-.unl-scoring-failed-round {
-  border-left: 3px solid $red;
+.unl-scoring-accent-panel-compact {
+  padding: 16px 18px;
+
+  .unl-scoring-accent-body {
+    max-width: none;
+  }
+}
+
+.unl-scoring-accent-positive {
+  --unl-scoring-accent-color: #{$green-50};
+}
+
+.unl-scoring-accent-mixed {
+  --unl-scoring-accent-color: #{$blue-40};
+}
+
+.unl-scoring-accent-warning {
+  --unl-scoring-accent-color: #{$yellow-50};
+}
+
+.unl-scoring-accent-negative {
+  --unl-scoring-accent-color: #{$red};
+}
+
+.unl-scoring-accent-neutral {
+  --unl-scoring-accent-color: #{$black-40};
 }
 
 .unl-scoring-running-round-meta,
@@ -436,16 +468,21 @@
 
 .round-reasoning {
   padding: 16px 20px;
+  gap: 14px;
+}
+
+.round-reasoning-header {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
 }
 
 .round-reasoning-title {
-  align-self: flex-start;
-  margin: 0 0 8px;
+  margin: 0;
   color: $white;
-  font-size: 14px;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  @include medium;
+  font-size: 20px;
+  line-height: 1.3;
+  @include semibold;
 }
 
 .round-reasoning-text {
@@ -454,6 +491,49 @@
   color: $white;
   font-size: 13px;
   line-height: 1.6;
+}
+
+.round-reasoning-summary {
+  margin: 0;
+  color: $white;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.round-reasoning-categories {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.round-reasoning-category {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.round-reasoning-category-header {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.round-reasoning-tone-label {
+  flex: 0 0 auto;
+  padding: 2px 6px;
+  border: 1px solid $black-70;
+  border-radius: 999px;
+  color: var(--unl-scoring-accent-color);
+  font-size: 11px;
+  line-height: 1.2;
+  text-transform: uppercase;
+  @include medium;
+}
+
+.round-reasoning-empty .round-reasoning-text {
+  color: $black-40;
 }
 
 .unl-scoring-ranked {

@@ -86,11 +86,13 @@ const rankedContextFor = ({
   unl = [rankedMasterKey],
   alternates = [],
   networkSummary,
+  networkReport,
 }: {
   currentScore?: number
   unl?: string[]
   alternates?: string[]
   networkSummary?: string
+  networkReport?: ScoresJson['network_report']
 } = {}): ScoringContext => ({
   activeRound: round(202, 'custom'),
   round: round(201),
@@ -103,6 +105,7 @@ const rankedContextFor = ({
     ...(networkSummary === undefined
       ? {}
       : { network_summary: networkSummary }),
+    ...(networkReport === undefined ? {} : { network_report: networkReport }),
     validator_scores: [rankedScoreEntry(currentScore)],
   },
   config: null,
@@ -157,6 +160,133 @@ describe('OverrideRoundTable', () => {
 })
 
 describe('RankedTable round reasoning', () => {
+  it('renders structured round reasoning before ranked validators when a network report is present', () => {
+    const wrapper = mountRankedTable(
+      rankedContextFor({
+        networkReport: {
+          headline: 'Strong Consensus, Concentrated Infrastructure',
+          summary: 'The validator set shows strong consensus health overall.',
+          categories: {
+            consensus: {
+              tone: 'positive',
+              body: 'Consensus performance is the strongest dimension.',
+            },
+            reliability: {
+              tone: 'unexpected',
+              body: 'Reliability is stable but uneven across operators.',
+            },
+            diversity: {
+              tone: 'warning',
+              body: 'Diversity remains concentrated around v001.',
+            },
+          },
+        },
+      }),
+      validatorIdMap,
+    )
+
+    const reasoning = wrapper.find('.round-reasoning')
+    expect(reasoning.exists()).toBe(true)
+    expect(reasoning.find('.round-reasoning-title').text()).toBe(
+      'Strong Consensus, Concentrated Infrastructure',
+    )
+    expect(reasoning.text()).not.toContain('Round reasoning')
+    expect(reasoning.find('.round-reasoning-summary').text()).toContain(
+      'strong consensus health',
+    )
+    expect(reasoning.find('.round-reasoning-category')).toHaveLength(3)
+    expect(
+      reasoning.find('.round-reasoning-category.dashboard-panel'),
+    ).toHaveLength(3)
+    expect(reasoning.find('.unl-scoring-accent-panel-compact')).toHaveLength(3)
+    expect(reasoning.find('.unl-scoring-accent-positive')).toHaveLength(1)
+    expect(reasoning.find('.unl-scoring-accent-warning')).toHaveLength(1)
+    expect(reasoning.find('.unl-scoring-accent-neutral')).toHaveLength(1)
+    expect(reasoning.find('.drill-down-reasoning-validator-link')).toHaveLength(
+      1,
+    )
+
+    const pageText = wrapper.text()
+    expect(
+      pageText.indexOf('Strong Consensus, Concentrated Infrastructure'),
+    ).toBeLessThan(pageText.indexOf('Ranked validators'))
+
+    wrapper.unmount()
+  })
+
+  it('uses a fallback title when a structured report has no headline', () => {
+    const wrapper = mountRankedTable(
+      rankedContextFor({
+        networkReport: {
+          summary: 'Structured summary without a headline.',
+          categories: {
+            consensus: {
+              tone: 'positive',
+              body: 'Consensus is stable.',
+            },
+          },
+        },
+      }),
+    )
+
+    const pageText = wrapper.text()
+    expect(wrapper.find('.round-reasoning-title').text()).toBe(
+      'Round reasoning',
+    )
+    expect(pageText.indexOf('Round reasoning')).toBeLessThan(
+      pageText.indexOf('Ranked validators'),
+    )
+
+    wrapper.unmount()
+  })
+
+  it('prefers structured round reasoning when both report shapes are present', () => {
+    const wrapper = mountRankedTable(
+      rankedContextFor({
+        networkSummary: 'Legacy summary should not be primary.',
+        networkReport: {
+          headline: 'Structured report',
+          summary: 'Structured summary should be primary.',
+        },
+      }),
+    )
+
+    expect(wrapper.find('.round-reasoning').text()).toContain(
+      'Structured summary should be primary.',
+    )
+    expect(wrapper.find('.round-reasoning').text()).not.toContain(
+      'Legacy summary should not be primary.',
+    )
+
+    wrapper.unmount()
+  })
+
+  it('falls back to the legacy summary when the network report is not renderable', () => {
+    const wrapper = mountRankedTable(
+      rankedContextFor({
+        networkSummary: 'Legacy summary remains available.',
+        networkReport: {
+          headline: ' ',
+          summary: '',
+          categories: {
+            consensus: {
+              tone: 'positive',
+              body: ' ',
+            },
+          },
+        },
+      }),
+    )
+
+    const reasoning = wrapper.find('.round-reasoning')
+    expect(reasoning.find('.round-reasoning-title').text()).toBe(
+      'Round reasoning',
+    )
+    expect(reasoning.text()).toContain('Legacy summary remains available.')
+
+    wrapper.unmount()
+  })
+
   it('renders round reasoning before ranked validators when a network summary is present', () => {
     const wrapper = mountRankedTable(
       rankedContextFor({
@@ -180,20 +310,26 @@ describe('RankedTable round reasoning', () => {
     wrapper.unmount()
   })
 
-  it('omits round reasoning when the network summary is absent', () => {
+  it('renders a missing state when round reasoning is absent', () => {
     const wrapper = mountRankedTable(rankedContextFor())
 
-    expect(wrapper.find('.round-reasoning').exists()).toBe(false)
+    expect(wrapper.find('.round-reasoning-empty').exists()).toBe(true)
+    expect(wrapper.find('.round-reasoning').text()).toContain(
+      'No round reasoning available for this round.',
+    )
 
     wrapper.unmount()
   })
 
-  it('omits round reasoning when the network summary is blank', () => {
+  it('renders a missing state when the network summary is blank', () => {
     const wrapper = mountRankedTable(
       rankedContextFor({ networkSummary: '   ' }),
     )
 
-    expect(wrapper.find('.round-reasoning').exists()).toBe(false)
+    expect(wrapper.find('.round-reasoning-empty').exists()).toBe(true)
+    expect(wrapper.find('.round-reasoning').text()).toContain(
+      'No round reasoning available for this round.',
+    )
 
     wrapper.unmount()
   })

@@ -4,10 +4,13 @@ import DomainLink from '../shared/components/DomainLink'
 import { buildPath } from '../shared/routing'
 import { VALIDATOR_ROUTE } from '../App/routes'
 import {
+  NetworkReport,
+  NetworkReportTone,
   SCORING_DIMENSIONS,
   ScoringContext,
   ScoringRoundMeta,
   ScoringStatus,
+  ScoringDimension,
   ScoresJson,
   SnapshotJson,
   SnapshotValidator,
@@ -60,8 +63,31 @@ interface OverrideRow {
   kind: 'manual' | 'not_selected'
 }
 
+interface RenderableNetworkReportCategory {
+  key: ScoringDimension
+  label: string
+  tone: NetworkReportTone
+  body: string
+}
+
+interface RenderableNetworkReport {
+  headline: string | null
+  summary: string | null
+  categories: RenderableNetworkReportCategory[]
+}
+
 const DIMENSION_COLS = SCORING_DIMENSIONS.length
 const TOTAL_COLS = 3 + DIMENSION_COLS // Rank + Validator + Overall + dimensions
+const DEFAULT_NETWORK_REPORT_TONE: NetworkReportTone = 'neutral'
+const NETWORK_REPORT_TONES = new Set<string>([
+  'positive',
+  'mixed',
+  'warning',
+  'negative',
+  'neutral',
+])
+const ROUND_REASONING_MISSING_MESSAGE =
+  'No round reasoning available for this round.'
 
 const statusOf = (masterKey: string, unl: UnlArtifact): ScoringStatus => {
   if (unl.unl.includes(masterKey)) return 'on_unl'
@@ -177,6 +203,48 @@ const ValidatorIdentity: FC<{
   )
 }
 
+const normalizeReasoningText = (value: unknown): string | null => {
+  if (typeof value !== 'string') return null
+  const trimmedValue = value.trim()
+  return trimmedValue.length > 0 ? trimmedValue : null
+}
+
+const normalizeNetworkReportTone = (tone: unknown): NetworkReportTone => {
+  if (typeof tone === 'string' && NETWORK_REPORT_TONES.has(tone)) {
+    return tone as NetworkReportTone
+  }
+  return DEFAULT_NETWORK_REPORT_TONE
+}
+
+const getRenderableNetworkReport = (
+  report: NetworkReport | undefined,
+): RenderableNetworkReport | null => {
+  if (!report || typeof report !== 'object') return null
+
+  const headline = normalizeReasoningText(report.headline)
+  const summary = normalizeReasoningText(report.summary)
+  const categories = SCORING_DIMENSIONS.map((dimension) => {
+    const category = report.categories?.[dimension.key]
+    if (!category || typeof category !== 'object') return null
+
+    const body = normalizeReasoningText(category.body)
+    if (!body) return null
+
+    return {
+      key: dimension.key,
+      label: dimension.label,
+      tone: normalizeNetworkReportTone(category.tone),
+      body,
+    }
+  }).filter(
+    (category): category is RenderableNetworkReportCategory =>
+      category !== null,
+  )
+
+  if (!headline && !summary && categories.length === 0) return null
+  return { headline, summary, categories }
+}
+
 const RankedValidatorRow: FC<{
   row: RankedRow
   rank: number
@@ -241,27 +309,88 @@ const RankedValidatorRow: FC<{
 }
 
 const RoundReasoningPanel: FC<{
-  summary?: string
+  scores: ScoresJson
   validatorIdMap?: ValidatorIdMap | null
-}> = ({ summary, validatorIdMap = null }) => {
-  const trimmedSummary = summary?.trim()
-  const renderedSummary = useMemo(
-    () =>
-      trimmedSummary
-        ? renderReasoningWithValidatorLinks(trimmedSummary, validatorIdMap)
-        : null,
-    [trimmedSummary, validatorIdMap],
+}> = ({ scores, validatorIdMap = null }) => {
+  const networkReport = useMemo(
+    () => getRenderableNetworkReport(scores.network_report),
+    [scores.network_report],
   )
+  const legacySummary = normalizeReasoningText(scores.network_summary)
 
-  if (!trimmedSummary) return null
+  if (networkReport) {
+    const title = networkReport.headline ?? 'Round reasoning'
+
+    return (
+      <section
+        className="round-reasoning dashboard-panel"
+        aria-label="Round reasoning"
+      >
+        <div className="round-reasoning-header">
+          <h2 className="round-reasoning-title">{title}</h2>
+        </div>
+
+        {networkReport.summary && (
+          <p className="round-reasoning-summary">
+            {renderReasoningWithValidatorLinks(
+              networkReport.summary,
+              validatorIdMap,
+            )}
+          </p>
+        )}
+
+        {networkReport.categories.length > 0 && (
+          <div className="round-reasoning-categories">
+            {networkReport.categories.map((category) => (
+              <section
+                className={`round-reasoning-category unl-scoring-accent-panel unl-scoring-accent-panel-compact unl-scoring-accent-${category.tone} dashboard-panel`}
+                key={category.key}
+              >
+                <div className="round-reasoning-category-header">
+                  <h3 className="unl-scoring-accent-title">{category.label}</h3>
+                  <span className="round-reasoning-tone-label">
+                    {category.tone}
+                  </span>
+                </div>
+                <p className="unl-scoring-accent-body">
+                  {renderReasoningWithValidatorLinks(
+                    category.body,
+                    validatorIdMap,
+                  )}
+                </p>
+              </section>
+            ))}
+          </div>
+        )}
+      </section>
+    )
+  }
+
+  if (legacySummary) {
+    return (
+      <section
+        className="round-reasoning dashboard-panel"
+        aria-label="Round reasoning"
+      >
+        <div className="round-reasoning-header">
+          <h2 className="round-reasoning-title">Round reasoning</h2>
+        </div>
+        <p className="round-reasoning-text">
+          {renderReasoningWithValidatorLinks(legacySummary, validatorIdMap)}
+        </p>
+      </section>
+    )
+  }
 
   return (
     <section
-      className="round-reasoning dashboard-panel"
+      className="round-reasoning round-reasoning-empty dashboard-panel"
       aria-label="Round reasoning"
     >
-      <h2 className="round-reasoning-title">Round reasoning</h2>
-      <p className="round-reasoning-text">{renderedSummary}</p>
+      <div className="round-reasoning-header">
+        <h2 className="round-reasoning-title">Round reasoning</h2>
+      </div>
+      <p className="round-reasoning-text">{ROUND_REASONING_MISSING_MESSAGE}</p>
     </section>
   )
 }
@@ -519,10 +648,7 @@ export const RankedTable: FC<RankedTableProps> = ({
   if (bothEmptyCollapse) {
     return (
       <>
-        <RoundReasoningPanel
-          summary={scores.network_summary}
-          validatorIdMap={validatorIdMap}
-        />
+        <RoundReasoningPanel scores={scores} validatorIdMap={validatorIdMap} />
         <div className="unl-scoring-ranked dashboard-panel">
           <div className="ranked-header">
             <h2 className="ranked-title">Ranked validators</h2>
@@ -553,10 +679,7 @@ export const RankedTable: FC<RankedTableProps> = ({
 
   return (
     <>
-      <RoundReasoningPanel
-        summary={scores.network_summary}
-        validatorIdMap={validatorIdMap}
-      />
+      <RoundReasoningPanel scores={scores} validatorIdMap={validatorIdMap} />
       <div className="unl-scoring-ranked dashboard-panel">
         <div className="ranked-header">
           <h2 className="ranked-title">Ranked validators</h2>
