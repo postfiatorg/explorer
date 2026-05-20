@@ -5,6 +5,8 @@ import {
   ScoringStatus,
   UnlArtifact,
   fetchJsonOrNull,
+  fetchRoundScores,
+  fetchRoundSelectedUnl,
   isScoredRound,
 } from '../Network/scoringUtils'
 
@@ -68,8 +70,8 @@ export const useScoreHistory = (
     async () => {
       const results = await Promise.all(
         roundNumbers.flatMap((n) => [
-          fetchJsonOrNull<ScoresJson>(`/api/scoring/rounds/${n}/scores.json`),
-          fetchJsonOrNull<UnlArtifact>(`/api/scoring/rounds/${n}/unl.json`),
+          fetchRoundScores(n),
+          fetchRoundSelectedUnl(n),
         ]),
       )
       const byRound: Record<number, RoundArtifacts> = {}

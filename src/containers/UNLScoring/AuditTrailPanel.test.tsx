@@ -29,6 +29,7 @@ describe('AuditTrailPanel memo warnings', () => {
       vlExpiresIso: '2026-05-29T13:00:00.000Z',
       memoLedger: 12345,
       memoBodyText: '{"round_number":240}',
+      signedVl: { blobs_v2: [{ blob: 'eyJzZXF1ZW5jZSI6N30=' }] },
       vlJsonAvailable: true,
     })
   })
@@ -73,6 +74,23 @@ describe('AuditTrailPanel memo warnings', () => {
     expect(wrapper.find('.audit-trail-hash-link').text()).toBe('ABC123')
     expect(wrapper.text()).toContain('"round_number": 240')
     expect(wrapper.text()).not.toContain('Memo publication failed')
+
+    wrapper.unmount()
+  })
+
+  it('uses final_bundle_cid when legacy ipfs_cid is absent', () => {
+    const wrapper = mount(
+      <AuditTrailPanel
+        round={round('VL_PUBLISHED_MEMO_FAILED', {
+          ipfs_cid: null,
+          final_bundle_cid: 'QmFinalBundleCid',
+          memo_tx_hash: null,
+        })}
+      />,
+    )
+
+    expect(wrapper.find('.audit-trail-placeholder').exists()).toBe(false)
+    expect(wrapper.text()).toContain('QmFinalBundleCid')
 
     wrapper.unmount()
   })

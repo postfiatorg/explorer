@@ -108,6 +108,21 @@ describe('getTTLSeconds', () => {
     )
   })
 
+  it('caches /rounds/{id} with status=VL_PUBLISHED_MEMO_FAILED for 24 hours', () => {
+    expect(
+      getTTLSeconds('/rounds/16', {}, { status: 'VL_PUBLISHED_MEMO_FAILED' }),
+    ).toBe(TTL_SECONDS.ROUND_TERMINAL)
+  })
+
+  it('caches immutable round artifact paths for 24 hours', () => {
+    expect(getTTLSeconds('/rounds/14/vl.json', {}, {})).toBe(
+      TTL_SECONDS.ROUND_ARTIFACT,
+    )
+    expect(
+      getTTLSeconds('/rounds/14/runtime/execution_manifest.json', {}, {}),
+    ).toBe(TTL_SECONDS.ROUND_ARTIFACT)
+  })
+
   it('caches /rounds/{id} in a non-terminal state for 30 seconds', () => {
     expect(getTTLSeconds('/rounds/15', {}, { status: 'COLLECTING' })).toBe(
       TTL_SECONDS.ROUND_NON_TERMINAL,
@@ -121,9 +136,6 @@ describe('getTTLSeconds', () => {
   })
 
   it('defaults to 30 seconds for unlisted paths', () => {
-    expect(getTTLSeconds('/rounds/14/vl.json', {}, {})).toBe(
-      TTL_SECONDS.DEFAULT,
-    )
     expect(getTTLSeconds('/unknown/path', {}, {})).toBe(TTL_SECONDS.DEFAULT)
   })
 })
@@ -434,6 +446,22 @@ describe('scoringProxy — per-endpoint TTL integration', () => {
     )
   })
 
+  it('response-aware TTL caches VL_PUBLISHED_MEMO_FAILED rounds long', async () => {
+    axios.get.mockResolvedValue({
+      status: 200,
+      data: { round_number: 16, status: 'VL_PUBLISHED_MEMO_FAILED' },
+    })
+
+    await scoringProxy(
+      mockReq({ url: '/rounds/16', path: '/rounds/16' }),
+      mockRes(),
+    )
+
+    expect(cache.get('/rounds/16').ttlMs).toBe(
+      TTL_SECONDS.ROUND_TERMINAL * 1000,
+    )
+  })
+
   it('response-aware TTL caches non-terminal rounds short', async () => {
     axios.get.mockResolvedValue({
       status: 200,
@@ -447,6 +475,25 @@ describe('scoringProxy — per-endpoint TTL integration', () => {
 
     expect(cache.get('/rounds/15').ttlMs).toBe(
       TTL_SECONDS.ROUND_NON_TERMINAL * 1000,
+    )
+  })
+
+  it('caches immutable round artifacts long', async () => {
+    axios.get.mockResolvedValue({
+      status: 200,
+      data: { validator_scores: [] },
+    })
+
+    await scoringProxy(
+      mockReq({
+        url: '/rounds/14/outputs/validator_scores.json',
+        path: '/rounds/14/outputs/validator_scores.json',
+      }),
+      mockRes(),
+    )
+
+    expect(cache.get('/rounds/14/outputs/validator_scores.json').ttlMs).toBe(
+      TTL_SECONDS.ROUND_ARTIFACT * 1000,
     )
   })
 })

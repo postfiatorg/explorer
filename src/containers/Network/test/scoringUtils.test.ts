@@ -1,13 +1,16 @@
 import {
   classifyRoundState,
   computeValidatorDelta,
+  deriveFailedAtStage,
   findLatestScoredRound,
   findPreviousScoredRound,
   getExcludedScoringServerVersion,
+  getRoundBundleCid,
   getScoringInfoForValidator,
   isInProgressRound,
   isOperationallyPublishedRound,
   isScoredRound,
+  roundScoringConfigFromExecutionManifest,
 } from '../scoringUtils'
 import type { ScoringRoundMeta } from '../scoringUtils'
 
@@ -97,6 +100,19 @@ describe('scoringUtils override handling', () => {
 })
 
 describe('round state helpers', () => {
+  it('normalizes legacy and final bundle CIDs', () => {
+    expect(
+      getRoundBundleCid({
+        final_bundle_cid: 'QmFinalBundle',
+        ipfs_cid: 'QmLegacyBundle',
+      }),
+    ).toBe('QmFinalBundle')
+    expect(getRoundBundleCid({ ipfs_cid: 'QmLegacyBundle' })).toBe(
+      'QmLegacyBundle',
+    )
+    expect(getRoundBundleCid({ final_bundle_cid: '', ipfs_cid: '' })).toBeNull()
+  })
+
   it('identifies in-progress rounds separately from terminal rounds', () => {
     expect(classifyRoundState('COMPLETE')).toBe('complete')
     expect(classifyRoundState('FAILED')).toBe('failed')
@@ -122,9 +138,51 @@ describe('round state helpers', () => {
       isOperationallyPublishedRound(round(9, 'UNEXPECTED_PRIVATE_STATUS')),
     ).toBe(false)
   })
+
+  it('derives failed stages from final bundle CID as well as legacy IPFS CID', () => {
+    expect(
+      deriveFailedAtStage({
+        ...round(16, 'FAILED'),
+        snapshot_hash: 'snapshot',
+        scores_hash: 'scores',
+        vl_sequence: 12,
+      }),
+    ).toBe('IPFS_PUBLISHED')
+    expect(
+      deriveFailedAtStage({
+        ...round(17, 'FAILED'),
+        snapshot_hash: 'snapshot',
+        scores_hash: 'scores',
+        vl_sequence: 12,
+        final_bundle_cid: 'QmFinalBundle',
+      }),
+    ).toBe('VL_DISTRIBUTED')
+  })
 })
 
 describe('excluded scoring server versions', () => {
+  it('reads excluded validator server versions from staged execution manifests', () => {
+    const config = roundScoringConfigFromExecutionManifest({
+      code: {
+        collector: {
+          parameters: {
+            excluded_validator_server_versions: [' 3.0.0 ', '', '2.9.0', 4],
+          },
+        },
+      },
+    })
+
+    expect(config).toEqual({
+      excluded_validator_server_versions: ['3.0.0', '2.9.0'],
+    })
+    expect(getExcludedScoringServerVersion('3.0.0', config)).toBe('3.0.0')
+  })
+
+  it('falls back when staged execution manifests omit collector exclusions', () => {
+    expect(roundScoringConfigFromExecutionManifest({ code: {} })).toBeNull()
+    expect(roundScoringConfigFromExecutionManifest(null)).toBeNull()
+  })
+
   it('matches excluded validator server versions exactly after trimming', () => {
     expect(
       getExcludedScoringServerVersion(' 3.0.0 ', {

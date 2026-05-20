@@ -1415,11 +1415,17 @@
   border-radius: 6px;
   background: $black-90;
   color: $white;
+  cursor: pointer;
   font-size: 12px;
   text-decoration: none;
   @include medium;
 
-  &:hover {
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+
+  &:hover:not(:disabled) {
     border-color: $black-60;
     background: $black-80;
   }

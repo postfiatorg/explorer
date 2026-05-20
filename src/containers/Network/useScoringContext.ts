@@ -11,6 +11,10 @@ import {
   SnapshotJson,
   UnlArtifact,
   fetchJsonOrNull,
+  fetchRoundScoringConfig,
+  fetchRoundScores,
+  fetchRoundSelectedUnl,
+  fetchRoundSnapshot,
   findLatestScoredRound,
   findPreviousScoredRound,
   isScoredRound,
@@ -129,10 +133,7 @@ export const useScoringContext = (): UseScoringContextResult => {
   const { data: scoringScores, isLoading: loadingScores } =
     useQuery<ScoresJson | null>(
       ['scoring-scores', scoredRoundNumber],
-      () =>
-        fetchJsonOrNull<ScoresJson>(
-          `/api/scoring/rounds/${scoredRoundNumber}/scores.json`,
-        ),
+      () => fetchRoundScores(scoredRoundNumber as number),
       {
         enabled: typeof scoredRoundNumber === 'number',
         staleTime: TWENTY_FOUR_HOURS_MS,
@@ -142,10 +143,7 @@ export const useScoringContext = (): UseScoringContextResult => {
 
   const { data: roundScoringConfig } = useQuery<RoundScoringConfig | null>(
     ['scoring-round-config', scoredRoundNumber],
-    () =>
-      fetchJsonOrNull<RoundScoringConfig>(
-        `/api/scoring/rounds/${scoredRoundNumber}/scoring_config.json`,
-      ),
+    () => fetchRoundScoringConfig(scoredRoundNumber as number),
     {
       enabled: typeof scoredRoundNumber === 'number',
       staleTime: TWENTY_FOUR_HOURS_MS,
@@ -155,10 +153,7 @@ export const useScoringContext = (): UseScoringContextResult => {
 
   const { data: priorScores } = useQuery<ScoresJson | null>(
     ['scoring-scores', previousScoredRoundNumber],
-    () =>
-      fetchJsonOrNull<ScoresJson>(
-        `/api/scoring/rounds/${previousScoredRoundNumber}/scores.json`,
-      ),
+    () => fetchRoundScores(previousScoredRoundNumber as number),
     {
       enabled: typeof previousScoredRoundNumber === 'number',
       staleTime: TWENTY_FOUR_HOURS_MS,
@@ -168,10 +163,7 @@ export const useScoringContext = (): UseScoringContextResult => {
 
   const { data: priorUnl } = useQuery<UnlArtifact | null>(
     ['scoring-unl', previousScoredRoundNumber],
-    () =>
-      fetchJsonOrNull<UnlArtifact>(
-        `/api/scoring/rounds/${previousScoredRoundNumber}/unl.json`,
-      ),
+    () => fetchRoundSelectedUnl(previousScoredRoundNumber as number),
     {
       enabled: typeof previousScoredRoundNumber === 'number',
       staleTime: TWENTY_FOUR_HOURS_MS,
@@ -193,10 +185,7 @@ export const useScoringContext = (): UseScoringContextResult => {
 
   const { data: scoringSnapshot } = useQuery<SnapshotJson | null>(
     ['scoring-snapshot', scoredRoundNumber],
-    () =>
-      fetchJsonOrNull<SnapshotJson>(
-        `/api/scoring/rounds/${scoredRoundNumber}/snapshot.json`,
-      ),
+    () => fetchRoundSnapshot(scoredRoundNumber as number),
     {
       enabled: typeof scoredRoundNumber === 'number',
       staleTime: TWENTY_FOUR_HOURS_MS,

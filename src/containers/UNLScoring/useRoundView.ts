@@ -2,11 +2,17 @@ import { useMemo } from 'react'
 import { useQuery } from 'react-query'
 import {
   ScoresJson,
+  RoundScoringConfig,
   ScoringRoundMeta,
   SnapshotJson,
   UnlArtifact,
   ValidatorIdMap,
   fetchJsonOrNull,
+  fetchRoundScoringConfig,
+  fetchRoundScores,
+  fetchRoundSelectedUnl,
+  fetchRoundSnapshot,
+  fetchRoundValidatorIdMap,
   findPreviousScoredRound,
   isFailedRound,
   isInProgressRound,
@@ -27,6 +33,7 @@ interface BaseRoundView {
   priorScores: ScoresJson | null | undefined
   priorUnl: UnlArtifact | null | undefined
   validatorIdMap: ValidatorIdMap | null
+  roundConfig: RoundScoringConfig | null
 }
 
 export interface ScoredRoundView extends BaseRoundView {
@@ -93,10 +100,7 @@ export const useRoundView = (
   const { data: scores, isLoading: loadingScores } =
     useQuery<ScoresJson | null>(
       ['scoring-scores', roundNumber],
-      () =>
-        fetchJsonOrNull<ScoresJson>(
-          `/api/scoring/rounds/${roundNumber}/scores.json`,
-        ),
+      () => fetchRoundScores(roundNumber as number),
       {
         enabled: shouldFetchScoredArtifacts,
         staleTime: TWENTY_FOUR_HOURS_MS,
@@ -106,10 +110,7 @@ export const useRoundView = (
 
   const { data: unl, isLoading: loadingUnl } = useQuery<UnlArtifact | null>(
     ['scoring-unl', roundNumber],
-    () =>
-      fetchJsonOrNull<UnlArtifact>(
-        `/api/scoring/rounds/${roundNumber}/unl.json`,
-      ),
+    () => fetchRoundSelectedUnl(roundNumber as number),
     {
       enabled: shouldFetchRoundArtifacts,
       staleTime: TWENTY_FOUR_HOURS_MS,
@@ -119,10 +120,7 @@ export const useRoundView = (
 
   const { data: snapshot } = useQuery<SnapshotJson | null>(
     ['scoring-snapshot', roundNumber],
-    () =>
-      fetchJsonOrNull<SnapshotJson>(
-        `/api/scoring/rounds/${roundNumber}/snapshot.json`,
-      ),
+    () => fetchRoundSnapshot(roundNumber as number),
     {
       enabled: shouldFetchScoredArtifacts,
       staleTime: TWENTY_FOUR_HOURS_MS,
@@ -132,10 +130,17 @@ export const useRoundView = (
 
   const { data: validatorIdMap } = useQuery<ValidatorIdMap | null>(
     ['scoring-validator-id-map', roundNumber],
-    () =>
-      fetchJsonOrNull<ValidatorIdMap>(
-        `/api/scoring/rounds/${roundNumber}/validator_id_map.json`,
-      ),
+    () => fetchRoundValidatorIdMap(roundNumber as number),
+    {
+      enabled: shouldFetchScoredArtifacts,
+      staleTime: TWENTY_FOUR_HOURS_MS,
+      retry: false,
+    },
+  )
+
+  const { data: roundConfig } = useQuery<RoundScoringConfig | null>(
+    ['scoring-round-config', roundNumber],
+    () => fetchRoundScoringConfig(roundNumber as number),
     {
       enabled: shouldFetchScoredArtifacts,
       staleTime: TWENTY_FOUR_HOURS_MS,
@@ -162,10 +167,7 @@ export const useRoundView = (
 
   const { data: priorScores } = useQuery<ScoresJson | null>(
     ['scoring-scores', previousScoredRoundNumber],
-    () =>
-      fetchJsonOrNull<ScoresJson>(
-        `/api/scoring/rounds/${previousScoredRoundNumber}/scores.json`,
-      ),
+    () => fetchRoundScores(previousScoredRoundNumber as number),
     {
       enabled:
         shouldFetchScoredArtifacts &&
@@ -177,10 +179,7 @@ export const useRoundView = (
 
   const { data: priorUnl } = useQuery<UnlArtifact | null>(
     ['scoring-unl', previousScoredRoundNumber],
-    () =>
-      fetchJsonOrNull<UnlArtifact>(
-        `/api/scoring/rounds/${previousScoredRoundNumber}/unl.json`,
-      ),
+    () => fetchRoundSelectedUnl(previousScoredRoundNumber as number),
     {
       enabled:
         shouldFetchScoredArtifacts &&
@@ -239,6 +238,7 @@ export const useRoundView = (
         priorScores: null,
         priorUnl: null,
         validatorIdMap: null,
+        roundConfig: null,
       }
     }
     if (!scores) return null
@@ -251,6 +251,7 @@ export const useRoundView = (
       priorScores: priorScoresForView,
       priorUnl: priorUnlForView,
       validatorIdMap: validatorIdMap ?? null,
+      roundConfig: roundConfig ?? null,
     }
   }, [
     round,
@@ -260,6 +261,7 @@ export const useRoundView = (
     priorScoresForView,
     priorUnlForView,
     validatorIdMap,
+    roundConfig,
   ])
 
   const roundNotFound = enabled && !loadingRound && round === null

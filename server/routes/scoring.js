@@ -8,7 +8,11 @@ const THREE_MINUTES_S = 3 * 60
 const THIRTY_SECONDS_S = 30
 
 const REQUEST_TIMEOUT_MS = 10000
-const TERMINAL_ROUND_STATUSES = new Set(['COMPLETE', 'FAILED'])
+const TERMINAL_ROUND_STATUSES = new Set([
+  'COMPLETE',
+  'FAILED',
+  'VL_PUBLISHED_MEMO_FAILED',
+])
 
 const cache = new Map()
 
@@ -26,6 +30,8 @@ const getTTLSeconds = (path, query, responseBody) => {
     if (TERMINAL_ROUND_STATUSES.has(status)) return TWENTY_FOUR_HOURS_S
     return THIRTY_SECONDS_S
   }
+
+  if (/^\/rounds\/\d+\/.+/.test(path)) return TWENTY_FOUR_HOURS_S
 
   return THIRTY_SECONDS_S
 }
@@ -111,6 +117,7 @@ module.exports = {
     ROUNDS_LIST_DEFAULT: THREE_MINUTES_S,
     ROUND_TERMINAL: TWENTY_FOUR_HOURS_S,
     ROUND_NON_TERMINAL: THIRTY_SECONDS_S,
+    ROUND_ARTIFACT: TWENTY_FOUR_HOURS_S,
     DEFAULT: THIRTY_SECONDS_S,
   },
 }

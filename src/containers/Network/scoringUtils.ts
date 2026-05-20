@@ -20,6 +20,7 @@ export interface ScoringUnlResponse {
 }
 
 export interface ScoringRoundMeta {
+  id?: number
   round_number: number
   status: string
   completed_at: string | null
@@ -31,11 +32,22 @@ export interface ScoringRoundMeta {
   snapshot_hash?: string | null
   scores_hash?: string | null
   vl_sequence?: number | null
+  final_bundle_cid?: string | null
   ipfs_cid?: string | null
   memo_tx_hash?: string | null
   github_pages_commit_url?: string | null
   override_type?: string | null
   override_reason?: string | null
+}
+
+export const getRoundBundleCid = (
+  round:
+    | Pick<ScoringRoundMeta, 'final_bundle_cid' | 'ipfs_cid'>
+    | null
+    | undefined,
+): string | null => {
+  const cid = round?.final_bundle_cid ?? round?.ipfs_cid
+  return cid || null
 }
 
 export type FailedAtStage =
@@ -53,7 +65,7 @@ export const deriveFailedAtStage = (
   if (round.snapshot_hash == null) return 'COLLECTING'
   if (round.scores_hash == null) return 'SCORED'
   if (round.vl_sequence == null) return 'SELECTED_OR_VL_SIGNED'
-  if (round.ipfs_cid == null) return 'IPFS_PUBLISHED'
+  if (getRoundBundleCid(round) == null) return 'IPFS_PUBLISHED'
   if (round.github_pages_commit_url == null) return 'VL_DISTRIBUTED'
   if (round.memo_tx_hash == null) return 'ONCHAIN_PUBLISHED'
   return null
@@ -151,6 +163,16 @@ export interface RoundScoringConfig {
   excluded_validator_server_versions?: string[]
 }
 
+export interface ExecutionManifest {
+  code?: {
+    collector?: {
+      parameters?: {
+        excluded_validator_server_versions?: unknown
+      }
+    }
+  }
+}
+
 export interface ScoringContext {
   activeRound: ScoringRoundMeta
   unl: ScoringUnlResponse
@@ -237,6 +259,27 @@ export const getScoringInfoForValidator = (
 
 const normalizeServerVersion = (serverVersion: unknown): string =>
   serverVersion == null ? '' : String(serverVersion).trim()
+
+const normalizeExcludedServerVersions = (
+  value: unknown,
+): string[] | undefined => {
+  if (!Array.isArray(value)) return undefined
+  return value
+    .filter((version): version is string => typeof version === 'string')
+    .map(normalizeServerVersion)
+    .filter((version) => version.length > 0)
+}
+
+export const roundScoringConfigFromExecutionManifest = (
+  manifest: ExecutionManifest | null | undefined,
+): RoundScoringConfig | null => {
+  const versions = normalizeExcludedServerVersions(
+    manifest?.code?.collector?.parameters?.excluded_validator_server_versions,
+  )
+  return versions === undefined
+    ? null
+    : { excluded_validator_server_versions: versions }
+}
 
 export const getExcludedScoringServerVersion = (
   serverVersion: unknown,
@@ -381,6 +424,84 @@ export interface SnapshotValidator {
 
 export interface SnapshotJson {
   validators: SnapshotValidator[]
+}
+
+export const ROUND_ARTIFACT_PATHS = {
+  scores: ['outputs/validator_scores.json', 'scores.json'],
+  unl: ['outputs/selected_unl.json', 'unl.json'],
+  snapshot: ['inputs/validator_evidence.json', 'snapshot.json'],
+  validatorMap: ['inputs/validator_map.json', 'validator_id_map.json'],
+  signedValidatorList: ['outputs/signed_validator_list.json', 'vl.json'],
+  executionManifest: ['runtime/execution_manifest.json'],
+  legacyScoringConfig: ['scoring_config.json'],
+} as const
+
+const roundArtifactUrl = (roundNumber: number, path: string): string =>
+  `/api/scoring/rounds/${roundNumber}/${path}`
+
+export const fetchRoundArtifact = async <T>(
+  roundNumber: number,
+  paths: readonly string[],
+  index = 0,
+): Promise<T | null> => {
+  const path = paths[index]
+  if (path === undefined) return null
+  const data = await fetchJsonOrNull<T>(roundArtifactUrl(roundNumber, path))
+  return data ?? fetchRoundArtifact<T>(roundNumber, paths, index + 1)
+}
+
+export const fetchRoundScores = (
+  roundNumber: number,
+): Promise<ScoresJson | null> =>
+  fetchRoundArtifact<ScoresJson>(roundNumber, ROUND_ARTIFACT_PATHS.scores)
+
+export const fetchRoundSelectedUnl = (
+  roundNumber: number,
+): Promise<UnlArtifact | null> =>
+  fetchRoundArtifact<UnlArtifact>(roundNumber, ROUND_ARTIFACT_PATHS.unl)
+
+export const fetchRoundSnapshot = (
+  roundNumber: number,
+): Promise<SnapshotJson | null> =>
+  fetchRoundArtifact<SnapshotJson>(roundNumber, ROUND_ARTIFACT_PATHS.snapshot)
+
+export const fetchRoundValidatorIdMap = (
+  roundNumber: number,
+): Promise<ValidatorIdMap | null> =>
+  fetchRoundArtifact<ValidatorIdMap>(
+    roundNumber,
+    ROUND_ARTIFACT_PATHS.validatorMap,
+  )
+
+export const fetchRoundSignedValidatorList = <T = unknown>(
+  roundNumber: number,
+): Promise<T | null> =>
+  fetchRoundArtifact<T>(roundNumber, ROUND_ARTIFACT_PATHS.signedValidatorList)
+
+export const fetchRoundExecutionManifest = (
+  roundNumber: number,
+): Promise<ExecutionManifest | null> =>
+  fetchRoundArtifact<ExecutionManifest>(
+    roundNumber,
+    ROUND_ARTIFACT_PATHS.executionManifest,
+  )
+
+export const fetchRoundScoringConfig = async (
+  roundNumber: number,
+): Promise<RoundScoringConfig | null> => {
+  const legacyConfig = await fetchRoundArtifact<RoundScoringConfig>(
+    roundNumber,
+    ROUND_ARTIFACT_PATHS.legacyScoringConfig,
+  )
+  const legacyVersions = normalizeExcludedServerVersions(
+    legacyConfig?.excluded_validator_server_versions,
+  )
+  if (legacyVersions !== undefined) {
+    return { excluded_validator_server_versions: legacyVersions }
+  }
+
+  const manifest = await fetchRoundExecutionManifest(roundNumber)
+  return roundScoringConfigFromExecutionManifest(manifest)
 }
 
 export interface HealthSignal {

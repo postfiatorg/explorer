@@ -312,7 +312,7 @@ export const UNLScoring = () => {
       scores: viewingRound.scores,
       round: viewingRound.round,
       config: latestContext.config,
-      roundConfig: latestContext.roundConfig,
+      roundConfig: viewingRound.roundConfig,
     }
   }, [viewingRound, latestContext])
 

@@ -3,6 +3,7 @@ import { Check, Copy } from 'lucide-react'
 import { CopyableAddress } from '../shared/components/CopyableAddress/CopyableAddress'
 import {
   ScoringRoundMeta,
+  getRoundBundleCid,
   isMemoFailedPublishedRound,
 } from '../Network/scoringUtils'
 import { useAuditTrail } from './useAuditTrail'
@@ -52,6 +53,20 @@ const formatExpiresRelative = (
 const formatLedger = (ledger: number | null): string => {
   if (ledger === null) return '—'
   return ledger.toLocaleString('en-US')
+}
+
+const downloadJson = (data: unknown, filename: string): void => {
+  const blob = new Blob([JSON.stringify(data, null, 2)], {
+    type: 'application/json',
+  })
+  const url = URL.createObjectURL(blob)
+  const anchor = document.createElement('a')
+  anchor.href = url
+  anchor.download = filename
+  document.body.appendChild(anchor)
+  anchor.click()
+  document.body.removeChild(anchor)
+  URL.revokeObjectURL(url)
 }
 
 const MemoBody: FC<{ raw: string }> = ({ raw }) => {
@@ -115,22 +130,25 @@ export const AuditTrailPanel: FC<AuditTrailPanelProps> = ({
   round,
   supersedingRound = null,
 }) => {
-  const { vlEffectiveIso, vlExpiresIso, memoLedger, memoBodyText } =
+  const { vlEffectiveIso, vlExpiresIso, memoLedger, memoBodyText, signedVl } =
     useAuditTrail(round)
+  const cid = getRoundBundleCid(round)
 
-  if (round.status === 'FAILED' || !round.ipfs_cid) {
+  if (round.status === 'FAILED' || !cid) {
     return <PlaceholderPanel round={round} />
   }
 
-  const cid = round.ipfs_cid
   const ipfsPrimaryUrl = `https://${IPFS_PRIMARY_HOST}/ipfs/${cid}`
   const pinataUrl = `https://gateway.pinata.cloud/ipfs/${cid}`
-  const vlDownloadUrl = `/api/scoring/rounds/${round.round_number}/vl.json`
   const memoTxLink = round.memo_tx_hash
     ? `/transactions/${round.memo_tx_hash}`
     : null
   const showMemoFailure =
     isMemoFailedPublishedRound(round) && !round.memo_tx_hash
+  const handleDownloadSignedVl = () => {
+    if (!signedVl) return
+    downloadJson(signedVl, `round-${round.round_number}-vl.json`)
+  }
 
   return (
     <div className="audit-trail dashboard-panel">
@@ -184,13 +202,14 @@ export const AuditTrailPanel: FC<AuditTrailPanelProps> = ({
             </>
           )}
         </dl>
-        <a
+        <button
+          type="button"
           className="audit-trail-download"
-          href={vlDownloadUrl}
-          download={`round-${round.round_number}-vl.json`}
+          onClick={handleDownloadSignedVl}
+          disabled={!signedVl}
         >
           Download vl.json (round #{round.round_number})
-        </a>
+        </button>
       </section>
 
       {round.memo_tx_hash && (

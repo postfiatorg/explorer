@@ -1,6 +1,10 @@
 import { useContext } from 'react'
 import { useQuery } from 'react-query'
-import { ScoringRoundMeta, fetchJsonOrNull } from '../Network/scoringUtils'
+import {
+  ScoringRoundMeta,
+  fetchRoundSignedValidatorList,
+  getRoundBundleCid,
+} from '../Network/scoringUtils'
 import SocketContext from '../shared/SocketContext'
 import { getTransaction } from '../../rippled'
 
@@ -32,6 +36,7 @@ export interface AuditTrailData {
   vlExpiresIso: string | null
   memoLedger: number | null
   memoBodyText: string | null
+  signedVl: VLJsonEnvelope | null
   vlJsonAvailable: boolean
 }
 
@@ -86,7 +91,7 @@ export const useAuditTrail = (
 ): AuditTrailData => {
   const rippledSocket = useContext(SocketContext)
 
-  const hasCid = Boolean(round?.ipfs_cid)
+  const hasCid = Boolean(getRoundBundleCid(round))
   const hasMemo = Boolean(round?.memo_tx_hash)
   const roundNumber = round?.round_number
 
@@ -94,9 +99,7 @@ export const useAuditTrail = (
     useQuery<VLJsonEnvelope | null>(
       ['scoring-vl', roundNumber],
       () =>
-        fetchJsonOrNull<VLJsonEnvelope>(
-          `/api/scoring/rounds/${roundNumber}/vl.json`,
-        ),
+        fetchRoundSignedValidatorList<VLJsonEnvelope>(roundNumber as number),
       {
         enabled: typeof roundNumber === 'number' && hasCid,
         staleTime: TWENTY_FOUR_HOURS_MS,
@@ -136,6 +139,7 @@ export const useAuditTrail = (
     vlExpiresIso,
     memoLedger,
     memoBodyText,
+    signedVl: vlEnvelope ?? null,
     vlJsonAvailable: vlStatus === 'success' && vlEnvelope !== null,
   }
 }
