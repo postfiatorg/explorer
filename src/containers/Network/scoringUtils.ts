@@ -564,6 +564,31 @@ export const computeValidatorDelta = (
   return membership ? { kind: 'same', membership } : { kind: 'same' }
 }
 
+export const FRESHNESS_WINDOW_HOURS = 24
+
+// A round is "fresh" while it is an operationally published, non-override
+// scored round whose completion is recent. The window is capped at the scoring
+// cadence so the indicator can never stay lit permanently if rounds ever run
+// more often than the window length.
+export const isRoundFresh = (
+  round: ScoringRoundMeta | null | undefined,
+  cadenceHours: number | null | undefined,
+  now: number = Date.now(),
+): boolean => {
+  if (!round || !isScoredRound(round) || !round.completed_at) return false
+
+  const completedMs = Date.parse(round.completed_at)
+  if (Number.isNaN(completedMs)) return false
+
+  const windowHours =
+    cadenceHours && Number.isFinite(cadenceHours) && cadenceHours > 0
+      ? Math.min(FRESHNESS_WINDOW_HOURS, cadenceHours)
+      : FRESHNESS_WINDOW_HOURS
+
+  const elapsedHours = (now - completedMs) / (60 * 60 * 1000)
+  return elapsedHours >= 0 && elapsedHours < windowHours
+}
+
 export type StalenessLevel = 'neutral' | 'amber' | 'red'
 
 export const getStalenessLevel = (

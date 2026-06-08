@@ -4,6 +4,7 @@ import { PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { sidebarConfig, sidebarFooterLinks, SidebarItem } from './sidebarConfig'
 import { useSidebarContext } from '../SidebarContext'
 import { useScoringAvailability } from '../../Network/useScoringAvailability'
+import { useScoringFreshness } from '../../Network/useScoringFreshness'
 import './sidebar.scss'
 
 const UNL_SCORING_LABEL = 'UNL Scoring'
@@ -12,14 +13,18 @@ interface SidebarNavItemProps {
   item: SidebarItem
   collapsed: boolean
   pathname: string
+  showFreshnessDot: boolean
   onNavigate?: () => void
 }
 
-const SidebarItemLabel: FC<{ item: SidebarItem }> = ({ item }) => (
+const SidebarItemLabel: FC<{
+  item: SidebarItem
+  showFreshnessDot: boolean
+}> = ({ item, showFreshnessDot }) => (
   <span className="sidebar-item-content">
     <span className="sidebar-item-label">{item.label}</span>
-    {item.badge && (
-      <span className="sidebar-item-badge">{item.badge.label}</span>
+    {showFreshnessDot && (
+      <span className="sidebar-item-freshness-dot" aria-hidden />
     )}
   </span>
 )
@@ -28,6 +33,7 @@ const SidebarNavItem: FC<SidebarNavItemProps> = ({
   item,
   collapsed,
   pathname,
+  showFreshnessDot,
   onNavigate,
 }) => {
   const isActive =
@@ -47,7 +53,9 @@ const SidebarNavItem: FC<SidebarNavItemProps> = ({
         title={collapsed ? item.label : undefined}
       >
         <Icon size={20} />
-        {!collapsed && <SidebarItemLabel item={item} />}
+        {!collapsed && (
+          <SidebarItemLabel item={item} showFreshnessDot={showFreshnessDot} />
+        )}
       </a>
     )
   }
@@ -60,7 +68,9 @@ const SidebarNavItem: FC<SidebarNavItemProps> = ({
       onClick={onNavigate}
     >
       <Icon size={20} />
-      {!collapsed && <SidebarItemLabel item={item} />}
+      {!collapsed && (
+        <SidebarItemLabel item={item} showFreshnessDot={showFreshnessDot} />
+      )}
     </Link>
   )
 }
@@ -73,6 +83,7 @@ export const Sidebar: FC<SidebarProps> = ({ onNavigate }) => {
   const { collapsed, setCollapsed } = useSidebarContext()
   const { pathname } = useLocation()
   const { state: scoringState } = useScoringAvailability()
+  const { isFresh } = useScoringFreshness()
 
   // Hide the UNL Scoring nav entry on networks that haven't completed a
   // scoring round yet; re-appears automatically once the first round lands.
@@ -92,6 +103,7 @@ export const Sidebar: FC<SidebarProps> = ({ onNavigate }) => {
               item={item}
               collapsed={collapsed}
               pathname={pathname}
+              showFreshnessDot={Boolean(item.freshnessDot) && isFresh}
               onNavigate={onNavigate}
             />
           ))}
@@ -103,6 +115,7 @@ export const Sidebar: FC<SidebarProps> = ({ onNavigate }) => {
               item={item}
               collapsed={collapsed}
               pathname={pathname}
+              showFreshnessDot={false}
               onNavigate={onNavigate}
             />
           ))}

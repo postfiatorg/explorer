@@ -9,6 +9,7 @@ import {
   getScoringInfoForValidator,
   isInProgressRound,
   isOperationallyPublishedRound,
+  isRoundFresh,
   isScoredRound,
   roundScoringConfigFromExecutionManifest,
 } from '../scoringUtils'
@@ -274,5 +275,82 @@ describe('computeValidatorDelta', () => {
         { unl: ['validator-a'], alternates: [] },
       ),
     ).toEqual({ kind: 'same' })
+  })
+})
+
+describe('isRoundFresh', () => {
+  const HOUR_MS = 60 * 60 * 1000
+  const completedAt = '2026-06-01T00:00:00Z'
+  const completedMs = Date.parse(completedAt)
+
+  const freshRound = (
+    overrides: Partial<ScoringRoundMeta> = {},
+  ): ScoringRoundMeta => ({
+    round_number: 9,
+    status: 'COMPLETE',
+    completed_at: completedAt,
+    override_type: null,
+    ...overrides,
+  })
+
+  it('is fresh inside the default 24h window when cadence is long', () => {
+    expect(isRoundFresh(freshRound(), 168, completedMs + 5 * HOUR_MS)).toBe(
+      true,
+    )
+  })
+
+  it('becomes stale once the window elapses', () => {
+    expect(isRoundFresh(freshRound(), 168, completedMs + 25 * HOUR_MS)).toBe(
+      false,
+    )
+  })
+
+  it('is no longer fresh exactly at the window boundary', () => {
+    expect(isRoundFresh(freshRound(), 168, completedMs + 24 * HOUR_MS)).toBe(
+      false,
+    )
+  })
+
+  it('ignores a round whose completion is in the future (clock skew)', () => {
+    expect(isRoundFresh(freshRound(), 168, completedMs - HOUR_MS)).toBe(false)
+  })
+
+  it('caps the window at the cadence so it cannot stay lit permanently', () => {
+    expect(isRoundFresh(freshRound(), 6, completedMs + 5 * HOUR_MS)).toBe(true)
+    expect(isRoundFresh(freshRound(), 6, completedMs + 7 * HOUR_MS)).toBe(false)
+  })
+
+  it('falls back to the 24h window when cadence is unknown', () => {
+    expect(isRoundFresh(freshRound(), null, completedMs + 5 * HOUR_MS)).toBe(
+      true,
+    )
+    expect(isRoundFresh(freshRound(), null, completedMs + 25 * HOUR_MS)).toBe(
+      false,
+    )
+  })
+
+  it('treats VL_PUBLISHED_MEMO_FAILED as a fresh published round', () => {
+    expect(
+      isRoundFresh(
+        freshRound({ status: 'VL_PUBLISHED_MEMO_FAILED' }),
+        168,
+        completedMs + HOUR_MS,
+      ),
+    ).toBe(true)
+  })
+
+  it('suppresses override, failed, in-progress, and missing rounds', () => {
+    const now = completedMs + HOUR_MS
+    expect(
+      isRoundFresh(freshRound({ override_type: 'manual' }), 168, now),
+    ).toBe(false)
+    expect(isRoundFresh(freshRound({ status: 'FAILED' }), 168, now)).toBe(false)
+    expect(isRoundFresh(freshRound({ status: 'COLLECTING' }), 168, now)).toBe(
+      false,
+    )
+    expect(isRoundFresh(freshRound({ completed_at: null }), 168, now)).toBe(
+      false,
+    )
+    expect(isRoundFresh(null, 168, now)).toBe(false)
   })
 })

@@ -7,7 +7,14 @@ import SocketContext from '../../shared/SocketContext'
 import MockWsClient from '../../test/mockWsClient'
 import { Header } from '../index'
 import { queryClient } from '../../shared/QueryClient'
+import { useScoringFreshness } from '../../Network/useScoringFreshness'
 import { V7_FUTURE_ROUTER_FLAGS } from '../../test/utils'
+
+jest.mock('../../Network/useScoringFreshness')
+
+const mockUseScoringFreshness = useScoringFreshness as jest.MockedFunction<
+  typeof useScoringFreshness
+>
 
 describe('Header component', () => {
   let client
@@ -26,10 +33,12 @@ describe('Header component', () => {
 
   beforeEach(() => {
     client = new MockWsClient()
+    mockUseScoringFreshness.mockReturnValue({ isFresh: false })
   })
 
   afterEach(() => {
     client.close()
+    jest.clearAllMocks()
   })
 
   it('renders without crashing', () => {
@@ -47,7 +56,8 @@ describe('Header component', () => {
     wrapper.unmount()
   })
 
-  it('renders the UNL Scoring navigation badge without changing other links', () => {
+  it('shows the UNL Scoring freshness dot only on that link when a round is fresh', () => {
+    mockUseScoringFreshness.mockReturnValue({ isFresh: true })
     const wrapper = createWrapper()
     const unlScoringLink = wrapper
       .find('a.nav-link[href="/unl-scoring"]')
@@ -58,9 +68,22 @@ describe('Header component', () => {
 
     expect(unlScoringLink.length).toEqual(1)
     expect(unlScoringLink.find('.nav-label-text').text()).toEqual('UNL Scoring')
-    expect(unlScoringLink.find('.nav-badge').text()).toEqual('NEW')
+    expect(unlScoringLink.find('.nav-freshness-dot').exists()).toBe(true)
     expect(nodesLink.length).toEqual(1)
-    expect(nodesLink.find('.nav-badge').exists()).toBe(false)
+    expect(nodesLink.find('.nav-freshness-dot').exists()).toBe(false)
+
+    wrapper.unmount()
+  })
+
+  it('hides the UNL Scoring freshness dot when no round is fresh', () => {
+    mockUseScoringFreshness.mockReturnValue({ isFresh: false })
+    const wrapper = createWrapper()
+    const unlScoringLink = wrapper
+      .find('a.nav-link[href="/unl-scoring"]')
+      .hostNodes()
+
+    expect(unlScoringLink.length).toEqual(1)
+    expect(unlScoringLink.find('.nav-freshness-dot').exists()).toBe(false)
 
     wrapper.unmount()
   })

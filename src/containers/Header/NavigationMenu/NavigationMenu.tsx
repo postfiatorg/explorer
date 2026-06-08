@@ -9,17 +9,14 @@ import { Dropdown, DropdownItem } from '../../shared/components/Dropdown'
 import type { defaultTranslationsKey } from '../../../../@types/i18next'
 import { useAnalytics } from '../../shared/analytics'
 import { buildPath, RouteLink, RouteDefinition } from '../../shared/routing'
+import { useScoringFreshness } from '../../Network/useScoringFreshness'
 
 import './NavigationMenu.scss'
-
-export interface NavigationMenuBadge {
-  label: string
-}
 
 export interface NavigationMenuRoute {
   title: defaultTranslationsKey
   current?: (path: string) => boolean
-  badge?: NavigationMenuBadge
+  freshnessDot?: boolean
 }
 
 export interface NavigationMenuParentRoute extends NavigationMenuRoute {
@@ -40,15 +37,15 @@ export type NavigationMenuAnyRoute =
   | NavigationMenuExternalRoute
   | NavigationMenuInternalRoute
 
-const renderNavigationLabel = (title: string, badge?: NavigationMenuBadge) => {
-  if (!badge) {
+const renderNavigationLabel = (title: string, showFreshnessDot?: boolean) => {
+  if (!showFreshnessDot) {
     return title
   }
 
   return (
     <span className="nav-label">
       <span className="nav-label-text">{title}</span>
-      <span className="nav-badge">{badge.label}</span>
+      <span className="nav-freshness-dot" aria-hidden />
     </span>
   )
 }
@@ -61,6 +58,7 @@ export const NavigationMenu = ({
   const { track } = useAnalytics()
   const location = useLocation()
   const { t } = useTranslation()
+  const { isFresh } = useScoringFreshness()
   const toggle = useRef<HTMLInputElement>(null)
 
   // manually set toggle to false because the <Link> component will `preventDefault` breaking the <label> technique
@@ -108,7 +106,10 @@ export const NavigationMenu = ({
               return (
                 <Dropdown
                   key={nav.title}
-                  title={renderNavigationLabel(title, nav.badge)}
+                  title={renderNavigationLabel(
+                    title,
+                    Boolean(nav.freshnessDot) && isFresh,
+                  )}
                   className="nav-item dropdown-right"
                   tagName="li"
                 >
@@ -119,7 +120,10 @@ export const NavigationMenu = ({
                       className="nav-link"
                       key={child.title}
                     >
-                      {renderNavigationLabel(t(child.title), child.badge)}
+                      {renderNavigationLabel(
+                        t(child.title),
+                        Boolean(child.freshnessDot) && isFresh,
+                      )}
                     </DropdownItem>
                   ))}
                 </Dropdown>
@@ -135,7 +139,10 @@ export const NavigationMenu = ({
                     data-title={title}
                     className="nav-link"
                   >
-                    {renderNavigationLabel(title, nav.badge)}
+                    {renderNavigationLabel(
+                      title,
+                      Boolean(nav.freshnessDot) && isFresh,
+                    )}
                   </a>
                 </li>
               )
@@ -155,7 +162,10 @@ export const NavigationMenu = ({
                   onClick={forceClose}
                   params={nav.params || {}}
                 >
-                  {renderNavigationLabel(title, nav.badge)}
+                  {renderNavigationLabel(
+                    title,
+                    Boolean(nav.freshnessDot) && isFresh,
+                  )}
                 </RouteLink>
                 <div className="dot" />
               </li>

@@ -16,9 +16,7 @@ export interface SidebarItem {
   icon: typeof LayoutDashboard
   path?: string
   href?: string
-  badge?: {
-    label: string
-  }
+  freshnessDot?: boolean
 }
 
 export const sidebarConfig: SidebarItem[] = [
@@ -30,9 +28,7 @@ export const sidebarConfig: SidebarItem[] = [
     label: 'UNL Scoring',
     icon: Gauge,
     path: '/unl-scoring',
-    badge: {
-      label: 'NEW',
-    },
+    freshnessDot: true,
   },
   { label: 'Amendments', icon: FileText, path: '/amendments' },
   {
