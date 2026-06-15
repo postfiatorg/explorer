@@ -1,9 +1,10 @@
-import { FC, useCallback, useMemo, useState } from 'react'
+import { FC, ReactNode, useCallback, useMemo, useState } from 'react'
 import { Check, Copy } from 'lucide-react'
 import { CopyableAddress } from '../shared/components/CopyableAddress/CopyableAddress'
 import {
   ScoringRoundMeta,
   getRoundBundleCid,
+  getRoundInputPackageCid,
   isMemoFailedPublishedRound,
 } from '../Network/scoringUtils'
 import { useAuditTrail } from './useAuditTrail'
@@ -17,8 +18,18 @@ interface AuditTrailPanelProps {
 // this hostname is constant regardless of VITE_ENVIRONMENT. If/when mainnet
 // gets its own gateway, this becomes environment-driven.
 const IPFS_PRIMARY_HOST = 'ipfs-testnet.postfiat.org'
+const PINATA_GATEWAY_HOST = 'gateway.pinata.cloud'
 
-const formatUtcTimestamp = (iso: string | null): string => {
+const ipfsUrl = (host: string, cid: string): string =>
+  `https://${host}/ipfs/${cid}`
+
+const VERIFICATION_HASH_FIELDS = [
+  { key: 'model_response_hash', label: 'Model response' },
+  { key: 'validator_scores_hash', label: 'Validator scores' },
+  { key: 'selected_unl_hash', label: 'Selected UNL' },
+] as const
+
+const formatUtcTimestamp = (iso: string | null | undefined): string => {
   if (!iso) return '—'
   const date = new Date(iso)
   if (Number.isNaN(date.getTime())) return '—'
@@ -41,13 +52,10 @@ const formatExpiresRelative = (
   const diffDays = Math.round(
     (target.getTime() - from.getTime()) / (1000 * 60 * 60 * 24),
   )
-  const tail = ', or when the next round publishes'
-  if (diffDays === 0) return `(today${tail})`
-  if (diffDays > 0) {
-    return `(in ${diffDays} day${diffDays === 1 ? '' : 's'}${tail})`
-  }
+  if (diffDays === 0) return '(today)'
+  if (diffDays > 0) return `(in ${diffDays} day${diffDays === 1 ? '' : 's'})`
   const ago = -diffDays
-  return `(${ago} day${ago === 1 ? '' : 's'} ago${tail})`
+  return `(${ago} day${ago === 1 ? '' : 's'} ago)`
 }
 
 const formatLedger = (ledger: number | null): string => {
@@ -102,15 +110,43 @@ const MemoBody: FC<{ raw: string }> = ({ raw }) => {
   )
 }
 
-const GatewayLink: FC<{ label: string; href: string }> = ({ label, href }) => (
-  <a
-    className="audit-gateway-link"
-    href={href}
-    target="_blank"
-    rel="noopener noreferrer"
-  >
-    {label}
-  </a>
+// PostFiat gateway is the primary; Pinata is offered as a manual fallback the
+// user can click if the primary is unreachable. These are plain external links
+// — Explorer fetches round data through its own /api/scoring proxy, not through
+// these gateways — so there is nothing to fall back to automatically.
+const GatewayLinks: FC<{ cid: string; children?: ReactNode }> = ({
+  cid,
+  children,
+}) => (
+  <div className="audit-trail-links">
+    <a
+      className="audit-gateway-link"
+      href={ipfsUrl(IPFS_PRIMARY_HOST, cid)}
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      Open on IPFS
+    </a>
+    <a
+      className="audit-gateway-alt"
+      href={ipfsUrl(PINATA_GATEWAY_HOST, cid)}
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      Pinata
+    </a>
+    {children}
+  </div>
+)
+
+const Field: FC<{ label: string; children: ReactNode }> = ({
+  label,
+  children,
+}) => (
+  <div className="audit-card-field">
+    <span className="audit-card-key">{label}</span>
+    <span className="audit-card-value">{children}</span>
+  </div>
 )
 
 const auditTitleFor = (round: ScoringRoundMeta): string =>
@@ -130,16 +166,21 @@ export const AuditTrailPanel: FC<AuditTrailPanelProps> = ({
   round,
   supersedingRound = null,
 }) => {
-  const { vlEffectiveIso, vlExpiresIso, memoLedger, memoBodyText, signedVl } =
-    useAuditTrail(round)
+  const {
+    vlEffectiveIso,
+    vlExpiresIso,
+    memoLedger,
+    memoBodyText,
+    signedVl,
+    verificationHashes,
+  } = useAuditTrail(round)
   const cid = getRoundBundleCid(round)
+  const inputCid = getRoundInputPackageCid(round)
 
   if (round.status === 'FAILED' || !cid) {
     return <PlaceholderPanel round={round} />
   }
 
-  const ipfsPrimaryUrl = `https://${IPFS_PRIMARY_HOST}/ipfs/${cid}`
-  const pinataUrl = `https://gateway.pinata.cloud/ipfs/${cid}`
   const memoTxLink = round.memo_tx_hash
     ? `/transactions/${round.memo_tx_hash}`
     : null
@@ -150,6 +191,65 @@ export const AuditTrailPanel: FC<AuditTrailPanelProps> = ({
     downloadJson(signedVl, `round-${round.round_number}-vl.json`)
   }
 
+  const reproducibleHashes = VERIFICATION_HASH_FIELDS.flatMap((field) => {
+    const value = verificationHashes?.[field.key]
+    return value ? [{ label: field.label, value }] : []
+  })
+
+  const outputsCard = (
+    <section className="audit-trail-card">
+      <h3 className="audit-card-title">
+        <span className="audit-card-dot audit-card-dot-out" />
+        Published outputs
+      </h3>
+      <div className="audit-card-field">
+        <span className="audit-card-key">Final bundle CID</span>
+        <div className="audit-trail-cid">
+          <CopyableAddress address={cid} />
+        </div>
+      </div>
+      <Field label="VL sequence">
+        {round.vl_sequence ?? '—'}
+        {vlEffectiveIso && (
+          <span className="audit-card-muted">
+            {' '}
+            · effective {formatUtcTimestamp(vlEffectiveIso)}
+          </span>
+        )}
+      </Field>
+      {supersedingRound ? (
+        <Field label="Expired">
+          {formatUtcTimestamp(supersedingRound.completed_at)}
+          <span className="audit-card-muted">
+            {' '}
+            (when round #{supersedingRound.round_number} completed)
+          </span>
+        </Field>
+      ) : (
+        <Field label="Expires">
+          {formatUtcTimestamp(vlExpiresIso)}
+          <span className="audit-card-muted">
+            {' '}
+            {formatExpiresRelative(vlExpiresIso)}
+          </span>
+        </Field>
+      )}
+      <GatewayLinks cid={cid}>
+        <span className="audit-trail-sep" aria-hidden="true">
+          ·
+        </span>
+        <button
+          type="button"
+          className="audit-gateway-alt"
+          onClick={handleDownloadSignedVl}
+          disabled={!signedVl}
+        >
+          Download vl.json
+        </button>
+      </GatewayLinks>
+    </section>
+  )
+
   return (
     <div className="audit-trail dashboard-panel">
       <h2 className="audit-trail-title">{auditTitleFor(round)}</h2>
@@ -159,58 +259,63 @@ export const AuditTrailPanel: FC<AuditTrailPanelProps> = ({
         </p>
       )}
 
-      <section className="audit-trail-section">
-        <span className="audit-trail-label">IPFS CID</span>
-        <div className="audit-trail-value audit-trail-cid">
-          <CopyableAddress address={cid} />
+      {inputCid ? (
+        <div className="audit-trail-cols">
+          <section className="audit-trail-card">
+            <h3 className="audit-card-title">
+              <span className="audit-card-dot audit-card-dot-in" />
+              Frozen inputs
+            </h3>
+            <Field label="Frozen at">
+              {formatUtcTimestamp(round.input_frozen_at)}
+            </Field>
+            <div className="audit-card-field">
+              <span className="audit-card-key">Input package CID</span>
+              <div className="audit-trail-cid">
+                <CopyableAddress address={inputCid} />
+              </div>
+            </div>
+            {round.input_package_hash && (
+              <div className="audit-card-field">
+                <span className="audit-card-key">Package hash</span>
+                <span className="audit-trail-cid">
+                  {round.input_package_hash}
+                </span>
+              </div>
+            )}
+            <GatewayLinks cid={inputCid} />
+          </section>
+          {outputsCard}
         </div>
-        <div className="audit-trail-links">
-          <GatewayLink
-            label={`Open on ${IPFS_PRIMARY_HOST}`}
-            href={ipfsPrimaryUrl}
-          />
-          <GatewayLink label="Open on Pinata gateway" href={pinataUrl} />
-        </div>
-      </section>
+      ) : (
+        outputsCard
+      )}
 
-      <section className="audit-trail-section">
-        <span className="audit-trail-label">Published VL</span>
-        <dl className="audit-trail-grid">
-          <dt>VL sequence</dt>
-          <dd>{round.vl_sequence ?? '—'}</dd>
-          <dt>Effective from</dt>
-          <dd>{formatUtcTimestamp(vlEffectiveIso)}</dd>
-          {supersedingRound ? (
-            <>
-              <dt>Expired</dt>
-              <dd>
-                {formatUtcTimestamp(supersedingRound.completed_at)}{' '}
-                <span className="audit-trail-relative">
-                  (when round #{supersedingRound.round_number} completed)
-                </span>
-              </dd>
-            </>
-          ) : (
-            <>
-              <dt>Expires</dt>
-              <dd>
-                {formatUtcTimestamp(vlExpiresIso)}{' '}
-                <span className="audit-trail-relative">
-                  {formatExpiresRelative(vlExpiresIso)}
-                </span>
-              </dd>
-            </>
-          )}
-        </dl>
-        <button
-          type="button"
-          className="audit-trail-download"
-          onClick={handleDownloadSignedVl}
-          disabled={!signedVl}
-        >
-          Download vl.json (round #{round.round_number})
-        </button>
-      </section>
+      {reproducibleHashes.length > 0 && (
+        <section className="audit-trail-section">
+          <span className="audit-trail-label">Reproducible output hashes</span>
+          <p className="audit-card-hint">
+            SHA-256 of the three outputs an independent party recomputes from
+            the frozen inputs to verify this round.
+          </p>
+          <table className="audit-hash-table">
+            <thead>
+              <tr>
+                <th>Output</th>
+                <th>SHA-256</th>
+              </tr>
+            </thead>
+            <tbody>
+              {reproducibleHashes.map((entry) => (
+                <tr key={entry.label}>
+                  <td>{entry.label}</td>
+                  <td className="audit-hash-cell">{entry.value}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      )}
 
       {round.memo_tx_hash && (
         <section className="audit-trail-section">

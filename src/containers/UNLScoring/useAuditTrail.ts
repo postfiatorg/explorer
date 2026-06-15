@@ -2,7 +2,9 @@ import { useContext } from 'react'
 import { useQuery } from 'react-query'
 import {
   ScoringRoundMeta,
+  VerificationHashes,
   fetchRoundSignedValidatorList,
+  fetchRoundVerificationHashes,
   getRoundBundleCid,
 } from '../Network/scoringUtils'
 import SocketContext from '../shared/SocketContext'
@@ -38,6 +40,7 @@ export interface AuditTrailData {
   memoBodyText: string | null
   signedVl: VLJsonEnvelope | null
   vlJsonAvailable: boolean
+  verificationHashes: VerificationHashes | null
 }
 
 const decodeVlBlob = (envelope: VLJsonEnvelope): VLBlobPayload | null => {
@@ -107,6 +110,16 @@ export const useAuditTrail = (
       },
     )
 
+  const { data: verificationHashes } = useQuery<VerificationHashes | null>(
+    ['scoring-verification-hashes', roundNumber],
+    () => fetchRoundVerificationHashes(roundNumber as number),
+    {
+      enabled: typeof roundNumber === 'number' && hasCid,
+      staleTime: TWENTY_FOUR_HOURS_MS,
+      retry: false,
+    },
+  )
+
   const { data: tx } = useQuery<RippledTxResult | null>(
     ['scoring-memo-tx', round?.memo_tx_hash],
     async () => {
@@ -141,5 +154,6 @@ export const useAuditTrail = (
     memoBodyText,
     signedVl: vlEnvelope ?? null,
     vlJsonAvailable: vlStatus === 'success' && vlEnvelope !== null,
+    verificationHashes: verificationHashes ?? null,
   }
 }

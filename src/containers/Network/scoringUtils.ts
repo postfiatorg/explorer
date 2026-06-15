@@ -34,6 +34,11 @@ export interface ScoringRoundMeta {
   vl_sequence?: number | null
   final_bundle_cid?: string | null
   ipfs_cid?: string | null
+  // Frozen input package — pinned before scoring runs, addressed by its own CID
+  // and integrity hash, and the basis of the Phase 2 reproducibility guarantee.
+  input_package_cid?: string | null
+  input_package_hash?: string | null
+  input_frozen_at?: string | null
   memo_tx_hash?: string | null
   github_pages_commit_url?: string | null
   override_type?: string | null
@@ -49,6 +54,10 @@ export const getRoundBundleCid = (
   const cid = round?.final_bundle_cid ?? round?.ipfs_cid
   return cid || null
 }
+
+export const getRoundInputPackageCid = (
+  round: Pick<ScoringRoundMeta, 'input_package_cid'> | null | undefined,
+): string | null => round?.input_package_cid || null
 
 export type FailedAtStage =
   | 'COLLECTING'
@@ -432,6 +441,10 @@ export const ROUND_ARTIFACT_PATHS = {
   snapshot: ['inputs/validator_evidence.json', 'snapshot.json'],
   validatorMap: ['inputs/validator_map.json', 'validator_id_map.json'],
   signedValidatorList: ['outputs/signed_validator_list.json', 'vl.json'],
+  verificationHashes: [
+    'outputs/verification_hashes.json',
+    'verification_hashes.json',
+  ],
   executionManifest: ['runtime/execution_manifest.json'],
   legacyScoringConfig: ['scoring_config.json'],
 } as const
@@ -477,6 +490,24 @@ export const fetchRoundSignedValidatorList = <T = unknown>(
   roundNumber: number,
 ): Promise<T | null> =>
   fetchRoundArtifact<T>(roundNumber, ROUND_ARTIFACT_PATHS.signedValidatorList)
+
+// The three outputs an independent party can recompute from the frozen input
+// package. The artifact also carries `signed_validator_list_hash`, which is
+// intentionally omitted: it covers a foundation-signed payload and so cannot be
+// reproduced without the foundation's signing key.
+export interface VerificationHashes {
+  model_response_hash?: string | null
+  validator_scores_hash?: string | null
+  selected_unl_hash?: string | null
+}
+
+export const fetchRoundVerificationHashes = (
+  roundNumber: number,
+): Promise<VerificationHashes | null> =>
+  fetchRoundArtifact<VerificationHashes>(
+    roundNumber,
+    ROUND_ARTIFACT_PATHS.verificationHashes,
+  )
 
 export const fetchRoundExecutionManifest = (
   roundNumber: number,

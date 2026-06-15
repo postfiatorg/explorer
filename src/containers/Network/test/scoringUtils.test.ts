@@ -6,6 +6,7 @@ import {
   findPreviousScoredRound,
   getExcludedScoringServerVersion,
   getRoundBundleCid,
+  getRoundInputPackageCid,
   getScoringInfoForValidator,
   isInProgressRound,
   isOperationallyPublishedRound,
@@ -112,6 +113,14 @@ describe('round state helpers', () => {
       'QmLegacyBundle',
     )
     expect(getRoundBundleCid({ final_bundle_cid: '', ipfs_cid: '' })).toBeNull()
+  })
+
+  it('normalizes the frozen input package CID', () => {
+    expect(getRoundInputPackageCid({ input_package_cid: 'QmInput' })).toBe(
+      'QmInput',
+    )
+    expect(getRoundInputPackageCid({ input_package_cid: '' })).toBeNull()
+    expect(getRoundInputPackageCid({})).toBeNull()
   })
 
   it('identifies in-progress rounds separately from terminal rounds', () => {

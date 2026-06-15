@@ -1294,11 +1294,6 @@
   padding-top: 14px;
   border-top: 1px solid $black-80;
   gap: 10px;
-
-  &:first-of-type {
-    padding-top: 0;
-    border-top: none;
-  }
 }
 
 .audit-trail-label {
@@ -1335,9 +1330,9 @@
 
 .audit-trail-links {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
 }
 
 .audit-gateway-link {
@@ -1400,34 +1395,6 @@
     color: $white;
     font-size: 13px;
     word-break: break-all;
-  }
-}
-
-.audit-trail-relative {
-  color: $black-40;
-  font-size: 12px;
-}
-
-.audit-trail-download {
-  align-self: flex-start;
-  padding: 6px 12px;
-  border: 1px solid $black-80;
-  border-radius: 6px;
-  background: $black-90;
-  color: $white;
-  cursor: pointer;
-  font-size: 12px;
-  text-decoration: none;
-  @include medium;
-
-  &:disabled {
-    cursor: not-allowed;
-    opacity: 0.55;
-  }
-
-  &:hover:not(:disabled) {
-    border-color: $black-60;
-    background: $black-80;
   }
 }
 
@@ -1512,6 +1479,152 @@
   background: rgba($yellow-50, 0.08);
   font-size: 13px;
   font-style: italic;
+}
+
+// ---------------------------------------------------------------------------
+// Audit trail — frozen inputs / published outputs
+// ---------------------------------------------------------------------------
+
+.audit-trail-cols {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 1fr;
+
+  @include for-size(desktop-up) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.audit-trail-card {
+  display: flex;
+  flex-direction: column;
+  padding: 14px 14px 16px;
+  border: 1px solid $black-80;
+  border-radius: 10px;
+  background: $black-100;
+  gap: 12px;
+}
+
+.audit-card-title {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  color: $white;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  gap: 8px;
+  @include bold;
+}
+
+.audit-card-dot {
+  width: 7px;
+  height: 7px;
+  flex: none;
+  border-radius: 50%;
+}
+
+.audit-card-dot-in {
+  background: $blue-40;
+}
+
+.audit-card-dot-out {
+  background: $green;
+}
+
+.audit-card-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.audit-card-key {
+  color: $black-40;
+  font-size: 11px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.audit-card-hint {
+  margin: 0;
+  color: $black-40;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+// Shared by the Pinata anchor and the vl.json download button so they read as
+// matching inline secondary actions.
+.audit-gateway-alt {
+  padding: 0;
+  border: none;
+  background: none;
+  color: $black-40;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  text-decoration: none;
+  transition: color $transition-default;
+
+  &:hover {
+    color: $white;
+    text-decoration: underline;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+
+  &:disabled:hover {
+    color: $black-40;
+    text-decoration: none;
+  }
+}
+
+.audit-card-value {
+  color: $white;
+  font-size: 12px;
+  word-break: break-word;
+}
+
+.audit-card-muted {
+  color: $black-40;
+}
+
+.audit-trail-sep {
+  color: $black-60;
+}
+
+.audit-hash-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th {
+    padding: 0 8px 8px 0;
+    color: $black-40;
+    font-size: 10px;
+    letter-spacing: 0.5px;
+    text-align: left;
+    text-transform: uppercase;
+    @include bold;
+
+    &:first-child {
+      width: 180px;
+    }
+  }
+
+  td {
+    padding: 7px 8px 7px 0;
+    border-top: 1px solid $black-80;
+    font-size: 12px;
+    vertical-align: top;
+  }
+}
+
+.audit-hash-cell {
+  color: $white;
+  font-family: monospace;
+  word-break: break-all;
 }
 
 // ---------------------------------------------------------------------------
