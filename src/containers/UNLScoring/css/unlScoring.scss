@@ -1628,6 +1628,135 @@
 }
 
 // ---------------------------------------------------------------------------
+// Audit trail — independent verification (commit-reveal)
+// ---------------------------------------------------------------------------
+
+.cr-announce {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cr-windows {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.cr-window {
+  display: flex;
+  min-width: 210px;
+  flex-direction: column;
+  padding: 10px 14px;
+  border: 1px solid $black-80;
+  border-radius: 8px;
+  background: $black-100;
+  gap: 4px;
+}
+
+.cr-window-label {
+  color: $black-40;
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.cr-window-time {
+  color: $white;
+  font-family: monospace;
+  font-size: 13px;
+}
+
+.cr-window-duration {
+  color: $black-40;
+  font-size: 11px;
+}
+
+.cr-participation {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cr-headline {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cr-headline-count {
+  color: $green;
+  font-size: 22px;
+  @include bold;
+}
+
+.cr-headline-text {
+  color: $black-40;
+  font-size: 12px;
+}
+
+.cr-bar {
+  display: flex;
+  height: 16px;
+  border-radius: 6px;
+  overflow: hidden;
+  gap: 2px;
+}
+
+.cr-bar-seg {
+  height: 100%;
+}
+
+.cr-legend {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  gap: 8px;
+}
+
+.cr-legend-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  dt {
+    display: flex;
+    align-items: center;
+    color: $black-30;
+    font-size: 12.5px;
+    gap: 8px;
+  }
+
+  dd {
+    margin: 0;
+    color: $white;
+    font-size: 12.5px;
+    @include bold;
+  }
+}
+
+.cr-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  flex: none;
+  border-radius: 3px;
+}
+
+.cr-seg-match {
+  background: $green;
+}
+
+.cr-seg-divergent {
+  background: $red;
+}
+
+.cr-seg-noreveal {
+  background: $yellow-50;
+}
+
+// ---------------------------------------------------------------------------
 // Methodology explainer
 // ---------------------------------------------------------------------------
 

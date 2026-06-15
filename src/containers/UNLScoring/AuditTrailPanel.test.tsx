@@ -1,12 +1,34 @@
 import { mount } from 'enzyme'
 import { AuditTrailPanel } from './AuditTrailPanel'
 import { useAuditTrail } from './useAuditTrail'
+import { useIndependentVerification } from './useIndependentVerification'
 import type { ScoringRoundMeta } from '../Network/scoringUtils'
 
 jest.mock('./useAuditTrail', () => ({
   __esModule: true,
   useAuditTrail: jest.fn(),
 }))
+
+jest.mock('./useIndependentVerification', () => ({
+  __esModule: true,
+  useIndependentVerification: jest.fn(),
+}))
+
+// The suite runs with resetMocks, so the verification hook's return must be
+// re-stubbed before each test. These panel tests cover the Task 1 surfaces, so
+// the section stays inert ('unavailable' renders nothing).
+beforeEach(() => {
+  ;(useIndependentVerification as jest.Mock).mockReturnValue({
+    status: 'unavailable',
+    announcementTxHash: null,
+    commitOpensAt: null,
+    commitClosesAt: null,
+    revealOpensAt: null,
+    revealClosesAt: null,
+    revealWindowClosed: false,
+    tally: null,
+  })
+})
 
 const round = (
   status = 'COMPLETE',

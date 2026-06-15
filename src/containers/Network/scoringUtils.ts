@@ -166,6 +166,12 @@ export interface ScoringConfig {
   unl_score_cutoff: number
   unl_max_size: number
   unl_min_score_gap: number
+  // Commit-reveal discovery fields. Present once a scoring service ships the
+  // Phase 2 commit-reveal module; absent on deployments that predate it. The
+  // per-round commit/reveal window times come from the announcement memo, so
+  // only the publisher account and announcement memo type are needed here.
+  foundation_publisher_address?: string
+  announcement_memo_type?: string
 }
 
 export interface RoundScoringConfig {

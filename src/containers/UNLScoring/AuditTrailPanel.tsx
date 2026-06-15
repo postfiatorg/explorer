@@ -8,6 +8,8 @@ import {
   isMemoFailedPublishedRound,
 } from '../Network/scoringUtils'
 import { useAuditTrail } from './useAuditTrail'
+import { useIndependentVerification } from './useIndependentVerification'
+import { IndependentVerification } from './IndependentVerification'
 
 interface AuditTrailPanelProps {
   round: ScoringRoundMeta
@@ -174,6 +176,7 @@ export const AuditTrailPanel: FC<AuditTrailPanelProps> = ({
     signedVl,
     verificationHashes,
   } = useAuditTrail(round)
+  const verification = useIndependentVerification(round, verificationHashes)
   const cid = getRoundBundleCid(round)
   const inputCid = getRoundInputPackageCid(round)
 
@@ -294,10 +297,6 @@ export const AuditTrailPanel: FC<AuditTrailPanelProps> = ({
       {reproducibleHashes.length > 0 && (
         <section className="audit-trail-section">
           <span className="audit-trail-label">Reproducible output hashes</span>
-          <p className="audit-card-hint">
-            SHA-256 of the three outputs an independent party recomputes from
-            the frozen inputs to verify this round.
-          </p>
           <table className="audit-hash-table">
             <thead>
               <tr>
@@ -316,6 +315,8 @@ export const AuditTrailPanel: FC<AuditTrailPanelProps> = ({
           </table>
         </section>
       )}
+
+      <IndependentVerification result={verification} />
 
       {round.memo_tx_hash && (
         <section className="audit-trail-section">
