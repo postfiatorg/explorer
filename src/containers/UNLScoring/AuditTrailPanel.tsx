@@ -54,10 +54,13 @@ const formatExpiresRelative = (
   const diffDays = Math.round(
     (target.getTime() - from.getTime()) / (1000 * 60 * 60 * 24),
   )
-  if (diffDays === 0) return '(today)'
-  if (diffDays > 0) return `(in ${diffDays} day${diffDays === 1 ? '' : 's'})`
+  const tail = ', or when the next round publishes'
+  if (diffDays === 0) return `(today${tail})`
+  if (diffDays > 0) {
+    return `(in ${diffDays} day${diffDays === 1 ? '' : 's'}${tail})`
+  }
   const ago = -diffDays
-  return `(${ago} day${ago === 1 ? '' : 's'} ago)`
+  return `(${ago} day${ago === 1 ? '' : 's'} ago${tail})`
 }
 
 const formatLedger = (ledger: number | null): string => {

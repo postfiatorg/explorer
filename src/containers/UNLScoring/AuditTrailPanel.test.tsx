@@ -100,6 +100,7 @@ describe('AuditTrailPanel memo warnings', () => {
     expect(wrapper.find('.audit-trail-hash-link').text()).toBe('ABC123')
     expect(wrapper.text()).toContain('"round_number": 240')
     expect(wrapper.text()).not.toContain('Memo publication failed')
+    expect(wrapper.text()).toContain('or when the next round publishes')
 
     wrapper.unmount()
   })

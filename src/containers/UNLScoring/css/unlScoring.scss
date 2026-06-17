@@ -1814,13 +1814,111 @@
   }
 }
 
-.methodology-chain {
-  padding: 10px 12px;
-  border-radius: 4px;
+.methodology-stats {
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+  gap: 8px;
+}
+
+.methodology-stat {
+  display: flex;
+  flex: 1 1 160px;
+  flex-direction: column;
+  padding: 8px 12px;
+  border: 1px solid $black-80;
+  border-radius: 8px;
   background: $black-100;
-  font-family: monospace;
-  font-size: 12px;
-  text-align: center;
+}
+
+.methodology-stat-k {
+  display: block;
+  margin-bottom: 3px;
+  color: $black-40;
+  font-size: 10px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.methodology-stat-v {
+  color: $white;
+  font-size: 15px;
+  @include bold;
+}
+
+.methodology-stat-desc {
+  margin-top: 4px;
+  color: $black-40;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.methodology-lead {
+  margin: 0 0 10px;
+  color: $black-40;
+}
+
+.methodology-dim {
+  display: flex;
+  margin-bottom: 7px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  gap: 10px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.methodology-dim-name {
+  min-width: 90px;
+  color: $white;
+  @include bold;
+}
+
+.methodology-dim-desc {
+  color: $black-40;
+}
+
+.methodology-steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: methodology-step;
+
+  li {
+    position: relative;
+    padding: 0 0 12px 30px;
+    color: $black-30;
+    counter-increment: methodology-step;
+
+    &:last-child {
+      padding-bottom: 0;
+    }
+
+    &::before {
+      content: counter(methodology-step);
+      position: absolute;
+      left: 0;
+      top: 0;
+      display: flex;
+      width: 20px;
+      height: 20px;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid $black-70;
+      border-radius: 50%;
+      background: $black-100;
+      color: $blue-40;
+      font-size: 11px;
+      @include bold;
+    }
+
+    strong {
+      color: $white;
+      @include bold;
+    }
+  }
 }
 
 .drill-down-link {

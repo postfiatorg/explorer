@@ -13,6 +13,7 @@ import {
   isRoundFresh,
   isScoredRound,
   roundScoringConfigFromExecutionManifest,
+  SCORING_DIMENSIONS,
 } from '../scoringUtils'
 import type { ScoringRoundMeta } from '../scoringUtils'
 
@@ -361,5 +362,16 @@ describe('isRoundFresh', () => {
       false,
     )
     expect(isRoundFresh(null, 168, now)).toBe(false)
+  })
+})
+
+describe('scoring dimensions metadata', () => {
+  it('gives every dimension a label, tooltip, and concise summary', () => {
+    expect(SCORING_DIMENSIONS).toHaveLength(5)
+    SCORING_DIMENSIONS.forEach((dimension) => {
+      expect(dimension.label.length).toBeGreaterThan(0)
+      expect(dimension.tooltip.length).toBeGreaterThan(0)
+      expect(dimension.summary.length).toBeGreaterThan(0)
+    })
   })
 })

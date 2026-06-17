@@ -324,7 +324,10 @@ export type ScoringDimension =
 export interface DimensionMeta {
   key: ScoringDimension
   label: string
+  // Long-form copy for hover tooltips on score surfaces.
   tooltip: string
+  // Concise one-liner for the methodology explainer's dimension rows.
+  summary: string
 }
 
 export const SCORING_DIMENSIONS: DimensionMeta[] = [
@@ -333,30 +336,35 @@ export const SCORING_DIMENSIONS: DimensionMeta[] = [
     label: 'Consensus',
     tooltip:
       "How reliably the validator's proposals match consensus across recent ledgers.",
+    summary: "Agreement with the network's ledgers.",
   },
   {
     key: 'reliability',
     label: 'Reliability',
     tooltip:
       'Operational reliability signaled by verified domain (public accountability) and current UNL membership.',
+    summary: 'Verified domain and current UNL membership.',
   },
   {
     key: 'software',
     label: 'Software',
     tooltip:
       'Whether the validator runs up-to-date software and votes reasonable fees.',
+    summary: 'Up-to-date version and reasonable fee votes.',
   },
   {
     key: 'diversity',
     label: 'Diversity',
     tooltip:
       'Geographic and infrastructure spread. Validators in underrepresented countries or on less common cloud providers score higher.',
+    summary: 'Geographic and infrastructure spread.',
   },
   {
     key: 'identity',
     label: 'Identity',
     tooltip:
       'Identity and reputation. Verified domain and organizational identity raise this score.',
+    summary: 'Verified domain and organizational identity.',
   },
 ]
 
