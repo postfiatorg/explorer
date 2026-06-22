@@ -123,6 +123,31 @@ describe('getTTLSeconds', () => {
     ).toBe(TTL_SECONDS.ROUND_ARTIFACT)
   })
 
+  it('caches a live convergence view briefly, not as an immutable artifact', () => {
+    expect(
+      getTTLSeconds('/rounds/14/convergence', {}, { finalized: false }),
+    ).toBe(TTL_SECONDS.CONVERGENCE_LIVE)
+    // Regression guard: must not inherit the 24h per-round artifact TTL.
+    expect(
+      getTTLSeconds('/rounds/14/convergence', {}, { finalized: false }),
+    ).not.toBe(TTL_SECONDS.ROUND_ARTIFACT)
+  })
+
+  it('caches a sealed convergence view for 24 hours', () => {
+    expect(
+      getTTLSeconds('/rounds/14/convergence', {}, { finalized: true }),
+    ).toBe(TTL_SECONDS.CONVERGENCE_SEALED)
+  })
+
+  it('caches /convergence/current by finalized state', () => {
+    expect(
+      getTTLSeconds('/convergence/current', {}, { finalized: false }),
+    ).toBe(TTL_SECONDS.CONVERGENCE_LIVE)
+    expect(getTTLSeconds('/convergence/current', {}, { finalized: true })).toBe(
+      TTL_SECONDS.CONVERGENCE_SEALED,
+    )
+  })
+
   it('caches /rounds/{id} in a non-terminal state for 30 seconds', () => {
     expect(getTTLSeconds('/rounds/15', {}, { status: 'COLLECTING' })).toBe(
       TTL_SECONDS.ROUND_NON_TERMINAL,

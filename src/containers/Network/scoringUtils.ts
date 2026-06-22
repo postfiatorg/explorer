@@ -9,6 +9,15 @@ export const fetchJsonOrNull = async <T>(url: string): Promise<T | null> => {
   }
 }
 
+// Both devnet and testnet pin artifacts to the same shared IPFS gateway, so
+// these hosts are constant regardless of VITE_ENVIRONMENT. When mainnet gets
+// its own gateway, this becomes environment-driven.
+export const IPFS_PRIMARY_HOST = 'ipfs-testnet.postfiat.org'
+export const PINATA_GATEWAY_HOST = 'gateway.pinata.cloud'
+
+export const ipfsGatewayUrl = (host: string, cid: string): string =>
+  `https://${host}/ipfs/${cid}`
+
 export type ScoringStatus = 'on_unl' | 'candidate' | 'ineligible' | 'no_data'
 
 export interface ScoringUnlResponse {

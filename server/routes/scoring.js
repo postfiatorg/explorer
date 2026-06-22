@@ -6,6 +6,9 @@ const ONE_HOUR_S = 60 * 60
 const TWENTY_FOUR_HOURS_S = 24 * 60 * 60
 const THREE_MINUTES_S = 3 * 60
 const THIRTY_SECONDS_S = 30
+// A live convergence view changes as commits and reveals land; matches the
+// upstream service's own live-cache window.
+const CONVERGENCE_LIVE_S = 15
 
 const REQUEST_TIMEOUT_MS = 10000
 const TERMINAL_ROUND_STATUSES = new Set([
@@ -23,6 +26,20 @@ const getTTLSeconds = (path, query, responseBody) => {
   if (path === '/rounds') {
     if (query && query.limit === '1') return THIRTY_SECONDS_S
     return THREE_MINUTES_S
+  }
+
+  // Convergence views. A finalized (sealed) round is immutable and content-
+  // addressed, so it caches for a day; a live round keeps changing, so it gets
+  // a short window. Checked before the immutable round-artifact rule below
+  // because `/rounds/{id}/convergence` also matches that per-round sub-path
+  // pattern and would otherwise be pinned for 24 hours while still live.
+  if (
+    /^\/rounds\/\d+\/convergence$/.test(path) ||
+    path === '/convergence/current'
+  ) {
+    return responseBody && responseBody.finalized
+      ? TWENTY_FOUR_HOURS_S
+      : CONVERGENCE_LIVE_S
   }
 
   if (/^\/rounds\/\d+$/.test(path)) {
@@ -118,6 +135,8 @@ module.exports = {
     ROUND_TERMINAL: TWENTY_FOUR_HOURS_S,
     ROUND_NON_TERMINAL: THIRTY_SECONDS_S,
     ROUND_ARTIFACT: TWENTY_FOUR_HOURS_S,
+    CONVERGENCE_LIVE: CONVERGENCE_LIVE_S,
+    CONVERGENCE_SEALED: TWENTY_FOUR_HOURS_S,
     DEFAULT: THIRTY_SECONDS_S,
   },
 }

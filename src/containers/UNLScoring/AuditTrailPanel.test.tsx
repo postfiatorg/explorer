@@ -1,7 +1,7 @@
 import { mount } from 'enzyme'
 import { AuditTrailPanel } from './AuditTrailPanel'
 import { useAuditTrail } from './useAuditTrail'
-import { useIndependentVerification } from './useIndependentVerification'
+import { useConvergence } from './useConvergence'
 import type { ScoringRoundMeta } from '../Network/scoringUtils'
 
 jest.mock('./useAuditTrail', () => ({
@@ -9,24 +9,26 @@ jest.mock('./useAuditTrail', () => ({
   useAuditTrail: jest.fn(),
 }))
 
-jest.mock('./useIndependentVerification', () => ({
+jest.mock('./useConvergence', () => ({
   __esModule: true,
-  useIndependentVerification: jest.fn(),
+  useConvergence: jest.fn(),
 }))
 
-// The suite runs with resetMocks, so the verification hook's return must be
-// re-stubbed before each test. These panel tests cover the Task 1 surfaces, so
-// the section stays inert ('unavailable' renders nothing).
+// The suite runs with resetMocks, so the convergence hook's return must be
+// re-stubbed before each test. These panel tests cover the audit-trail
+// surfaces, so the participation section stays inert ('unavailable' renders
+// nothing).
 beforeEach(() => {
-  ;(useIndependentVerification as jest.Mock).mockReturnValue({
+  ;(useConvergence as jest.Mock).mockReturnValue({
     status: 'unavailable',
-    announcementTxHash: null,
-    commitOpensAt: null,
-    commitClosesAt: null,
-    revealOpensAt: null,
-    revealClosesAt: null,
-    revealWindowClosed: false,
-    tally: null,
+    phase: 'not_tracked',
+    finalized: false,
+    roundNumber: null,
+    participants: [],
+    summary: null,
+    convergenceBundleCid: null,
+    anchorTxHash: null,
+    sealedAt: null,
   })
 })
 

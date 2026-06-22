@@ -1628,48 +1628,19 @@
 }
 
 // ---------------------------------------------------------------------------
-// Audit trail — independent verification (commit-reveal)
+// Audit trail — validator participation (convergence)
 // ---------------------------------------------------------------------------
 
-.cr-announce {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.cr-windows {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.cr-window {
-  display: flex;
-  min-width: 210px;
-  flex-direction: column;
-  padding: 10px 14px;
-  border: 1px solid $black-80;
-  border-radius: 8px;
-  background: $black-100;
-  gap: 4px;
-}
-
-.cr-window-label {
-  color: $black-40;
+.cr-live-tag {
+  padding: 1px 7px;
+  border-radius: 999px;
+  margin-left: 8px;
+  background: rgba($green, 0.15);
+  color: $green;
   font-size: 10px;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.4px;
   text-transform: uppercase;
-}
-
-.cr-window-time {
-  color: $white;
-  font-family: monospace;
-  font-size: 13px;
-}
-
-.cr-window-duration {
-  color: $black-40;
-  font-size: 11px;
+  vertical-align: middle;
 }
 
 .cr-participation {
@@ -1680,8 +1651,8 @@
 
 .cr-headline {
   display: flex;
-  align-items: baseline;
   flex-wrap: wrap;
+  align-items: baseline;
   gap: 8px;
 }
 
@@ -1698,50 +1669,14 @@
 
 .cr-bar {
   display: flex;
+  overflow: hidden;
   height: 16px;
   border-radius: 6px;
-  overflow: hidden;
   gap: 2px;
 }
 
 .cr-bar-seg {
   height: 100%;
-}
-
-.cr-legend {
-  display: flex;
-  flex-direction: column;
-  margin: 0;
-  gap: 8px;
-}
-
-.cr-legend-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  dt {
-    display: flex;
-    align-items: center;
-    color: $black-30;
-    font-size: 12.5px;
-    gap: 8px;
-  }
-
-  dd {
-    margin: 0;
-    color: $white;
-    font-size: 12.5px;
-    @include bold;
-  }
-}
-
-.cr-swatch {
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  flex: none;
-  border-radius: 3px;
 }
 
 .cr-seg-match {
@@ -1752,8 +1687,105 @@
   background: $red;
 }
 
-.cr-seg-noreveal {
+.cr-seg-other {
   background: $yellow-50;
+}
+
+.cr-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+
+  thead th {
+    padding: 6px 10px;
+    border-bottom: 1px solid $black-80;
+    color: $black-40;
+    font-size: 10px;
+    letter-spacing: 0.5px;
+    text-align: left;
+    text-transform: uppercase;
+  }
+
+  tbody td {
+    padding: 8px 10px;
+    border-bottom: 1px solid $black-90;
+    vertical-align: middle;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+}
+
+.cr-validator a {
+  color: $white;
+  font-family: monospace;
+}
+
+.cr-outcome {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 5px;
+  font-size: 11.5px;
+  @include bold;
+}
+
+.cr-outcome-match {
+  background: rgba($green, 0.15);
+  color: $green;
+}
+
+.cr-outcome-divergent {
+  background: rgba($red, 0.15);
+  color: $red;
+}
+
+.cr-outcome-other {
+  background: rgba($yellow-50, 0.15);
+  color: $yellow-50;
+}
+
+.cr-conflict {
+  margin-left: 6px;
+  color: $yellow-50;
+  font-size: 10px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.cr-levels {
+  white-space: nowrap;
+}
+
+.cr-levels-head {
+  text-align: left;
+}
+
+.cr-level {
+  display: inline-block;
+  min-width: 38px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  margin-right: 4px;
+  font-size: 10.5px;
+  text-align: center;
+}
+
+.cr-level-on {
+  background: rgba($green, 0.18);
+  color: $green;
+}
+
+.cr-level-off {
+  background: $black-90;
+  color: $black-50;
+}
+
+.cr-sealed {
+  display: flex;
+  flex-direction: column;
+  margin-top: 12px;
+  gap: 6px;
 }
 
 // ---------------------------------------------------------------------------

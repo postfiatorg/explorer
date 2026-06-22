@@ -3,27 +3,21 @@ import { Check, Copy } from 'lucide-react'
 import { CopyableAddress } from '../shared/components/CopyableAddress/CopyableAddress'
 import {
   ScoringRoundMeta,
+  IPFS_PRIMARY_HOST,
+  PINATA_GATEWAY_HOST,
+  ipfsGatewayUrl,
   getRoundBundleCid,
   getRoundInputPackageCid,
   isMemoFailedPublishedRound,
 } from '../Network/scoringUtils'
 import { useAuditTrail } from './useAuditTrail'
-import { useIndependentVerification } from './useIndependentVerification'
-import { IndependentVerification } from './IndependentVerification'
+import { useConvergence } from './useConvergence'
+import { ConvergenceParticipation } from './ConvergenceParticipation'
 
 interface AuditTrailPanelProps {
   round: ScoringRoundMeta
   supersedingRound?: ScoringRoundMeta | null
 }
-
-// Both devnet and testnet pin artifacts to the same shared IPFS gateway, so
-// this hostname is constant regardless of VITE_ENVIRONMENT. If/when mainnet
-// gets its own gateway, this becomes environment-driven.
-const IPFS_PRIMARY_HOST = 'ipfs-testnet.postfiat.org'
-const PINATA_GATEWAY_HOST = 'gateway.pinata.cloud'
-
-const ipfsUrl = (host: string, cid: string): string =>
-  `https://${host}/ipfs/${cid}`
 
 const VERIFICATION_HASH_FIELDS = [
   { key: 'model_response_hash', label: 'Model response' },
@@ -126,7 +120,7 @@ const GatewayLinks: FC<{ cid: string; children?: ReactNode }> = ({
   <div className="audit-trail-links">
     <a
       className="audit-gateway-link"
-      href={ipfsUrl(IPFS_PRIMARY_HOST, cid)}
+      href={ipfsGatewayUrl(IPFS_PRIMARY_HOST, cid)}
       target="_blank"
       rel="noopener noreferrer"
     >
@@ -134,7 +128,7 @@ const GatewayLinks: FC<{ cid: string; children?: ReactNode }> = ({
     </a>
     <a
       className="audit-gateway-alt"
-      href={ipfsUrl(PINATA_GATEWAY_HOST, cid)}
+      href={ipfsGatewayUrl(PINATA_GATEWAY_HOST, cid)}
       target="_blank"
       rel="noopener noreferrer"
     >
@@ -179,7 +173,7 @@ export const AuditTrailPanel: FC<AuditTrailPanelProps> = ({
     signedVl,
     verificationHashes,
   } = useAuditTrail(round)
-  const verification = useIndependentVerification(round, verificationHashes)
+  const convergence = useConvergence(round)
   const cid = getRoundBundleCid(round)
   const inputCid = getRoundInputPackageCid(round)
 
@@ -319,7 +313,7 @@ export const AuditTrailPanel: FC<AuditTrailPanelProps> = ({
         </section>
       )}
 
-      <IndependentVerification result={verification} />
+      <ConvergenceParticipation result={convergence} />
 
       {round.memo_tx_hash && (
         <section className="audit-trail-section">
