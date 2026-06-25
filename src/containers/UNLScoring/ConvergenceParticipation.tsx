@@ -1,10 +1,14 @@
 import { FC } from 'react'
 import {
-  IPFS_PRIMARY_HOST,
-  PINATA_GATEWAY_HOST,
+  PUBLIC_IPFS_GATEWAY_HOST,
+  ipfsProxyUrl,
   ipfsGatewayUrl,
 } from '../Network/scoringUtils'
 import { ConvergenceOutcome, ConvergenceResult } from './useConvergence'
+
+// The sealed convergence bundle contains this single JSON report; linking to it
+// opens readable data rather than the gateway's directory-index page.
+const CONVERGENCE_REPORT_FILE = 'convergence_report.json'
 
 // The three reproducibility levels the convergence service compares, in order.
 const LEVELS = [
@@ -207,9 +211,9 @@ export const ConvergenceParticipation: FC<ConvergenceParticipationProps> = ({
           <div className="audit-trail-links">
             <a
               className="audit-gateway-link"
-              href={ipfsGatewayUrl(
-                IPFS_PRIMARY_HOST,
+              href={ipfsProxyUrl(
                 result.convergenceBundleCid,
+                CONVERGENCE_REPORT_FILE,
               )}
               target="_blank"
               rel="noopener noreferrer"
@@ -219,13 +223,14 @@ export const ConvergenceParticipation: FC<ConvergenceParticipationProps> = ({
             <a
               className="audit-gateway-alt"
               href={ipfsGatewayUrl(
-                PINATA_GATEWAY_HOST,
+                PUBLIC_IPFS_GATEWAY_HOST,
                 result.convergenceBundleCid,
+                CONVERGENCE_REPORT_FILE,
               )}
               target="_blank"
               rel="noopener noreferrer"
             >
-              Pinata
+              Public gateway
             </a>
             {result.anchorTxHash && (
               <a

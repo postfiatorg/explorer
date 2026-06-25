@@ -9,14 +9,29 @@ export const fetchJsonOrNull = async <T>(url: string): Promise<T | null> => {
   }
 }
 
-// Both devnet and testnet pin artifacts to the same shared IPFS gateway, so
-// these hosts are constant regardless of VITE_ENVIRONMENT. When mainnet gets
-// its own gateway, this becomes environment-driven.
-export const IPFS_PRIMARY_HOST = 'ipfs-testnet.postfiat.org'
-export const PINATA_GATEWAY_HOST = 'gateway.pinata.cloud'
+// Both helpers resolve a bundle CID, optionally a single file within it. The
+// audit surfaces target the bundle's JSON manifest so the link opens readable
+// data instead of the gateway's directory-index page (whose styling depends on
+// flaky third-party infra).
+//
+// The primary link goes through the Explorer's own /ipfs proxy, which injects
+// the dedicated gateway's access token server-side so the token never reaches
+// the browser; the proxy serves both the directory and any nested file.
+export const ipfsProxyUrl = (cid: string, file?: string): string =>
+  file ? `/ipfs/${cid}/${file}` : `/ipfs/${cid}`
 
-export const ipfsGatewayUrl = (host: string, cid: string): string =>
-  `https://${host}/ipfs/${cid}`
+// A public gateway offered as a secondary, credential-free link so anyone can
+// confirm the same CID resolves on infrastructure the foundation does not run.
+// Public gateways retrieve over the IPFS network, so very recently pinned CIDs
+// can be slow to resolve there until they propagate.
+export const PUBLIC_IPFS_GATEWAY_HOST = 'dweb.link'
+
+export const ipfsGatewayUrl = (
+  host: string,
+  cid: string,
+  file?: string,
+): string =>
+  file ? `https://${host}/ipfs/${cid}/${file}` : `https://${host}/ipfs/${cid}`
 
 export type ScoringStatus = 'on_unl' | 'candidate' | 'ineligible' | 'no_data'
 

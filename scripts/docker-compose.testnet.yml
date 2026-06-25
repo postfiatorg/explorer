@@ -10,6 +10,9 @@ services:
     environment:
       - PRERENDER_SERVICE_URL=http://prerender:3000/
       - VITE_ENVIRONMENT=testnet
+      # Secret for the /ipfs/* proxy, supplied from the host environment at
+      # deploy time. Never bake it into the image or commit it.
+      - IPFS_GATEWAY_TOKEN=${IPFS_GATEWAY_TOKEN}
     logging:
       driver: "json-file"
       options:

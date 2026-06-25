@@ -7,6 +7,7 @@ const compression = require('compression')
 const prerender = require('prerender-node')
 const routes = require('./routes/v1')
 const scoring = require('./routes/scoring')
+const ipfs = require('./routes/ipfs')
 
 const log = require('./lib/logger')({ name: 'server' })
 
@@ -53,6 +54,10 @@ app.use(compression())
 app.use(bodyParser.json())
 app.use('/api/v1', routes)
 app.use('/api/scoring', scoring.router)
+// Mounted ahead of the prerender and SPA-catchall middleware so IPFS bundle
+// links (and the directory listing's root-absolute sub-links) resolve through
+// this proxy instead of being treated as app routes.
+app.use('/ipfs', ipfs.router)
 app.get('/sitemap.xml', require('./routes/v1/sitemap'))
 app.get('/robots.txt', require('./routes/v1/robots'))
 

@@ -3,8 +3,8 @@ import { Check, Copy } from 'lucide-react'
 import { CopyableAddress } from '../shared/components/CopyableAddress/CopyableAddress'
 import {
   ScoringRoundMeta,
-  IPFS_PRIMARY_HOST,
-  PINATA_GATEWAY_HOST,
+  PUBLIC_IPFS_GATEWAY_HOST,
+  ipfsProxyUrl,
   ipfsGatewayUrl,
   getRoundBundleCid,
   getRoundInputPackageCid,
@@ -18,6 +18,11 @@ interface AuditTrailPanelProps {
   round: ScoringRoundMeta
   supersedingRound?: ScoringRoundMeta | null
 }
+
+// Every pinned bundle (final outputs and frozen input package alike) carries a
+// JSON manifest at this path; linking to it opens readable data rather than the
+// gateway's directory-index page.
+const BUNDLE_MANIFEST_FILE = 'bundle.json'
 
 const VERIFICATION_HASH_FIELDS = [
   { key: 'model_response_hash', label: 'Model response' },
@@ -109,10 +114,11 @@ const MemoBody: FC<{ raw: string }> = ({ raw }) => {
   )
 }
 
-// PostFiat gateway is the primary; Pinata is offered as a manual fallback the
-// user can click if the primary is unreachable. These are plain external links
-// — Explorer fetches round data through its own /api/scoring proxy, not through
-// these gateways — so there is nothing to fall back to automatically.
+// Both links open the bundle's JSON manifest. The primary goes through the
+// Explorer's own /ipfs proxy (reliable, token injected server-side); the public
+// gateway is a credential-free link anyone can verify against. These are plain
+// external links — Explorer fetches round data through its own /api/scoring
+// proxy, not these gateways.
 const GatewayLinks: FC<{ cid: string; children?: ReactNode }> = ({
   cid,
   children,
@@ -120,7 +126,7 @@ const GatewayLinks: FC<{ cid: string; children?: ReactNode }> = ({
   <div className="audit-trail-links">
     <a
       className="audit-gateway-link"
-      href={ipfsGatewayUrl(IPFS_PRIMARY_HOST, cid)}
+      href={ipfsProxyUrl(cid, BUNDLE_MANIFEST_FILE)}
       target="_blank"
       rel="noopener noreferrer"
     >
@@ -128,11 +134,11 @@ const GatewayLinks: FC<{ cid: string; children?: ReactNode }> = ({
     </a>
     <a
       className="audit-gateway-alt"
-      href={ipfsGatewayUrl(PINATA_GATEWAY_HOST, cid)}
+      href={ipfsGatewayUrl(PUBLIC_IPFS_GATEWAY_HOST, cid, BUNDLE_MANIFEST_FILE)}
       target="_blank"
       rel="noopener noreferrer"
     >
-      Pinata
+      Public gateway
     </a>
     {children}
   </div>

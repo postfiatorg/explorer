@@ -95,11 +95,11 @@ describe('ConvergenceParticipation', () => {
 
     expect(wrapper.find('.cr-live-tag').exists()).toBe(false)
     expect(wrapper.text()).toContain('Open on IPFS')
-    expect(wrapper.text()).toContain('Pinata')
+    expect(wrapper.text()).toContain('Public gateway')
     expect(wrapper.text()).toContain('On-chain anchor')
     expect(wrapper.text()).toContain('Sealed')
     expect(wrapper.find('a.audit-gateway-link').prop('href')).toContain(
-      'QmBundleCid',
+      'QmBundleCid/convergence_report.json',
     )
 
     wrapper.unmount()

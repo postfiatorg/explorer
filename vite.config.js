@@ -40,6 +40,7 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/api': 'http://localhost:5001',
+      '/ipfs': 'http://localhost:5001',
     },
   },
   resolve: {
