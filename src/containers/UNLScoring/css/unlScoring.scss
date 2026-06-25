@@ -1628,50 +1628,114 @@
 }
 
 // ---------------------------------------------------------------------------
-// Audit trail — validator participation (convergence)
+// Audit trail — independent verification (commit-reveal convergence)
 // ---------------------------------------------------------------------------
 
+// The theme red ($red) is a soft pink that reads as a warning. A divergence —
+// an independent validator computing a different result — is the one genuinely
+// adversarial signal in this panel, so it gets a harder, dedicated alarm red.
+$convergence-diverged: #f34;
+
+.cr-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .cr-live-tag {
-  padding: 1px 7px;
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 9px;
   border-radius: 999px;
-  margin-left: 8px;
-  background: rgba($green, 0.15);
+  background: rgba($green, 0.13);
   color: $green;
   font-size: 10px;
-  letter-spacing: 0.4px;
+  gap: 6px;
+  letter-spacing: 0.5px;
   text-transform: uppercase;
-  vertical-align: middle;
+  @include bold;
+}
+
+.cr-live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  animation: cr-pulse 1.6s infinite;
+  background: $green;
+}
+
+@keyframes cr-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba($green, 0.5);
+  }
+
+  70% {
+    box-shadow: 0 0 0 6px rgba($green, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba($green, 0);
+  }
+}
+
+.cr-final {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cr-final-tag {
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: $black-80;
+  color: $black-40;
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  @include bold;
+}
+
+.cr-final-at {
+  color: $black-40;
+  font-size: 11.5px;
 }
 
 .cr-participation {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 13px;
 }
 
-.cr-headline {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 8px;
-}
-
-.cr-headline-count {
-  color: $green;
-  font-size: 22px;
-  @include bold;
-}
-
-.cr-headline-text {
+.cr-line {
+  margin: 0;
   color: $black-40;
-  font-size: 12px;
+  font-size: 14px;
+  line-height: 1.5;
+
+  strong {
+    color: $white;
+    @include medium;
+  }
+}
+
+.cr-ok {
+  color: $green;
+  @include medium;
+}
+
+.cr-bad {
+  color: $convergence-diverged;
+  @include medium;
 }
 
 .cr-bar {
   display: flex;
   overflow: hidden;
-  height: 16px;
-  border-radius: 6px;
+  height: 8px;
+  border-radius: 5px;
+  background: $black-80;
   gap: 2px;
 }
 
@@ -1679,113 +1743,157 @@
   height: 100%;
 }
 
-.cr-seg-match {
+.cr-seg-ok {
   background: $green;
 }
 
-.cr-seg-divergent {
-  background: $red;
+.cr-seg-bad {
+  background: $convergence-diverged;
 }
 
-.cr-seg-other {
-  background: $yellow-50;
+.cr-rows {
+  display: flex;
+  flex-direction: column;
 }
 
-.cr-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 12.5px;
+.cr-row {
+  display: flex;
+  align-items: center;
+  padding: 9px 6px;
+  border-radius: 6px;
+  border-top: 1px solid $black-90;
+  gap: 12px;
 
-  thead th {
-    padding: 6px 10px;
-    border-bottom: 1px solid $black-80;
-    color: $black-40;
-    font-size: 10px;
-    letter-spacing: 0.5px;
-    text-align: left;
-    text-transform: uppercase;
+  &:first-child {
+    border-top: none;
   }
 
-  tbody td {
-    padding: 8px 10px;
-    border-bottom: 1px solid $black-90;
-    vertical-align: middle;
-  }
-
-  tbody tr:last-child td {
-    border-bottom: none;
+  &:hover {
+    background: rgba($white, 0.025);
   }
 }
 
-.cr-validator a {
-  color: $white;
-  font-family: monospace;
-}
-
-.cr-outcome {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 5px;
-  font-size: 11.5px;
+.cr-disc {
+  display: flex;
+  width: 18px;
+  height: 18px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 11px;
+  line-height: 1;
   @include bold;
 }
 
-.cr-outcome-match {
-  background: rgba($green, 0.15);
+.cr-disc-ok {
+  background: $green;
+  color: $black-100;
+}
+
+.cr-disc-bad {
+  background: $convergence-diverged;
+  color: $white;
+}
+
+.cr-disc-wait {
+  border: 2px solid $black-60;
+}
+
+.cr-disc-none {
+  background: $black-70;
+  color: $black-40;
+}
+
+.cr-ident {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.cr-dom {
+  color: $blue-40;
+  font-size: 13.5px;
+  text-decoration: none;
+  @include medium;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.cr-verified {
+  flex: none;
   color: $green;
 }
 
-.cr-outcome-divergent {
-  background: rgba($red, 0.15);
-  color: $red;
+.cr-key {
+  color: $black-40;
+  font-family: monospace;
+  font-size: 12px;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
 }
 
-.cr-outcome-other {
-  background: rgba($yellow-50, 0.15);
-  color: $yellow-50;
-}
-
-.cr-conflict {
-  margin-left: 6px;
-  color: $yellow-50;
-  font-size: 10px;
-  letter-spacing: 0.4px;
-  text-transform: uppercase;
-}
-
-.cr-levels {
+.cr-word {
+  margin-left: auto;
+  font-size: 12.5px;
   white-space: nowrap;
+  @include medium;
 }
 
-.cr-levels-head {
-  text-align: left;
-}
-
-.cr-level {
-  display: inline-block;
-  min-width: 38px;
-  padding: 1px 6px;
-  border-radius: 4px;
-  margin-right: 4px;
-  font-size: 10.5px;
-  text-align: center;
-}
-
-.cr-level-on {
-  background: rgba($green, 0.18);
+.cr-word-ok {
   color: $green;
 }
 
-.cr-level-off {
-  background: $black-90;
+.cr-word-bad {
+  color: $convergence-diverged;
+}
+
+.cr-word-wait,
+.cr-word-none {
+  color: $black-40;
+}
+
+.cr-diverge {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0 0 7px 30px;
+  font-size: 11.5px;
+  gap: 14px;
+}
+
+.cr-lev {
   color: $black-50;
 }
 
-.cr-sealed {
+.cr-lev-y {
+  color: $green;
+}
+
+.cr-lev-n {
+  color: $convergence-diverged;
+  @include bold;
+}
+
+.cr-foot {
   display: flex;
   flex-direction: column;
-  margin-top: 12px;
-  gap: 6px;
+  padding-top: 16px;
+  border-top: 1px solid $black-90;
+  margin-top: 8px;
+  gap: 14px;
+}
+
+.cr-foot-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
 }
 
 // ---------------------------------------------------------------------------

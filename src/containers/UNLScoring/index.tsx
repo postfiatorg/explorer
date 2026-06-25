@@ -414,6 +414,7 @@ export const UNLScoring = () => {
           <AuditTrailPanel
             round={viewingRound.round}
             supersedingRound={supersedingRound}
+            validatorMetaByKey={validatorMetaByKey}
           />
         </>
       )
@@ -435,6 +436,7 @@ export const UNLScoring = () => {
           <AuditTrailPanel
             round={viewingRound.round}
             supersedingRound={supersedingRound}
+            validatorMetaByKey={validatorMetaByKey}
           />
         </>
       )
@@ -505,6 +507,7 @@ export const UNLScoring = () => {
         <AuditTrailPanel
           round={overrideRound}
           supersedingRound={supersedingRound}
+          validatorMetaByKey={validatorMetaByKey}
         />
         <MethodologyExplainer config={null} />
       </>

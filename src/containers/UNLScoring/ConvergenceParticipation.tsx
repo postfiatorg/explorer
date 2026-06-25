@@ -1,59 +1,97 @@
 import { FC } from 'react'
+import { CircleCheck } from 'lucide-react'
 import {
   PUBLIC_IPFS_GATEWAY_HOST,
   ipfsProxyUrl,
   ipfsGatewayUrl,
 } from '../Network/scoringUtils'
-import { ConvergenceOutcome, ConvergenceResult } from './useConvergence'
+import { ValidatorMeta } from './RankedTable'
+import {
+  ConvergenceOutcome,
+  ConvergenceParticipant,
+  ConvergenceResult,
+} from './useConvergence'
 
 // The sealed convergence bundle contains this single JSON report; linking to it
 // opens readable data rather than the gateway's directory-index page.
 const CONVERGENCE_REPORT_FILE = 'convergence_report.json'
 
-// The three reproducibility levels the convergence service compares, in order.
+// The reproducibility levels the convergence service compares, surfaced only on
+// a divergence to show exactly where a validator's result parted from the
+// foundation's.
 const LEVELS = [
   { key: 'RAW', label: 'Raw' },
   { key: 'PARSED', label: 'Scores' },
-  { key: 'SELECTED_UNL', label: 'UNL' },
+  { key: 'SELECTED_UNL', label: 'UNL selection' },
 ] as const
 
-const OUTCOME_LABEL: Record<ConvergenceOutcome, string> = {
-  valid: 'Matched',
-  divergent: 'Diverged',
+// What a validator's row communicates, derived from the raw outcome plus whether
+// the round has sealed. A live round's missing or late reveal is still pending,
+// so it reads as "awaiting"; once the round is finalized the same outcome is a
+// terminal miss. Divergence — a different reproduced result — is the one
+// genuinely adversarial signal and is always called out.
+type DisplayStatus = 'reproduced' | 'diverged' | 'awaiting' | 'incomplete'
+type StatusTone = 'ok' | 'bad' | 'wait' | 'none'
+
+const TONE_BY_STATUS: Record<DisplayStatus, StatusTone> = {
+  reproduced: 'ok',
+  diverged: 'bad',
+  awaiting: 'wait',
+  incomplete: 'none',
+}
+
+const DISC_GLYPH: Record<StatusTone, string> = {
+  ok: '✓',
+  bad: '✕',
+  wait: '',
+  none: '–',
+}
+
+const INCOMPLETE_LABEL: Partial<Record<ConvergenceOutcome, string>> = {
   missing_reveal: 'No reveal',
-  late: 'Late',
+  late: 'Late reveal',
   commitment_mismatch: 'Commitment mismatch',
   signature_invalid: 'Invalid signature',
 }
 
-type OutcomeTone = 'match' | 'divergent' | 'other'
-
-const OUTCOME_TONE: Record<ConvergenceOutcome, OutcomeTone> = {
-  valid: 'match',
-  divergent: 'divergent',
-  missing_reveal: 'other',
-  late: 'other',
-  commitment_mismatch: 'other',
-  signature_invalid: 'other',
+const deriveStatus = (
+  outcome: ConvergenceOutcome,
+  finalized: boolean,
+): DisplayStatus => {
+  if (outcome === 'valid') return 'reproduced'
+  if (outcome === 'divergent') return 'diverged'
+  if (!finalized && (outcome === 'missing_reveal' || outcome === 'late')) {
+    return 'awaiting'
+  }
+  return 'incomplete'
 }
 
-const toneOf = (outcome: ConvergenceOutcome): OutcomeTone =>
-  OUTCOME_TONE[outcome] ?? 'other'
-
-const outcomeLabelOf = (outcome: ConvergenceOutcome): string =>
-  OUTCOME_LABEL[outcome] ?? outcome
+const statusLabel = (
+  status: DisplayStatus,
+  outcome: ConvergenceOutcome,
+): string => {
+  if (status === 'reproduced') return 'Reproduced'
+  if (status === 'diverged') return 'Diverged'
+  if (status === 'awaiting') return 'Awaiting reveal'
+  return INCOMPLETE_LABEL[outcome] ?? 'No reveal'
+}
 
 const shortenKey = (key: string): string =>
   key.length > 18 ? `${key.slice(0, 12)}…${key.slice(-4)}` : key
+
+const shortenHash = (hash: string): string =>
+  hash.length > 18 ? `${hash.slice(0, 10)}…${hash.slice(-6)}` : hash
+
+const MONTHS = 'Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec'.split(' ')
 
 const formatUtcDateTime = (iso: string | null): string => {
   if (!iso) return ''
   const d = new Date(iso)
   if (Number.isNaN(d.getTime())) return ''
   const pad = (n: number) => String(n).padStart(2, '0')
-  return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(
-    d.getUTCDate(),
-  )} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())} UTC`
+  return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()} ${pad(
+    d.getUTCHours(),
+  )}:${pad(d.getUTCMinutes())} UTC`
 }
 
 const parseMatchedLevels = (raw: string | null | undefined): Set<string> =>
@@ -64,140 +102,316 @@ const parseMatchedLevels = (raw: string | null | undefined): Set<string> =>
       .filter((level) => level.length > 0),
   )
 
+interface StatusCounts {
+  reproduced: number
+  diverged: number
+  awaiting: number
+  incomplete: number
+}
+
+const tallyStatuses = (
+  participants: ConvergenceParticipant[],
+  finalized: boolean,
+): StatusCounts =>
+  participants.reduce<StatusCounts>(
+    (acc, participant) => {
+      acc[deriveStatus(participant.outcome, finalized)] += 1
+      return acc
+    },
+    { reproduced: 0, diverged: 0, awaiting: 0, incomplete: 0 },
+  )
+
+const Headline: FC<{
+  counts: StatusCounts
+  committed: number
+  finalized: boolean
+}> = ({ counts, committed, finalized }) => {
+  const { reproduced, diverged, awaiting, incomplete } = counts
+
+  // Pre-reveal: validators have committed but none has revealed yet. Framing it
+  // as "0 of N reproduced" reads as a failure, so name the phase instead.
+  if (
+    !finalized &&
+    reproduced === 0 &&
+    diverged === 0 &&
+    awaiting === committed
+  ) {
+    return (
+      <p className="cr-line">
+        <strong>{committed}</strong>{' '}
+        {committed === 1 ? 'validator' : 'validators'} committed on chain —
+        awaiting {committed === 1 ? 'its reveal' : 'their reveals'}.
+      </p>
+    )
+  }
+
+  if (reproduced === committed) {
+    return (
+      <p className="cr-line">
+        <strong>
+          {reproduced} of {committed}
+        </strong>{' '}
+        {finalized ? (
+          <>
+            validators reproduced the result.{' '}
+            <span className="cr-ok">Verification complete.</span>
+          </>
+        ) : (
+          <>
+            validators independently re-ran this round and reached the{' '}
+            <span className="cr-ok">same result</span>.
+          </>
+        )}
+      </p>
+    )
+  }
+
+  return (
+    <p className="cr-line">
+      <strong>
+        {reproduced} of {committed}
+      </strong>{' '}
+      validators <span className="cr-ok">reproduced</span> the result
+      {diverged > 0 && (
+        <>
+          {' · '}
+          <span className="cr-bad">{diverged} diverged</span>
+        </>
+      )}
+      {awaiting > 0 && ` · ${awaiting} awaiting reveal`}
+      {incomplete > 0 && ` · ${incomplete} no reveal`}.
+    </p>
+  )
+}
+
+const ParticipationBar: FC<{ counts: StatusCounts; committed: number }> = ({
+  counts,
+  committed,
+}) => {
+  const widthOf = (n: number) => `${(n / committed) * 100}%`
+  return (
+    <div
+      className="cr-bar"
+      role="img"
+      aria-label={`${counts.reproduced} of ${committed} committed validators reproduced the foundation's result; ${counts.diverged} diverged`}
+    >
+      {counts.reproduced > 0 && (
+        <div
+          className="cr-bar-seg cr-seg-ok"
+          style={{ width: widthOf(counts.reproduced) }}
+        />
+      )}
+      {counts.diverged > 0 && (
+        <div
+          className="cr-bar-seg cr-seg-bad"
+          style={{ width: widthOf(counts.diverged) }}
+        />
+      )}
+    </div>
+  )
+}
+
+// Renders domain + key when metadata is present, key alone otherwise. The key
+// stays gray whether or not a domain leads it; the whole identity links to the
+// validator. Blue is reserved for an attested domain — an unattested domain is
+// shown the same way minus the verification check.
+const ValidatorIdentity: FC<{
+  masterKey: string
+  meta?: ValidatorMeta
+}> = ({ masterKey, meta }) => {
+  const href = `/validators/${masterKey}`
+  const keyLink = (
+    <a
+      className="cr-key"
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      title={masterKey}
+    >
+      {shortenKey(masterKey)}
+    </a>
+  )
+
+  if (!meta?.domain) {
+    return <span className="cr-ident">{keyLink}</span>
+  }
+
+  return (
+    <span className="cr-ident">
+      <a
+        className="cr-dom"
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {meta.domain}
+      </a>
+      {meta.domainVerified && (
+        <CircleCheck
+          className="cr-verified"
+          size={13}
+          aria-label="Verified domain"
+        />
+      )}
+      {keyLink}
+    </span>
+  )
+}
+
+const DivergenceDetail: FC<{ levelsMatched: string | null | undefined }> = ({
+  levelsMatched,
+}) => {
+  const matched = parseMatchedLevels(levelsMatched)
+  return (
+    <div className="cr-diverge">
+      {LEVELS.map((level) => {
+        const ok = matched.has(level.key)
+        return (
+          <span key={level.key} className="cr-lev">
+            {level.label}{' '}
+            <span className={ok ? 'cr-lev-y' : 'cr-lev-n'}>
+              {ok ? 'match' : 'differs'}
+            </span>
+          </span>
+        )
+      })}
+    </div>
+  )
+}
+
+const ParticipantRow: FC<{
+  participant: ConvergenceParticipant
+  finalized: boolean
+  meta?: ValidatorMeta
+}> = ({ participant, finalized, meta }) => {
+  const status = deriveStatus(participant.outcome, finalized)
+  const tone = TONE_BY_STATUS[status]
+
+  return (
+    <>
+      <div className="cr-row" data-testid="cr-participant">
+        <span className={`cr-disc cr-disc-${tone}`} aria-hidden="true">
+          {DISC_GLYPH[tone]}
+        </span>
+        <ValidatorIdentity
+          masterKey={participant.validator_master_key}
+          meta={meta}
+        />
+        <span className={`cr-word cr-word-${tone}`}>
+          {statusLabel(status, participant.outcome)}
+        </span>
+      </div>
+      {status === 'diverged' && (
+        <DivergenceDetail
+          levelsMatched={participant.comparison_levels_matched}
+        />
+      )}
+    </>
+  )
+}
+
+const SealedReport: FC<{
+  cid: string
+  anchorTxHash: string | null
+}> = ({ cid, anchorTxHash }) => (
+  <div className="cr-foot">
+    <div className="cr-foot-field">
+      <span className="audit-card-key">Sealed report</span>
+      <div className="audit-trail-links">
+        <a
+          className="audit-gateway-link"
+          href={ipfsProxyUrl(cid, CONVERGENCE_REPORT_FILE)}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Open on IPFS
+        </a>
+        <a
+          className="audit-gateway-alt"
+          href={ipfsGatewayUrl(
+            PUBLIC_IPFS_GATEWAY_HOST,
+            cid,
+            CONVERGENCE_REPORT_FILE,
+          )}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Public gateway
+        </a>
+      </div>
+    </div>
+    {anchorTxHash && (
+      <div className="cr-foot-field">
+        <span className="audit-card-key">Anchor tx</span>
+        <a
+          className="audit-trail-hash-link"
+          href={`/transactions/${anchorTxHash}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          title={anchorTxHash}
+        >
+          {shortenHash(anchorTxHash)}
+        </a>
+      </div>
+    )}
+  </div>
+)
+
 interface ConvergenceParticipationProps {
   result: ConvergenceResult
+  validatorMetaByKey?: Map<string, ValidatorMeta>
 }
 
 export const ConvergenceParticipation: FC<ConvergenceParticipationProps> = ({
   result,
+  validatorMetaByKey,
 }) => {
   if (result.status !== 'ready') return null
 
-  const { participants } = result
+  const { participants, finalized } = result
   // Participants are exactly the validators observed committing on chain, so
-  // their count is the committed-validator denominator for the bar and headline.
+  // their count is the committed denominator (summary.committers mirrors it).
   const committed = participants.length
-
-  const counts = participants.reduce(
-    (acc, participant) => {
-      acc[toneOf(participant.outcome)] += 1
-      return acc
-    },
-    { match: 0, divergent: 0, other: 0 },
-  )
-
-  const segments = [
-    { key: 'match', label: 'Reproduced (matched)', value: counts.match },
-    { key: 'divergent', label: 'Diverged', value: counts.divergent },
-    { key: 'other', label: 'No valid reveal', value: counts.other },
-  ]
+  const counts = tallyStatuses(participants, finalized)
+  const finalizedAt = finalized ? formatUtcDateTime(result.sealedAt) : ''
 
   return (
     <section className="audit-trail-section">
-      <span className="audit-trail-label">
-        Validator participation
-        {!result.finalized && <span className="cr-live-tag">Live</span>}
-      </span>
+      <div className="cr-head">
+        <span className="audit-trail-label">Independent verification</span>
+        {finalized ? (
+          <span className="cr-final">
+            <span className="cr-final-tag">Final</span>
+            {finalizedAt && (
+              <span className="cr-final-at">· {finalizedAt}</span>
+            )}
+          </span>
+        ) : (
+          <span className="cr-live-tag">
+            <span className="cr-live-dot" aria-hidden="true" />
+            Live
+          </span>
+        )}
+      </div>
 
       {committed > 0 ? (
         <div className="cr-participation">
-          <div className="cr-headline">
-            <span className="cr-headline-count">
-              {counts.match} / {committed}
-            </span>
-            <span className="cr-headline-text">
-              committed validators reproduced the foundation&apos;s result
-            </span>
+          <Headline
+            counts={counts}
+            committed={committed}
+            finalized={finalized}
+          />
+          <ParticipationBar counts={counts} committed={committed} />
+          <div className="cr-rows">
+            {participants.map((participant) => (
+              <ParticipantRow
+                key={participant.validator_master_key}
+                participant={participant}
+                finalized={finalized}
+                meta={validatorMetaByKey?.get(participant.validator_master_key)}
+              />
+            ))}
           </div>
-
-          <div
-            className="cr-bar"
-            role="img"
-            aria-label={`${counts.match} of ${committed} committed validators reproduced the foundation's result; ${counts.divergent} diverged, ${counts.other} had no valid reveal`}
-          >
-            {segments
-              .filter((segment) => segment.value > 0)
-              .map((segment) => (
-                <div
-                  key={segment.key}
-                  className={`cr-bar-seg cr-seg-${segment.key}`}
-                  style={{ width: `${(segment.value / committed) * 100}%` }}
-                />
-              ))}
-          </div>
-
-          <table className="cr-table">
-            <thead>
-              <tr>
-                <th>Validator</th>
-                <th>Outcome</th>
-                <th className="cr-levels-head">Levels matched</th>
-              </tr>
-            </thead>
-            <tbody>
-              {participants.map((participant) => {
-                const matched = parseMatchedLevels(
-                  participant.comparison_levels_matched,
-                )
-                const conflicting =
-                  participant.conflicting_commit ||
-                  participant.conflicting_reveal
-                return (
-                  <tr
-                    key={participant.validator_master_key}
-                    data-testid="cr-participant"
-                  >
-                    <td className="cr-validator">
-                      <a
-                        href={`/validators/${participant.validator_master_key}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        title={participant.validator_master_key}
-                      >
-                        {shortenKey(participant.validator_master_key)}
-                      </a>
-                    </td>
-                    <td>
-                      <span
-                        className={`cr-outcome cr-outcome-${toneOf(
-                          participant.outcome,
-                        )}`}
-                      >
-                        {outcomeLabelOf(participant.outcome)}
-                      </span>
-                      {conflicting && (
-                        <span
-                          className="cr-conflict"
-                          title="Multiple conflicting submissions were seen on chain for this validator"
-                        >
-                          conflicting
-                        </span>
-                      )}
-                    </td>
-                    <td className="cr-levels">
-                      {LEVELS.map((level) => (
-                        <span
-                          key={level.key}
-                          className={`cr-level ${
-                            matched.has(level.key)
-                              ? 'cr-level-on'
-                              : 'cr-level-off'
-                          }`}
-                          title={
-                            matched.has(level.key)
-                              ? `${level.key} matched the foundation`
-                              : `${level.key} not matched`
-                          }
-                        >
-                          {level.label}
-                        </span>
-                      ))}
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
         </div>
       ) : (
         <p className="audit-card-hint">
@@ -205,50 +419,11 @@ export const ConvergenceParticipation: FC<ConvergenceParticipationProps> = ({
         </p>
       )}
 
-      {result.finalized && result.convergenceBundleCid && (
-        <div className="cr-sealed">
-          <span className="audit-card-key">Sealed report</span>
-          <div className="audit-trail-links">
-            <a
-              className="audit-gateway-link"
-              href={ipfsProxyUrl(
-                result.convergenceBundleCid,
-                CONVERGENCE_REPORT_FILE,
-              )}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Open on IPFS
-            </a>
-            <a
-              className="audit-gateway-alt"
-              href={ipfsGatewayUrl(
-                PUBLIC_IPFS_GATEWAY_HOST,
-                result.convergenceBundleCid,
-                CONVERGENCE_REPORT_FILE,
-              )}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Public gateway
-            </a>
-            {result.anchorTxHash && (
-              <a
-                className="audit-gateway-alt"
-                href={`/transactions/${result.anchorTxHash}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                On-chain anchor
-              </a>
-            )}
-          </div>
-          {result.sealedAt && (
-            <span className="audit-card-muted">
-              Sealed {formatUtcDateTime(result.sealedAt)}
-            </span>
-          )}
-        </div>
+      {finalized && result.convergenceBundleCid && (
+        <SealedReport
+          cid={result.convergenceBundleCid}
+          anchorTxHash={result.anchorTxHash}
+        />
       )}
     </section>
   )

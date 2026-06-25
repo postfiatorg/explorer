@@ -1,6 +1,10 @@
 import { mount } from 'enzyme'
 import { ConvergenceParticipation } from './ConvergenceParticipation'
 import type { ConvergenceResult } from './useConvergence'
+import type { ValidatorMeta } from './RankedTable'
+
+const KEY_A = 'nHUvalidatorKeyAAAAAAAAAAAAAAAAAAAAAA'
+const KEY_B = 'nHUvalidatorKeyBBBBBBBBBBBBBBBBBBBBBB'
 
 const ready = (
   overrides: Partial<ConvergenceResult> = {},
@@ -11,15 +15,14 @@ const ready = (
   roundNumber: 273,
   participants: [
     {
-      validator_master_key: 'nHUvalidatorKeyAAAAAAAAAAAAAAAAAAAAAA',
+      validator_master_key: KEY_A,
       outcome: 'valid',
       comparison_levels_matched: 'RAW,PARSED,SELECTED_UNL',
     },
     {
-      validator_master_key: 'nHUvalidatorKeyBBBBBBBBBBBBBBBBBBBBBB',
+      validator_master_key: KEY_B,
       outcome: 'divergent',
       comparison_levels_matched: 'RAW',
-      conflicting_reveal: true,
     },
   ],
   summary: { committers: 2, outcomes: { valid: 1, divergent: 1 } },
@@ -28,6 +31,10 @@ const ready = (
   sealedAt: null,
   ...overrides,
 })
+
+const metaByKey = new Map<string, ValidatorMeta>([
+  [KEY_A, { domain: 'validator.example.com', domainVerified: true }],
+])
 
 describe('ConvergenceParticipation', () => {
   it('renders nothing while loading', () => {
@@ -48,18 +55,86 @@ describe('ConvergenceParticipation', () => {
     wrapper.unmount()
   })
 
-  it('renders per-validator detail for a live round', () => {
-    const wrapper = mount(<ConvergenceParticipation result={ready()} />)
+  it('renders a status-per-validator row for a live round', () => {
+    const wrapper = mount(
+      <ConvergenceParticipation
+        result={ready()}
+        validatorMetaByKey={metaByKey}
+      />,
+    )
 
-    expect(wrapper.text()).toContain('Validator participation')
+    expect(wrapper.text()).toContain('Independent verification')
     expect(wrapper.find('.cr-live-tag').exists()).toBe(true)
-    expect(wrapper.text()).toContain('1 / 2')
     expect(
       wrapper.find('[data-testid="cr-participant"]').hostNodes(),
     ).toHaveLength(2)
-    expect(wrapper.text()).toContain('Matched')
+    expect(wrapper.text()).toContain('Reproduced')
     expect(wrapper.text()).toContain('Diverged')
-    expect(wrapper.text()).toContain('conflicting')
+    // the divergence detail surfaces which reproducibility level differs
+    expect(wrapper.find('.cr-diverge .cr-lev-n').exists()).toBe(true)
+    expect(wrapper.text()).toContain('differs')
+
+    wrapper.unmount()
+  })
+
+  it('shows a verified domain when validator metadata is provided', () => {
+    const wrapper = mount(
+      <ConvergenceParticipation
+        result={ready()}
+        validatorMetaByKey={metaByKey}
+      />,
+    )
+    expect(wrapper.find('a.cr-dom').text()).toBe('validator.example.com')
+    // the matching row carries the verified-domain badge
+    expect(wrapper.find('.cr-verified').exists()).toBe(true)
+    wrapper.unmount()
+  })
+
+  it('reads a live missing reveal as awaiting rather than a failure', () => {
+    const wrapper = mount(
+      <ConvergenceParticipation
+        result={ready({
+          participants: [
+            { validator_master_key: KEY_A, outcome: 'missing_reveal' },
+          ],
+          summary: { committers: 1 },
+        })}
+      />,
+    )
+    expect(wrapper.text()).toContain('Awaiting reveal')
+    expect(wrapper.text()).not.toContain('No reveal')
+    wrapper.unmount()
+  })
+
+  it('uses terminal labels for unrevealed outcomes once finalized', () => {
+    const wrapper = mount(
+      <ConvergenceParticipation
+        result={ready({
+          phase: 'sealed',
+          finalized: true,
+          participants: [
+            { validator_master_key: KEY_A, outcome: 'missing_reveal' },
+            { validator_master_key: KEY_B, outcome: 'late' },
+            {
+              validator_master_key: 'nHUvalidatorKeyCCCCCCCCCCCCCCCCCCCCCC',
+              outcome: 'commitment_mismatch',
+            },
+            {
+              validator_master_key: 'nHUvalidatorKeyDDDDDDDDDDDDDDDDDDDDDD',
+              outcome: 'signature_invalid',
+            },
+          ],
+          summary: { committers: 4 },
+        })}
+      />,
+    )
+
+    const text = wrapper.text()
+    expect(text).not.toContain('Awaiting reveal')
+    expect(text).toContain('No reveal')
+    expect(text).toContain('Late reveal')
+    expect(text).toContain('Commitment mismatch')
+    expect(text).toContain('Invalid signature')
 
     wrapper.unmount()
   })
@@ -76,30 +151,35 @@ describe('ConvergenceParticipation', () => {
     expect(wrapper.text()).toContain(
       'No validators committed to this round on chain.',
     )
-    expect(wrapper.find('.cr-table').exists()).toBe(false)
+    expect(wrapper.find('.cr-rows').exists()).toBe(false)
     wrapper.unmount()
   })
 
-  it('surfaces the sealed report links and anchor once finalized', () => {
+  it('marks the round Final and surfaces the sealed report once finalized', () => {
     const wrapper = mount(
       <ConvergenceParticipation
         result={ready({
           phase: 'sealed',
           finalized: true,
           convergenceBundleCid: 'QmBundleCid',
-          anchorTxHash: 'ANCHORHASH',
+          anchorTxHash: 'ANCHORHASH1234567890',
           sealedAt: '2026-05-25T01:30:00+00:00',
         })}
       />,
     )
 
     expect(wrapper.find('.cr-live-tag').exists()).toBe(false)
+    expect(wrapper.find('.cr-final-tag').exists()).toBe(true)
+    // the finalized timestamp lives in the header beside the Final tag
+    expect(wrapper.find('.cr-final-at').text()).toContain('25 May 2026')
     expect(wrapper.text()).toContain('Open on IPFS')
     expect(wrapper.text()).toContain('Public gateway')
-    expect(wrapper.text()).toContain('On-chain anchor')
-    expect(wrapper.text()).toContain('Sealed')
     expect(wrapper.find('a.audit-gateway-link').prop('href')).toContain(
       'QmBundleCid/convergence_report.json',
+    )
+    // the anchor renders as a transaction link, matching the page's tx convention
+    expect(wrapper.find('a.audit-trail-hash-link').prop('href')).toBe(
+      '/transactions/ANCHORHASH1234567890',
     )
 
     wrapper.unmount()

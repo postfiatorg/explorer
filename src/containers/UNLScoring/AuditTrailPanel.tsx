@@ -13,10 +13,12 @@ import {
 import { useAuditTrail } from './useAuditTrail'
 import { useConvergence } from './useConvergence'
 import { ConvergenceParticipation } from './ConvergenceParticipation'
+import { ValidatorMeta } from './RankedTable'
 
 interface AuditTrailPanelProps {
   round: ScoringRoundMeta
   supersedingRound?: ScoringRoundMeta | null
+  validatorMetaByKey?: Map<string, ValidatorMeta>
 }
 
 // Every pinned bundle (final outputs and frozen input package alike) carries a
@@ -170,6 +172,7 @@ const PlaceholderPanel: FC<{ round: ScoringRoundMeta }> = ({ round }) => (
 export const AuditTrailPanel: FC<AuditTrailPanelProps> = ({
   round,
   supersedingRound = null,
+  validatorMetaByKey,
 }) => {
   const {
     vlEffectiveIso,
@@ -319,7 +322,10 @@ export const AuditTrailPanel: FC<AuditTrailPanelProps> = ({
         </section>
       )}
 
-      <ConvergenceParticipation result={convergence} />
+      <ConvergenceParticipation
+        result={convergence}
+        validatorMetaByKey={validatorMetaByKey}
+      />
 
       {round.memo_tx_hash && (
         <section className="audit-trail-section">
