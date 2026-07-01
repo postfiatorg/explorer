@@ -84,14 +84,16 @@ const shortenHash = (hash: string): string =>
 
 const MONTHS = 'Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec'.split(' ')
 
-const formatUtcDateTime = (iso: string | null): string => {
+// Shown in the viewer's local timezone (no explicit label) so the "Final" seal
+// time matches the local window times in the commit/reveal timeline below.
+const formatLocalDateTime = (iso: string | null): string => {
   if (!iso) return ''
   const d = new Date(iso)
   if (Number.isNaN(d.getTime())) return ''
   const pad = (n: number) => String(n).padStart(2, '0')
-  return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()} ${pad(
-    d.getUTCHours(),
-  )}:${pad(d.getUTCMinutes())} UTC`
+  return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()} ${pad(
+    d.getHours(),
+  )}:${pad(d.getMinutes())}`
 }
 
 const parseMatchedLevels = (raw: string | null | undefined): Set<string> =>
@@ -370,7 +372,7 @@ export const ConvergenceParticipation: FC<ConvergenceParticipationProps> = ({
   // their count is the committed denominator (summary.committers mirrors it).
   const committed = participants.length
   const counts = tallyStatuses(participants, finalized)
-  const finalizedAt = finalized ? formatUtcDateTime(result.sealedAt) : ''
+  const finalizedAt = finalized ? formatLocalDateTime(result.sealedAt) : ''
 
   return (
     <section className="audit-trail-section">
@@ -391,11 +393,7 @@ export const ConvergenceParticipation: FC<ConvergenceParticipationProps> = ({
         )}
       </div>
 
-      <CommitRevealTimeline
-        frozenAt={frozenAt}
-        finalized={finalized}
-        sealedAt={result.sealedAt}
-      />
+      <CommitRevealTimeline frozenAt={frozenAt} finalized={finalized} />
 
       {committed > 0 ? (
         <div className="cr-participation">

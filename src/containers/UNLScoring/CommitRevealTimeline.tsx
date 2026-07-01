@@ -148,13 +148,11 @@ const formatClock = (ms: number): string => {
 interface CommitRevealTimelineProps {
   frozenAt: string | null | undefined
   finalized: boolean
-  sealedAt: string | null
 }
 
 export const CommitRevealTimeline: FC<CommitRevealTimelineProps> = ({
   frozenAt,
   finalized,
-  sealedAt,
 }) => {
   const config = useScoringConfig()
   const commitWindowSeconds = config?.announcement_commit_window_seconds
@@ -243,10 +241,6 @@ export const CommitRevealTimeline: FC<CommitRevealTimelineProps> = ({
   const showGapSegment = model.gapFrac > 0
   const initialFill = activeFillFrac(model, Date.now())
 
-  const sealedTs = sealedAt ? Date.parse(sealedAt) : NaN
-  const closedClockMs =
-    finalized && !Number.isNaN(sealedTs) ? sealedTs : model.revealEndMs
-
   const commitLabelMod = commitActive ? ' active' : ' done'
   let revealLabelMod = ''
   if (revealActive || currentPhase === 'gap') revealLabelMod = ' active'
@@ -265,19 +259,12 @@ export const CommitRevealTimeline: FC<CommitRevealTimelineProps> = ({
             {PHASE_NAME[currentPhase]}
           </span>
         </span>
-        {isLivePhase(currentPhase) ? (
+        {isLivePhase(currentPhase) && (
           <span className="crtl-count">
             <span className="crtl-count-lbl">
               {COUNTDOWN_PREFIX[currentPhase]}
             </span>{' '}
             <span ref={countdownRef}>{formatCountdown(model.remainingMs)}</span>
-          </span>
-        ) : (
-          <span className="crtl-count">
-            <span className="crtl-count-lbl">
-              {finalized ? 'sealed' : 'closing'}
-            </span>{' '}
-            {formatClock(closedClockMs)}
           </span>
         )}
       </div>

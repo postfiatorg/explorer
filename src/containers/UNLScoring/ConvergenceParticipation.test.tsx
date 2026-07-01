@@ -175,8 +175,10 @@ describe('ConvergenceParticipation', () => {
 
     expect(wrapper.find('.cr-live-tag').exists()).toBe(false)
     expect(wrapper.find('.cr-final-tag').exists()).toBe(true)
-    // the finalized timestamp lives in the header beside the Final tag
-    expect(wrapper.find('.cr-final-at').text()).toContain('25 May 2026')
+    // the finalized timestamp lives in the header beside the Final tag; it now
+    // renders in the viewer's local timezone, so assert the month/year (the day
+    // can shift a boundary across timezones) rather than a fixed local date.
+    expect(wrapper.find('.cr-final-at').text()).toContain('May 2026')
     expect(wrapper.text()).toContain('Open on IPFS')
     expect(wrapper.text()).toContain('Public gateway')
     expect(wrapper.find('a.audit-gateway-link').prop('href')).toContain(

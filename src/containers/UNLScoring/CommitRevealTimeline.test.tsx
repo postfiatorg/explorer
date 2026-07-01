@@ -148,11 +148,7 @@ describe('CommitRevealTimeline', () => {
     mockedUseScoringConfig.mockReturnValue(cfg(false))
     nowSpy.mockReturnValue(AT('2026-07-01T14:30:00Z'))
     const wrapper = mount(
-      <CommitRevealTimeline
-        frozenAt={FROZEN}
-        finalized={false}
-        sealedAt={null}
-      />,
+      <CommitRevealTimeline frozenAt={FROZEN} finalized={false} />,
     )
     expect(wrapper.isEmptyRender()).toBe(true)
     wrapper.unmount()
@@ -162,11 +158,7 @@ describe('CommitRevealTimeline', () => {
     mockedUseScoringConfig.mockReturnValue(cfg(true))
     nowSpy.mockReturnValue(AT('2026-07-01T14:30:00Z'))
     const wrapper = mount(
-      <CommitRevealTimeline
-        frozenAt={null}
-        finalized={false}
-        sealedAt={null}
-      />,
+      <CommitRevealTimeline frozenAt={null} finalized={false} />,
     )
     expect(wrapper.isEmptyRender()).toBe(true)
     wrapper.unmount()
@@ -176,11 +168,7 @@ describe('CommitRevealTimeline', () => {
     mockedUseScoringConfig.mockReturnValue(cfg(true))
     nowSpy.mockReturnValue(AT('2026-07-01T14:30:00Z'))
     const wrapper = mount(
-      <CommitRevealTimeline
-        frozenAt={FROZEN}
-        finalized={false}
-        sealedAt={null}
-      />,
+      <CommitRevealTimeline frozenAt={FROZEN} finalized={false} />,
     )
     expect(wrapper.find('.crtl-phase-name').text()).toBe('Commit window')
     expect(wrapper.text()).toContain('Commit')
@@ -195,11 +183,7 @@ describe('CommitRevealTimeline', () => {
     mockedUseScoringConfig.mockReturnValue(cfg(true))
     nowSpy.mockReturnValue(AT('2026-07-01T14:45:00Z'))
     const wrapper = mount(
-      <CommitRevealTimeline
-        frozenAt={FROZEN}
-        finalized={false}
-        sealedAt={null}
-      />,
+      <CommitRevealTimeline frozenAt={FROZEN} finalized={false} />,
     )
     expect(wrapper.find('.crtl-phase-name').text()).toBe('Reveal window')
     expect(wrapper.find('.crtl-now').exists()).toBe(true)
@@ -209,15 +193,11 @@ describe('CommitRevealTimeline', () => {
   it('renders a static sealed state with no live marker once finalized', () => {
     mockedUseScoringConfig.mockReturnValue(cfg(true))
     nowSpy.mockReturnValue(AT('2026-07-01T15:00:00Z'))
-    const wrapper = mount(
-      <CommitRevealTimeline
-        frozenAt={FROZEN}
-        finalized
-        sealedAt="2026-07-01T14:52:00Z"
-      />,
-    )
+    const wrapper = mount(<CommitRevealTimeline frozenAt={FROZEN} finalized />)
     expect(wrapper.find('.crtl-phase-name').text()).toBe('Windows closed')
     expect(wrapper.find('.crtl-now').exists()).toBe(false)
+    // the sealed head shows only the phase name — no duplicate seal-time count
+    expect(wrapper.find('.crtl-count').exists()).toBe(false)
     wrapper.unmount()
   })
 
@@ -225,17 +205,13 @@ describe('CommitRevealTimeline', () => {
     mockedUseScoringConfig.mockReturnValue(cfg(true))
     nowSpy.mockReturnValue(AT('2026-07-01T14:45:00Z')) // inside the reveal window
     const wrapper = mount(
-      <CommitRevealTimeline
-        frozenAt={FROZEN}
-        finalized={false}
-        sealedAt={null}
-      />,
+      <CommitRevealTimeline frozenAt={FROZEN} finalized={false} />,
     )
     expect(wrapper.find('.crtl-phase-name').text()).toBe('Reveal window')
 
     // The convergence view flips finalized -> true on its next poll while this
     // component stays mounted; the head must follow to the sealed state.
-    wrapper.setProps({ finalized: true, sealedAt: '2026-07-01T14:45:30Z' })
+    wrapper.setProps({ finalized: true })
     wrapper.update()
     expect(wrapper.find('.crtl-phase-name').text()).toBe('Windows closed')
     expect(wrapper.find('.crtl-now').exists()).toBe(false)
