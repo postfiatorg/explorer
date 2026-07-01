@@ -68,7 +68,7 @@ describe('ConvergenceParticipation', () => {
     expect(
       wrapper.find('[data-testid="cr-participant"]').hostNodes(),
     ).toHaveLength(2)
-    expect(wrapper.text()).toContain('Reproduced')
+    expect(wrapper.text()).toContain('Matched')
     expect(wrapper.text()).toContain('Diverged')
     // the divergence detail surfaces which reproducibility level differs
     expect(wrapper.find('.cr-diverge .cr-lev-n').exists()).toBe(true)
@@ -77,7 +77,7 @@ describe('ConvergenceParticipation', () => {
     wrapper.unmount()
   })
 
-  it('shows a verified domain when validator metadata is provided', () => {
+  it('renders the linked domain without a domain-attestation badge', () => {
     const wrapper = mount(
       <ConvergenceParticipation
         result={ready()}
@@ -85,8 +85,8 @@ describe('ConvergenceParticipation', () => {
       />,
     )
     expect(wrapper.find('a.cr-dom').text()).toBe('validator.example.com')
-    // the matching row carries the verified-domain badge
-    expect(wrapper.find('.cr-verified').exists()).toBe(true)
+    // the domain-attestation badge was intentionally removed from this panel
+    expect(wrapper.find('.cr-verified').exists()).toBe(false)
     wrapper.unmount()
   })
 

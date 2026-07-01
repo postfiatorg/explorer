@@ -1,5 +1,4 @@
 import { FC } from 'react'
-import { CircleCheck } from 'lucide-react'
 import {
   PUBLIC_IPFS_GATEWAY_HOST,
   ipfsProxyUrl,
@@ -70,7 +69,7 @@ const statusLabel = (
   status: DisplayStatus,
   outcome: ConvergenceOutcome,
 ): string => {
-  if (status === 'reproduced') return 'Reproduced'
+  if (status === 'reproduced') return 'Matched'
   if (status === 'diverged') return 'Diverged'
   if (status === 'awaiting') return 'Awaiting reveal'
   return INCOMPLETE_LABEL[outcome] ?? 'No reveal'
@@ -213,8 +212,8 @@ const ParticipationBar: FC<{ counts: StatusCounts; committed: number }> = ({
 
 // Renders domain + key when metadata is present, key alone otherwise. The key
 // stays gray whether or not a domain leads it; the whole identity links to the
-// validator. Blue is reserved for an attested domain — an unattested domain is
-// shown the same way minus the verification check.
+// validator. Domain attestation is deliberately not surfaced here — the row's
+// only verification signal is the reproduction-status disc.
 const ValidatorIdentity: FC<{
   masterKey: string
   meta?: ValidatorMeta
@@ -246,13 +245,6 @@ const ValidatorIdentity: FC<{
       >
         {meta.domain}
       </a>
-      {meta.domainVerified && (
-        <CircleCheck
-          className="cr-verified"
-          size={13}
-          aria-label="Verified domain"
-        />
-      )}
       {keyLink}
     </span>
   )
