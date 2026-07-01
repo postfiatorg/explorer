@@ -68,7 +68,7 @@ describe('ConvergenceParticipation', () => {
       />,
     )
 
-    expect(wrapper.text()).toContain('Independent verification')
+    expect(wrapper.text()).toContain('Shadow verification')
     expect(wrapper.find('.cr-live-tag').exists()).toBe(true)
     expect(
       wrapper.find('[data-testid="cr-participant"]').hostNodes(),
@@ -95,7 +95,23 @@ describe('ConvergenceParticipation', () => {
     wrapper.unmount()
   })
 
-  it('reads a live missing reveal as awaiting rather than a failure', () => {
+  it('reads a live awaiting reveal as awaiting rather than a failure', () => {
+    const wrapper = mount(
+      <ConvergenceParticipation
+        result={ready({
+          participants: [
+            { validator_master_key: KEY_A, outcome: 'awaiting_reveal' },
+          ],
+          summary: { committers: 1 },
+        })}
+      />,
+    )
+    expect(wrapper.text()).toContain('Awaiting reveal')
+    expect(wrapper.text()).not.toContain('No reveal')
+    wrapper.unmount()
+  })
+
+  it('keeps old live missing reveal responses as awaiting', () => {
     const wrapper = mount(
       <ConvergenceParticipation
         result={ready({
@@ -126,10 +142,14 @@ describe('ConvergenceParticipation', () => {
             },
             {
               validator_master_key: 'nHUvalidatorKeyDDDDDDDDDDDDDDDDDDDDDD',
+              outcome: 'announcement_mismatch',
+            },
+            {
+              validator_master_key: 'nHUvalidatorKeyEEEEEEEEEEEEEEEEEEEEEE',
               outcome: 'signature_invalid',
             },
           ],
-          summary: { committers: 4 },
+          summary: { committers: 5 },
         })}
       />,
     )
@@ -139,6 +159,7 @@ describe('ConvergenceParticipation', () => {
     expect(text).toContain('No reveal')
     expect(text).toContain('Late reveal')
     expect(text).toContain('Commitment mismatch')
+    expect(text).toContain('Announcement mismatch')
     expect(text).toContain('Invalid signature')
 
     wrapper.unmount()

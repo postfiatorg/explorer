@@ -8,9 +8,11 @@ const THIRTY_SECONDS_MS = 30 * 1000
 export type ConvergenceOutcome =
   | 'valid'
   | 'divergent'
+  | 'awaiting_reveal'
   | 'missing_reveal'
   | 'late'
   | 'commitment_mismatch'
+  | 'announcement_mismatch'
   | 'signature_invalid'
 
 export interface ConvergenceParticipant {

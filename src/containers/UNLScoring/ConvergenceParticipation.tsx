@@ -26,10 +26,10 @@ const LEVELS = [
 ] as const
 
 // What a validator's row communicates, derived from the raw outcome plus whether
-// the round has sealed. A live round's missing or late reveal is still pending,
+// the round has sealed. A live round's awaiting/missing reveal is still pending,
 // so it reads as "awaiting"; once the round is finalized the same outcome is a
-// terminal miss. Divergence — a different reproduced result — is the one
-// genuinely adversarial signal and is always called out.
+// terminal miss. Divergence remains the adversarial signal and is always called
+// out.
 type DisplayStatus = 'reproduced' | 'diverged' | 'awaiting' | 'incomplete'
 type StatusTone = 'ok' | 'bad' | 'wait' | 'none'
 
@@ -48,9 +48,11 @@ const DISC_GLYPH: Record<StatusTone, string> = {
 }
 
 const INCOMPLETE_LABEL: Partial<Record<ConvergenceOutcome, string>> = {
+  awaiting_reveal: 'No reveal',
   missing_reveal: 'No reveal',
   late: 'Late reveal',
   commitment_mismatch: 'Commitment mismatch',
+  announcement_mismatch: 'Announcement mismatch',
   signature_invalid: 'Invalid signature',
 }
 
@@ -60,7 +62,12 @@ const deriveStatus = (
 ): DisplayStatus => {
   if (outcome === 'valid') return 'reproduced'
   if (outcome === 'divergent') return 'diverged'
-  if (!finalized && (outcome === 'missing_reveal' || outcome === 'late')) {
+  if (
+    !finalized &&
+    (outcome === 'awaiting_reveal' ||
+      outcome === 'missing_reveal' ||
+      outcome === 'late')
+  ) {
     return 'awaiting'
   }
   return 'incomplete'
@@ -155,13 +162,13 @@ const Headline: FC<{
         </strong>{' '}
         {finalized ? (
           <>
-            validators reproduced the result.{' '}
-            <span className="cr-ok">Verification complete.</span>
+            validators revealed hashes matching the foundation output.{' '}
+            <span className="cr-ok">Shadow verification sealed.</span>
           </>
         ) : (
           <>
-            validators independently re-ran this round and reached the{' '}
-            <span className="cr-ok">same result</span>.
+            validators revealed hashes matching the{' '}
+            <span className="cr-ok">foundation output</span>.
           </>
         )}
       </p>
@@ -173,7 +180,7 @@ const Headline: FC<{
       <strong>
         {reproduced} of {committed}
       </strong>{' '}
-      validators <span className="cr-ok">reproduced</span> the result
+      validators <span className="cr-ok">matched</span> the foundation output
       {diverged > 0 && (
         <>
           {' · '}
@@ -195,7 +202,7 @@ const ParticipationBar: FC<{ counts: StatusCounts; committed: number }> = ({
     <div
       className="cr-bar"
       role="img"
-      aria-label={`${counts.reproduced} of ${committed} committed validators reproduced the foundation's result; ${counts.diverged} diverged`}
+      aria-label={`${counts.reproduced} of ${committed} committed validators matched the foundation output; ${counts.diverged} diverged`}
     >
       {counts.reproduced > 0 && (
         <div
@@ -377,7 +384,7 @@ export const ConvergenceParticipation: FC<ConvergenceParticipationProps> = ({
   return (
     <section className="audit-trail-section">
       <div className="cr-head">
-        <span className="audit-trail-label">Independent verification</span>
+        <span className="audit-trail-label">Shadow verification</span>
         {finalized ? (
           <span className="cr-final">
             <span className="cr-final-tag">Final</span>

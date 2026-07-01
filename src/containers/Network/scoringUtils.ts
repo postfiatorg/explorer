@@ -536,10 +536,10 @@ export const fetchRoundSignedValidatorList = <T = unknown>(
 ): Promise<T | null> =>
   fetchRoundArtifact<T>(roundNumber, ROUND_ARTIFACT_PATHS.signedValidatorList)
 
-// The three outputs an independent party can recompute from the frozen input
-// package. The artifact also carries `signed_validator_list_hash`, which is
+// The three output hashes a validator can compare after the commit window
+// closes. The artifact also carries `signed_validator_list_hash`, which is
 // intentionally omitted: it covers a foundation-signed payload and so cannot be
-// reproduced without the foundation's signing key.
+// recomputed without the foundation's signing key.
 export interface VerificationHashes {
   model_response_hash?: string | null
   validator_scores_hash?: string | null

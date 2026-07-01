@@ -73,8 +73,9 @@ export const MethodologyExplainer: FC<MethodologyExplainerProps> = ({
         <div className="methodology-body">
           <ol className="methodology-steps">
             <li>
-              <strong>Pin artifacts to IPFS</strong> — snapshot, scores, UNL,
-              signed VL, and metadata, content-addressed by CID.
+              <strong>Pin final artifacts to IPFS</strong> — after the commit
+              window closes, snapshot, scores, UNL, signed VL, and metadata are
+              published by CID.
             </li>
             <li>
               <strong>Anchor on chain</strong> — an on-chain memo records the
@@ -90,22 +91,22 @@ export const MethodologyExplainer: FC<MethodologyExplainerProps> = ({
 
       <details className="methodology-section">
         <summary className="methodology-summary">
-          How it&apos;s independently verified
+          How shadow verification works
         </summary>
         <div className="methodology-body">
           <ol className="methodology-steps">
             <li>
-              <strong>Inputs frozen first</strong> — the exact inputs are pinned
+              <strong>Frozen inputs first</strong> — the exact inputs are pinned
               before scoring runs, so the round is reproducible.
             </li>
             <li>
-              <strong>Anyone can reproduce</strong> — re-run scoring from the
-              frozen inputs and match the published output hashes.
+              <strong>Outputs held through commit close</strong> — validators
+              commit before final output hashes are published.
             </li>
             <li>
-              <strong>Validators confirm on chain</strong> — they reproduce the
-              round and commit-reveal their result, so agreement is provable,
-              not trusted.
+              <strong>Validators commit-reveal on chain</strong> — after
+              publication, reveals are checked against the frozen round
+              announcement and the foundation output hashes.
             </li>
           </ol>
         </div>
