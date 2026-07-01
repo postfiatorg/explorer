@@ -325,6 +325,7 @@ export const AuditTrailPanel: FC<AuditTrailPanelProps> = ({
       <ConvergenceParticipation
         result={convergence}
         validatorMetaByKey={validatorMetaByKey}
+        frozenAt={round.input_frozen_at}
       />
 
       {round.memo_tx_hash && (

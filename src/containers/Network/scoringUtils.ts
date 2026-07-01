@@ -196,6 +196,13 @@ export interface ScoringConfig {
   // only the publisher account and announcement memo type are needed here.
   foundation_publisher_address?: string
   announcement_memo_type?: string
+  // Commit and reveal window lengths in seconds (with an optional gap between
+  // them), served alongside the discovery fields by the same Phase 2 module.
+  // Absent on deployments that predate it — the commit/reveal timeline hides
+  // itself when they are missing.
+  announcement_commit_window_seconds?: number
+  announcement_reveal_window_seconds?: number
+  announcement_reveal_gap_seconds?: number
 }
 
 export interface RoundScoringConfig {

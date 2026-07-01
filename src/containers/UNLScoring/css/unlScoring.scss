@@ -1751,6 +1751,184 @@ $convergence-diverged: #f34;
   background: $convergence-diverged;
 }
 
+.crtl {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 16px;
+}
+
+.crtl-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 9px;
+  gap: 8px;
+}
+
+.crtl-phase {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.crtl-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  animation: cr-pulse 1.6s infinite;
+  background: $green;
+}
+
+.crtl-phase-name {
+  color: $green;
+  font-size: 11px;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+  @include bold;
+
+  &.done {
+    color: $black-40;
+  }
+}
+
+.crtl-count {
+  color: $white;
+  font-family: monospace;
+  font-size: 12.5px;
+}
+
+.crtl-count-lbl {
+  color: $black-40;
+}
+
+// Labels sit above the track so the progress fill can never paint over them.
+.crtl-labels {
+  display: flex;
+  margin-bottom: 6px;
+}
+
+.crtl-lab {
+  color: $black-40;
+  font-size: 9.5px;
+  letter-spacing: 0.9px;
+  text-align: center;
+  text-transform: uppercase;
+  @include bold;
+
+  &.active {
+    color: $green;
+  }
+}
+
+.crtl-track-wrap {
+  position: relative;
+}
+
+.crtl-track {
+  position: relative;
+  display: flex;
+  overflow: hidden;
+  height: 26px;
+  border-radius: 8px;
+  background: $black-90;
+}
+
+// Thin separator at the commit/reveal boundary, replacing the old flex gap so the
+// marker and the fill share one coordinate space and stay aligned as time moves.
+.crtl-boundary {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: $black-90;
+  transform: translateX(-1px);
+}
+
+.crtl-seg {
+  position: relative;
+  overflow: hidden;
+  background: $black-80;
+}
+
+// Inactive spacer between the two windows; only rendered when the protocol
+// configures a non-zero reveal gap. Reads as empty track.
+.crtl-gap {
+  background: $black-90;
+}
+
+.crtl-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  height: 100%;
+
+  &.done {
+    background: rgba(var(--green-50-rgb), 0.3);
+  }
+
+  &.active {
+    background: linear-gradient(
+      90deg,
+      rgba(var(--green-50-rgb), 0.85),
+      $green-30
+    );
+  }
+}
+
+// Leading edge of the active window — a thin bar with a tight breathing glow so
+// the movement reads as live without flooding the track.
+.crtl-now {
+  position: absolute;
+  z-index: 4;
+  top: -3px;
+  bottom: -3px;
+  width: 2.5px;
+  border-radius: 2px;
+  animation: crtl-now-glow 1.25s ease-in-out infinite;
+  background: $white;
+}
+
+@keyframes crtl-now-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 2px 0 rgba(var(--green-50-rgb), 0.45);
+  }
+
+  50% {
+    box-shadow: 0 0 5px 0 rgba(var(--green-50-rgb), 0.9);
+  }
+}
+
+.crtl-times {
+  position: relative;
+  height: 16px;
+  margin-top: 7px;
+}
+
+.crtl-times span {
+  position: absolute;
+  top: 0;
+  color: $black-40;
+  font-family: monospace;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.crtl-t0 {
+  left: 0;
+}
+
+.crtl-tmid {
+  transform: translateX(-50%);
+}
+
+.crtl-t1 {
+  right: 0;
+}
+
 .cr-rows {
   display: flex;
   flex-direction: column;

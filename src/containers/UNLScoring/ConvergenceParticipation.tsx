@@ -10,6 +10,7 @@ import {
   ConvergenceParticipant,
   ConvergenceResult,
 } from './useConvergence'
+import { CommitRevealTimeline } from './CommitRevealTimeline'
 
 // The sealed convergence bundle contains this single JSON report; linking to it
 // opens readable data rather than the gateway's directory-index page.
@@ -352,11 +353,15 @@ const SealedReport: FC<{
 interface ConvergenceParticipationProps {
   result: ConvergenceResult
   validatorMetaByKey?: Map<string, ValidatorMeta>
+  // Frozen-input timestamp of the round — anchors the commit/reveal window
+  // timeline. Absent on rounds that never froze an input package.
+  frozenAt?: string | null
 }
 
 export const ConvergenceParticipation: FC<ConvergenceParticipationProps> = ({
   result,
   validatorMetaByKey,
+  frozenAt,
 }) => {
   if (result.status !== 'ready') return null
 
@@ -385,6 +390,12 @@ export const ConvergenceParticipation: FC<ConvergenceParticipationProps> = ({
           </span>
         )}
       </div>
+
+      <CommitRevealTimeline
+        frozenAt={frozenAt}
+        finalized={finalized}
+        sealedAt={result.sealedAt}
+      />
 
       {committed > 0 ? (
         <div className="cr-participation">

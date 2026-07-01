@@ -3,6 +3,11 @@ import { ConvergenceParticipation } from './ConvergenceParticipation'
 import type { ConvergenceResult } from './useConvergence'
 import type { ValidatorMeta } from './RankedTable'
 
+// The embedded commit/reveal timeline reads config through react-query; these
+// tests exercise the participation rows only, so stub it out to keep them free of
+// a QueryClient (the timeline has its own suite).
+jest.mock('./useScoringConfig', () => ({ useScoringConfig: () => null }))
+
 const KEY_A = 'nHUvalidatorKeyAAAAAAAAAAAAAAAAAAAAAA'
 const KEY_B = 'nHUvalidatorKeyBBBBBBBBBBBBBBBBBBBBBB'
 
