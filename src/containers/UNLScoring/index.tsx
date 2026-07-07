@@ -10,7 +10,9 @@ import NetworkContext from '../shared/NetworkContext'
 import { ValidatorResponse } from '../shared/vhsTypes'
 import {
   ScoringContext,
+  ScoringRoundMeta,
   isFailedRound,
+  isHeldRound,
   isInProgressRound,
   isOperationallyPublishedRound,
   isScoredRound,
@@ -31,6 +33,7 @@ import {
   ScoringFailedRoundPanel,
   ScoringFinalizingRoundPanel,
   ScoringGenesisPanel,
+  ScoringHeldRoundPanel,
   ScoringPageSkeleton,
   ScoringRunningRoundPanel,
   ScoringStaleBanner,
@@ -390,9 +393,26 @@ export const UNLScoring = () => {
     </div>
   )
 
+  // A held round (inputs frozen, outputs withheld) keeps a public audit
+  // surface — frozen inputs, commit/reveal timeline, live verification — so it
+  // renders the audit trail alongside its state panel. A pre-freeze round has
+  // nothing public yet and keeps the plain running panel.
+  const renderInProgressRound = (round: ScoringRoundMeta) =>
+    isHeldRound(round) ? (
+      <>
+        <ScoringHeldRoundPanel round={round} />
+        <AuditTrailPanel
+          round={round}
+          validatorMetaByKey={validatorMetaByKey}
+        />
+      </>
+    ) : (
+      <ScoringRunningRoundPanel round={round} />
+    )
+
   const renderViewingRoundContent = () => {
     if (selectedRunningRound) {
-      return <ScoringRunningRoundPanel round={selectedRunningRound} />
+      return renderInProgressRound(selectedRunningRound)
     }
     if (selectedFinalizingRound) {
       return <ScoringFinalizingRoundPanel round={selectedFinalizingRound} />
@@ -527,9 +547,7 @@ export const UNLScoring = () => {
               onSelectRound={handleSelectRound}
             />
           )}
-        {selectedRunningRound && (
-          <ScoringRunningRoundPanel round={selectedRunningRound} />
-        )}
+        {selectedRunningRound && renderInProgressRound(selectedRunningRound)}
         {selectedFinalizingRound && (
           <ScoringFinalizingRoundPanel round={selectedFinalizingRound} />
         )}

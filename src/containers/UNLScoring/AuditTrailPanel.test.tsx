@@ -186,6 +186,71 @@ describe('AuditTrailPanel frozen input package', () => {
   })
 })
 
+describe('AuditTrailPanel held rounds', () => {
+  beforeEach(() => {
+    ;(useAuditTrail as jest.Mock).mockReturnValue(
+      auditTrailData({
+        vlEffectiveIso: null,
+        vlExpiresIso: null,
+        memoLedger: null,
+        memoBodyText: null,
+        signedVl: null,
+        vlJsonAvailable: false,
+      }),
+    )
+  })
+
+  afterEach(() => {
+    jest.clearAllMocks()
+  })
+
+  const heldRound = (): ScoringRoundMeta =>
+    round('AWAITING_COMMIT_CLOSE', {
+      ipfs_cid: null,
+      final_bundle_cid: null,
+      github_pages_commit_url: null,
+      memo_tx_hash: null,
+      completed_at: null,
+      input_package_cid: 'QmHeldInputCid',
+      input_package_hash: 'cafebabe11',
+      input_frozen_at: '2026-07-07T18:49:30Z',
+    })
+
+  it('renders frozen inputs with withheld outputs instead of the placeholder', () => {
+    const wrapper = mount(<AuditTrailPanel round={heldRound()} />)
+
+    expect(wrapper.find('.audit-trail-placeholder').exists()).toBe(false)
+    expect(wrapper.find('.audit-trail-cols').exists()).toBe(true)
+    expect(wrapper.text()).toContain('Frozen inputs')
+    expect(wrapper.text()).toContain('QmHeldInputCid')
+    expect(wrapper.text()).toContain('Published outputs')
+    expect(wrapper.text()).toContain('Withheld until the commit window closes')
+    expect(wrapper.find('.audit-trail-card-withheld').exists()).toBe(true)
+    expect(wrapper.text()).not.toContain('Final bundle CID')
+    expect(wrapper.text()).not.toContain('On-chain memo')
+
+    wrapper.unmount()
+  })
+
+  it('keeps the placeholder for in-progress rounds without a frozen input package', () => {
+    const wrapper = mount(
+      <AuditTrailPanel
+        round={round('COLLECTING', {
+          ipfs_cid: null,
+          final_bundle_cid: null,
+          github_pages_commit_url: null,
+          memo_tx_hash: null,
+          completed_at: null,
+        })}
+      />,
+    )
+
+    expect(wrapper.find('.audit-trail-placeholder').exists()).toBe(true)
+
+    wrapper.unmount()
+  })
+})
+
 describe('AuditTrailPanel reproducible output hashes', () => {
   afterEach(() => {
     jest.clearAllMocks()

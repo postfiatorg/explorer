@@ -7,6 +7,7 @@ import {
   ScoringRoundMeta,
   formatCadence,
   formatRelativeTime,
+  isHeldRound,
   isInProgressRound,
   isMemoFailedPublishedRound,
 } from '../Network/scoringUtils'
@@ -269,7 +270,8 @@ const InProgressBanner: FC<{
     <div className="unl-scoring-banner-row">
       <div className="unl-scoring-banner-col unl-scoring-banner-col-main">
         <span className="unl-scoring-banner-running-label">
-          Round #{runningRound.round_number} running
+          Round #{runningRound.round_number}{' '}
+          {isHeldRound(runningRound) ? 'verifying' : 'running'}
         </span>
         <span className="unl-scoring-banner-sub">
           {runningRound.completed_at

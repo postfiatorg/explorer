@@ -28,8 +28,8 @@ const LEVELS = [
 // What a validator's row communicates, derived from the raw outcome plus whether
 // the round has sealed. A live round's awaiting/missing reveal is still pending,
 // so it reads as "awaiting"; once the round is finalized the same outcome is a
-// terminal miss. Divergence remains the adversarial signal and is always called
-// out.
+// terminal miss. Divergence — a different reproduced result — is the one
+// genuinely adversarial signal and is always called out.
 type DisplayStatus = 'reproduced' | 'diverged' | 'awaiting' | 'incomplete'
 type StatusTone = 'ok' | 'bad' | 'wait' | 'none'
 
@@ -162,13 +162,13 @@ const Headline: FC<{
         </strong>{' '}
         {finalized ? (
           <>
-            validators revealed hashes matching the foundation output.{' '}
-            <span className="cr-ok">Shadow verification sealed.</span>
+            validators reproduced the result.{' '}
+            <span className="cr-ok">Verification complete.</span>
           </>
         ) : (
           <>
-            validators revealed hashes matching the{' '}
-            <span className="cr-ok">foundation output</span>.
+            validators independently re-ran this round and reached the{' '}
+            <span className="cr-ok">same result</span>.
           </>
         )}
       </p>
@@ -180,7 +180,7 @@ const Headline: FC<{
       <strong>
         {reproduced} of {committed}
       </strong>{' '}
-      validators <span className="cr-ok">matched</span> the foundation output
+      validators <span className="cr-ok">reproduced</span> the result
       {diverged > 0 && (
         <>
           {' · '}
@@ -202,7 +202,7 @@ const ParticipationBar: FC<{ counts: StatusCounts; committed: number }> = ({
     <div
       className="cr-bar"
       role="img"
-      aria-label={`${counts.reproduced} of ${committed} committed validators matched the foundation output; ${counts.diverged} diverged`}
+      aria-label={`${counts.reproduced} of ${committed} committed validators reproduced the foundation's result; ${counts.diverged} diverged`}
     >
       {counts.reproduced > 0 && (
         <div
@@ -384,7 +384,7 @@ export const ConvergenceParticipation: FC<ConvergenceParticipationProps> = ({
   return (
     <section className="audit-trail-section">
       <div className="cr-head">
-        <span className="audit-trail-label">Shadow verification</span>
+        <span className="audit-trail-label">Independent verification</span>
         {finalized ? (
           <span className="cr-final">
             <span className="cr-final-tag">Final</span>

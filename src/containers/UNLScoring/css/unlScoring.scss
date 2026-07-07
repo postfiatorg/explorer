@@ -1505,6 +1505,13 @@
   gap: 12px;
 }
 
+// A held round's outputs card — the artifacts exist but are deliberately
+// withheld until the commit window closes; the dashed border reads as pending
+// rather than missing.
+.audit-trail-card-withheld {
+  border-style: dashed;
+}
+
 .audit-card-title {
   display: flex;
   align-items: center;

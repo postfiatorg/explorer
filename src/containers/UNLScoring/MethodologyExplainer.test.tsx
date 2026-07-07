@@ -16,7 +16,7 @@ describe('MethodologyExplainer', () => {
     const text = wrapper.text()
     expect(text).toContain('How scoring works')
     expect(text).toContain('How results are published')
-    expect(text).toContain('How shadow verification works')
+    expect(text).toContain("How it's independently verified")
     wrapper.unmount()
   })
 
@@ -48,7 +48,8 @@ describe('MethodologyExplainer', () => {
     const wrapper = mount(<MethodologyExplainer config={config} />)
     const text = wrapper.text()
     expect(wrapper.find('.methodology-steps li')).toHaveLength(6)
-    expect(text).toContain('Frozen inputs')
+    expect(text).toContain('Inputs frozen first')
+    expect(text).toContain('after the commit window closes')
     expect(text).toContain('commit before final output hashes are published')
     expect(text).toContain('commit-reveal')
     expect(text).not.toContain('See Independent verification')

@@ -8,6 +8,7 @@ import {
   ipfsGatewayUrl,
   getRoundBundleCid,
   getRoundInputPackageCid,
+  isHeldRound,
   isMemoFailedPublishedRound,
 } from '../Network/scoringUtils'
 import { useAuditTrail } from './useAuditTrail'
@@ -185,8 +186,12 @@ export const AuditTrailPanel: FC<AuditTrailPanelProps> = ({
   const convergence = useConvergence(round)
   const cid = getRoundBundleCid(round)
   const inputCid = getRoundInputPackageCid(round)
+  // A held round has no published outputs yet — by protocol, not by failure.
+  // Its frozen inputs and live convergence view still render; the outputs card
+  // says the artifacts are withheld rather than pretending they are missing.
+  const outputsWithheld = !cid && isHeldRound(round)
 
-  if (round.status === 'FAILED' || !cid) {
+  if (round.status === 'FAILED' || (!cid && !outputsWithheld)) {
     return <PlaceholderPanel round={round} />
   }
 
@@ -205,7 +210,7 @@ export const AuditTrailPanel: FC<AuditTrailPanelProps> = ({
     return value ? [{ label: field.label, value }] : []
   })
 
-  const outputsCard = (
+  const outputsCard = cid ? (
     <section className="audit-trail-card">
       <h3 className="audit-card-title">
         <span className="audit-card-dot audit-card-dot-out" />
@@ -256,6 +261,18 @@ export const AuditTrailPanel: FC<AuditTrailPanelProps> = ({
           Download vl.json
         </button>
       </GatewayLinks>
+    </section>
+  ) : (
+    <section className="audit-trail-card audit-trail-card-withheld">
+      <h3 className="audit-card-title">
+        <span className="audit-card-dot audit-card-dot-out" />
+        Published outputs
+      </h3>
+      <p className="audit-card-hint">
+        Withheld until the commit window closes. Validators commit to their
+        independently computed results before the foundation&apos;s output
+        hashes become public, so a commit proves an independent run.
+      </p>
     </section>
   )
 

@@ -3,6 +3,7 @@ import { act } from 'react-dom/test-utils'
 import {
   ScoringFailedRoundPanel,
   ScoringFinalizingRoundPanel,
+  ScoringHeldRoundPanel,
   ScoringRunningRoundPanel,
 } from './ScoringStatePanels'
 
@@ -60,6 +61,59 @@ describe('ScoringRunningRoundPanel', () => {
     wrapper.update()
 
     expect(wrapper.text()).toContain('11s ago')
+
+    wrapper.unmount()
+  })
+})
+
+describe('ScoringHeldRoundPanel', () => {
+  beforeEach(() => {
+    jest.useFakeTimers()
+    jest.setSystemTime(new Date('2026-04-29T12:01:10Z'))
+  })
+
+  afterEach(() => {
+    jest.useRealTimers()
+  })
+
+  it('renders a held round as an active verification state', () => {
+    const wrapper = mount(
+      <ScoringHeldRoundPanel
+        round={{
+          round_number: 207,
+          status: 'AWAITING_COMMIT_CLOSE',
+          created_at: '2026-04-29T12:00:00Z',
+          started_at: '2026-04-29T12:00:30Z',
+          completed_at: null,
+          input_frozen_at: '2026-04-29T12:01:00Z',
+        }}
+      />,
+    )
+
+    expect(wrapper.find('.unl-scoring-held-round').exists()).toBe(true)
+    expect(wrapper.text()).toContain('Round #207 is being verified')
+    expect(wrapper.text()).toContain('Scoring outputs are withheld')
+    expect(wrapper.text()).toContain('AWAITING_COMMIT_CLOSE')
+    expect(wrapper.text()).toContain('inputs frozen 10s ago')
+
+    wrapper.unmount()
+  })
+
+  it('labels the fallback start time honestly when the freeze timestamp is absent', () => {
+    const wrapper = mount(
+      <ScoringHeldRoundPanel
+        round={{
+          round_number: 208,
+          status: 'AWAITING_COMMIT_CLOSE',
+          created_at: '2026-04-29T12:00:00Z',
+          started_at: '2026-04-29T12:01:00Z',
+          completed_at: null,
+        }}
+      />,
+    )
+
+    expect(wrapper.text()).toContain('started 10s ago')
+    expect(wrapper.text()).not.toContain('inputs frozen')
 
     wrapper.unmount()
   })

@@ -78,3 +78,37 @@ describe('ScoringBanner memo warning', () => {
     wrapper.unmount()
   })
 })
+
+describe('ScoringBanner in-progress rounds', () => {
+  it('labels a newer running attempt as running', () => {
+    const wrapper = mount(
+      <ScoringBanner
+        context={contextFor(round(239))}
+        latestAttempt={round(240, 'COLLECTING', { completed_at: null })}
+        health={null}
+      />,
+    )
+
+    expect(wrapper.text()).toContain('Round #240 running')
+
+    wrapper.unmount()
+  })
+
+  it('labels a held attempt as verifying', () => {
+    const wrapper = mount(
+      <ScoringBanner
+        context={contextFor(round(239))}
+        latestAttempt={round(240, 'AWAITING_COMMIT_CLOSE', {
+          completed_at: null,
+          input_package_cid: 'QmInputPackage',
+        })}
+        health={null}
+      />,
+    )
+
+    expect(wrapper.text()).toContain('Round #240 verifying')
+    expect(wrapper.text()).not.toContain('Round #240 running')
+
+    wrapper.unmount()
+  })
+})

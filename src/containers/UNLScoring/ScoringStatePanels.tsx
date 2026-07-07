@@ -121,6 +121,36 @@ export const ScoringRunningRoundPanel: FC<{ round: ScoringRoundMeta }> = ({
   )
 }
 
+// A held round has frozen its inputs and opened the commit/reveal windows, but
+// its outputs stay withheld until the commit window closes. The audit trail
+// rendered below this panel carries the live verification view.
+export const ScoringHeldRoundPanel: FC<{ round: ScoringRoundMeta }> = ({
+  round,
+}) => {
+  const now = useTicker(RUNNING_ROUND_TICK_MS)
+  const frozenAt = round.input_frozen_at ?? null
+  const startedAt = round.started_at ?? round.created_at ?? null
+
+  return (
+    <div className="unl-scoring-held-round unl-scoring-accent-panel unl-scoring-accent-warning dashboard-panel">
+      <h2>Round #{round.round_number} is being verified</h2>
+      <p>
+        Scoring outputs are withheld while validators independently re-run the
+        round and commit their results on chain. The audit trail below follows
+        the verification live; ranked scores appear once the round publishes.
+      </p>
+      <div className="unl-scoring-running-round-meta">
+        <span>{round.status}</span>
+        {frozenAt ? (
+          <span>inputs frozen {formatRelativeTime(frozenAt, now)}</span>
+        ) : (
+          startedAt && <span>started {formatRelativeTime(startedAt, now)}</span>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export const ScoringFinalizingRoundPanel: FC<{ round: ScoringRoundMeta }> = ({
   round,
 }) => (

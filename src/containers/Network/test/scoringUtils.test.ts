@@ -8,6 +8,7 @@ import {
   getRoundBundleCid,
   getRoundInputPackageCid,
   getScoringInfoForValidator,
+  isHeldRound,
   isInProgressRound,
   isOperationallyPublishedRound,
   isRoundFresh,
@@ -137,6 +138,39 @@ describe('round state helpers', () => {
     expect(isInProgressRound(round(9, 'FAILED'))).toBe(false)
     expect(isInProgressRound(round(7, 'VL_PUBLISHED_MEMO_FAILED'))).toBe(false)
     expect(isInProgressRound(round(6, 'UNEXPECTED_PRIVATE_STATUS'))).toBe(true)
+  })
+
+  it('identifies held rounds by their frozen input package', () => {
+    const held = {
+      ...round(13, 'AWAITING_COMMIT_CLOSE'),
+      input_package_cid: 'QmInputPackage',
+    }
+    expect(isHeldRound(held)).toBe(true)
+    // frozen inputs on any in-flight stage make the round held
+    expect(
+      isHeldRound({ ...round(13, 'SCORED'), input_package_cid: 'QmInput' }),
+    ).toBe(true)
+    // pre-freeze rounds and terminal rounds are not held
+    expect(isHeldRound(round(13, 'AWAITING_COMMIT_CLOSE'))).toBe(false)
+    expect(isHeldRound(round(11, 'COLLECTING'))).toBe(false)
+    expect(
+      isHeldRound({ ...round(12, 'COMPLETE'), input_package_cid: 'QmInput' }),
+    ).toBe(false)
+    // once the final bundle publishes, the in-flight round is no longer held
+    expect(
+      isHeldRound({
+        ...round(13, 'IPFS_PUBLISHED'),
+        input_package_cid: 'QmInput',
+        final_bundle_cid: 'QmFinalBundle',
+      }),
+    ).toBe(false)
+    expect(
+      isHeldRound({
+        ...round(13, 'ONCHAIN_PUBLISHED'),
+        input_package_cid: 'QmInput',
+        ipfs_cid: 'QmLegacyBundle',
+      }),
+    ).toBe(false)
   })
 
   it('treats memo-failed VL rounds as operationally published', () => {

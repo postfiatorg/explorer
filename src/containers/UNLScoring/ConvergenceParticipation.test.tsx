@@ -68,7 +68,7 @@ describe('ConvergenceParticipation', () => {
       />,
     )
 
-    expect(wrapper.text()).toContain('Shadow verification')
+    expect(wrapper.text()).toContain('Independent verification')
     expect(wrapper.find('.cr-live-tag').exists()).toBe(true)
     expect(
       wrapper.find('[data-testid="cr-participant"]').hostNodes(),
@@ -127,6 +127,22 @@ describe('ConvergenceParticipation', () => {
     wrapper.unmount()
   })
 
+  it('treats a live announcement mismatch as terminal, not awaiting', () => {
+    const wrapper = mount(
+      <ConvergenceParticipation
+        result={ready({
+          participants: [
+            { validator_master_key: KEY_A, outcome: 'announcement_mismatch' },
+          ],
+          summary: { committers: 1 },
+        })}
+      />,
+    )
+    expect(wrapper.text()).toContain('Announcement mismatch')
+    expect(wrapper.text()).not.toContain('Awaiting reveal')
+    wrapper.unmount()
+  })
+
   it('uses terminal labels for unrevealed outcomes once finalized', () => {
     const wrapper = mount(
       <ConvergenceParticipation
@@ -134,7 +150,7 @@ describe('ConvergenceParticipation', () => {
           phase: 'sealed',
           finalized: true,
           participants: [
-            { validator_master_key: KEY_A, outcome: 'missing_reveal' },
+            { validator_master_key: KEY_A, outcome: 'awaiting_reveal' },
             { validator_master_key: KEY_B, outcome: 'late' },
             {
               validator_master_key: 'nHUvalidatorKeyCCCCCCCCCCCCCCCCCCCCCC',
@@ -148,8 +164,12 @@ describe('ConvergenceParticipation', () => {
               validator_master_key: 'nHUvalidatorKeyEEEEEEEEEEEEEEEEEEEEEE',
               outcome: 'signature_invalid',
             },
+            {
+              validator_master_key: 'nHUvalidatorKeyFFFFFFFFFFFFFFFFFFFFFF',
+              outcome: 'missing_reveal',
+            },
           ],
-          summary: { committers: 5 },
+          summary: { committers: 6 },
         })}
       />,
     )

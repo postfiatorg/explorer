@@ -91,12 +91,12 @@ export const MethodologyExplainer: FC<MethodologyExplainerProps> = ({
 
       <details className="methodology-section">
         <summary className="methodology-summary">
-          How shadow verification works
+          How it&apos;s independently verified
         </summary>
         <div className="methodology-body">
           <ol className="methodology-steps">
             <li>
-              <strong>Frozen inputs first</strong> — the exact inputs are pinned
+              <strong>Inputs frozen first</strong> — the exact inputs are pinned
               before scoring runs, so the round is reproducible.
             </li>
             <li>

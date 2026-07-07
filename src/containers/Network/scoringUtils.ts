@@ -104,17 +104,6 @@ export const deriveFailedAtStage = (
   return null
 }
 
-// Non-terminal pipeline stages — rounds in any of these states are in-flight.
-export const IN_PROGRESS_STATUSES = new Set([
-  'COLLECTING',
-  'SCORED',
-  'SELECTED',
-  'VL_SIGNED',
-  'IPFS_PUBLISHED',
-  'VL_DISTRIBUTED',
-  'ONCHAIN_PUBLISHED',
-])
-
 export const VL_PUBLISHED_MEMO_FAILED_STATUS = 'VL_PUBLISHED_MEMO_FAILED'
 
 export type RoundStateKind =
@@ -132,6 +121,17 @@ export const classifyRoundState = (status: string): RoundStateKind => {
 
 export const isInProgressRound = (round: ScoringRoundMeta): boolean =>
   classifyRoundState(round.status) === 'running'
+
+// An in-flight round whose input package has been frozen and pinned but whose
+// outputs are still withheld. From the freeze the commit/reveal windows are
+// open and the convergence view is live, so the round has a public audit
+// surface (frozen inputs, timeline, participation) without any published
+// outputs. Once the final bundle CID lands the withholding is over and the
+// round is just finishing publication, not held.
+export const isHeldRound = (round: ScoringRoundMeta): boolean =>
+  isInProgressRound(round) &&
+  getRoundInputPackageCid(round) !== null &&
+  getRoundBundleCid(round) === null
 
 export const isFailedRound = (round: ScoringRoundMeta): boolean =>
   classifyRoundState(round.status) === 'failed'
