@@ -3,9 +3,6 @@ import { Check, Copy } from 'lucide-react'
 import { CopyableAddress } from '../shared/components/CopyableAddress/CopyableAddress'
 import {
   ScoringRoundMeta,
-  PUBLIC_IPFS_GATEWAY_HOST,
-  ipfsProxyUrl,
-  ipfsGatewayUrl,
   getRoundBundleCid,
   getRoundInputPackageCid,
   isHeldRound,
@@ -14,6 +11,7 @@ import {
 import { useAuditTrail } from './useAuditTrail'
 import { useConvergence } from './useConvergence'
 import { ConvergenceParticipation } from './ConvergenceParticipation'
+import { PackageContents } from './PackageContents'
 import { ValidatorMeta } from './RankedTable'
 
 interface AuditTrailPanelProps {
@@ -21,11 +19,6 @@ interface AuditTrailPanelProps {
   supersedingRound?: ScoringRoundMeta | null
   validatorMetaByKey?: Map<string, ValidatorMeta>
 }
-
-// Every pinned bundle (final outputs and frozen input package alike) carries a
-// JSON manifest at this path; linking to it opens readable data rather than the
-// gateway's directory-index page.
-const BUNDLE_MANIFEST_FILE = 'bundle.json'
 
 const VERIFICATION_HASH_FIELDS = [
   { key: 'model_response_hash', label: 'Model response' },
@@ -116,36 +109,6 @@ const MemoBody: FC<{ raw: string }> = ({ raw }) => {
     </div>
   )
 }
-
-// Both links open the bundle's JSON manifest. The primary goes through the
-// Explorer's own /ipfs proxy (reliable, token injected server-side); the public
-// gateway is a credential-free link anyone can verify against. These are plain
-// external links — Explorer fetches round data through its own /api/scoring
-// proxy, not these gateways.
-const GatewayLinks: FC<{ cid: string; children?: ReactNode }> = ({
-  cid,
-  children,
-}) => (
-  <div className="audit-trail-links">
-    <a
-      className="audit-gateway-link"
-      href={ipfsProxyUrl(cid, BUNDLE_MANIFEST_FILE)}
-      target="_blank"
-      rel="noopener noreferrer"
-    >
-      Open on IPFS
-    </a>
-    <a
-      className="audit-gateway-alt"
-      href={ipfsGatewayUrl(PUBLIC_IPFS_GATEWAY_HOST, cid, BUNDLE_MANIFEST_FILE)}
-      target="_blank"
-      rel="noopener noreferrer"
-    >
-      Public gateway
-    </a>
-    {children}
-  </div>
-)
 
 const Field: FC<{ label: string; children: ReactNode }> = ({
   label,
@@ -248,7 +211,7 @@ export const AuditTrailPanel: FC<AuditTrailPanelProps> = ({
           </span>
         </Field>
       )}
-      <GatewayLinks cid={cid}>
+      <PackageContents cid={cid}>
         <span className="audit-trail-sep" aria-hidden="true">
           ·
         </span>
@@ -260,7 +223,7 @@ export const AuditTrailPanel: FC<AuditTrailPanelProps> = ({
         >
           Download vl.json
         </button>
-      </GatewayLinks>
+      </PackageContents>
     </section>
   ) : (
     <section className="audit-trail-card audit-trail-card-withheld">
@@ -309,7 +272,7 @@ export const AuditTrailPanel: FC<AuditTrailPanelProps> = ({
                 </span>
               </div>
             )}
-            <GatewayLinks cid={inputCid} />
+            <PackageContents cid={inputCid} />
           </section>
           {outputsCard}
         </div>

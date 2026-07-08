@@ -1602,6 +1602,169 @@
   color: $black-60;
 }
 
+// In-explorer package inventory. The collapsed summary mirrors the
+// .audit-gateway-link pill so the card keeps its character.
+.pkg-contents {
+  border: 1px solid $black-80;
+  border-radius: 6px;
+  background: $black-90;
+}
+
+.pkg-summary {
+  display: flex;
+  align-items: center;
+  padding: 7px 12px;
+  color: $white;
+  cursor: pointer;
+  font-size: 13px;
+  gap: 8px;
+  list-style: none;
+  @include medium;
+
+  &::-webkit-details-marker {
+    display: none;
+  }
+
+  &:hover {
+    border-radius: 5px;
+    background: $black-80;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $blue-40;
+    outline-offset: 1px;
+  }
+}
+
+.pkg-summary-chevron {
+  color: $black-40;
+  font-size: 10px;
+  transition: transform $transition-default;
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
+.pkg-contents[open] .pkg-summary-chevron {
+  transform: rotate(90deg);
+}
+
+// Keep the open panel's summary flush with the file list's top border.
+.pkg-contents[open] .pkg-summary:hover {
+  border-radius: 5px 5px 0 0;
+}
+
+.pkg-summary-count {
+  color: $black-40;
+  font-weight: 400;
+}
+
+// Scrollbar matches the token-search dropdown: thin, $black-50 thumb on a
+// transparent track.
+.pkg-file-list {
+  max-height: 248px;
+  padding: 2px 0 4px;
+  border-top: 1px solid $black-80;
+  overflow-y: auto;
+  scrollbar-color: $black-50 transparent;
+  scrollbar-width: thin;
+}
+
+// Dimmer than the filenames and at the outer edge, with the rows indented
+// beneath it, so the stage labels read as structure rather than entries.
+.pkg-group {
+  padding: 10px 12px 3px;
+  color: $black-50;
+  font-size: 10px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+.pkg-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 12px;
+  font-family: monospace;
+  font-size: 11.5px;
+  gap: 14px;
+  text-decoration: none;
+
+  &:hover,
+  &:focus-visible {
+    background: $black-80;
+
+    .pkg-row-path {
+      color: $white;
+    }
+
+    .pkg-row-open {
+      opacity: 1;
+    }
+  }
+
+  // Negative offset keeps the ring inside the scrolling file list.
+  &:focus-visible {
+    outline: 2px solid $blue-40;
+    outline-offset: -2px;
+  }
+}
+
+.pkg-row-grouped {
+  padding-left: 24px;
+}
+
+.pkg-row-path {
+  color: $black-30;
+  word-break: break-all;
+}
+
+.pkg-row-tail {
+  display: flex;
+  align-items: center;
+  flex: none;
+  gap: 8px;
+}
+
+.pkg-row-hash {
+  display: none;
+  color: $black-60;
+  font-size: 10.5px;
+
+  @include for-size(tablet-landscape-up) {
+    display: inline;
+  }
+}
+
+.pkg-row-manifest-tag {
+  color: $black-60;
+  font-size: 9px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
+.pkg-row-open {
+  width: 12px;
+  color: $blue-40;
+  font-size: 11px;
+  opacity: 0;
+  transition: opacity $transition-default;
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
+.pkg-foot {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 8px 12px;
+  border-top: 1px solid $black-80;
+  gap: 12px;
+}
+
 .audit-hash-table {
   width: 100%;
   border-collapse: collapse;
@@ -2074,6 +2237,21 @@ $convergence-diverged: #f34;
   display: flex;
   flex-direction: column;
   gap: 7px;
+}
+
+// Full anchor hash on wider screens, the middle-truncated form below.
+.cr-anchor-full {
+  display: none;
+
+  @include for-size(tablet-landscape-up) {
+    display: inline;
+  }
+}
+
+.cr-anchor-short {
+  @include for-size(tablet-landscape-up) {
+    display: none;
+  }
 }
 
 // ---------------------------------------------------------------------------

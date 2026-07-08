@@ -220,15 +220,21 @@ describe('ConvergenceParticipation', () => {
     // renders in the viewer's local timezone, so assert the month/year (the day
     // can shift a boundary across timezones) rather than a fixed local date.
     expect(wrapper.find('.cr-final-at').text()).toContain('May 2026')
-    expect(wrapper.text()).toContain('Open on IPFS')
-    expect(wrapper.text()).toContain('Public gateway')
-    expect(wrapper.find('a.audit-gateway-link').prop('href')).toContain(
+    expect(wrapper.text()).toContain('Sealed report')
+    expect(wrapper.find('a.audit-gateway-alt').exists()).toBe(false)
+    const reportLink = wrapper.find('a.audit-gateway-link')
+    expect(reportLink.prop('href')).toContain(
       'QmBundleCid/convergence_report.json',
     )
-    // the anchor renders as a transaction link, matching the page's tx convention
+    // relative proxy href, so the new-tab glyph must be forced
+    expect(reportLink.hasClass('external')).toBe(true)
+    // the anchor renders as a transaction link, matching the page's tx
+    // convention: full hash on wide screens, middle-truncated below
     expect(wrapper.find('a.audit-trail-hash-link').prop('href')).toBe(
       '/transactions/ANCHORHASH1234567890',
     )
+    expect(wrapper.find('.cr-anchor-full').text()).toBe('ANCHORHASH1234567890')
+    expect(wrapper.find('.cr-anchor-short').text()).toBe('ANCHORHASH…567890')
 
     wrapper.unmount()
   })

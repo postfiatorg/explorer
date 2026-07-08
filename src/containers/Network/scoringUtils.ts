@@ -9,22 +9,25 @@ export const fetchJsonOrNull = async <T>(url: string): Promise<T | null> => {
   }
 }
 
-// Both helpers resolve a bundle CID, optionally a single file within it. The
-// audit surfaces target the bundle's JSON manifest so the link opens readable
-// data instead of the gateway's directory-index page (whose styling depends on
-// flaky third-party infra).
+// Both helpers resolve a bundle CID, optionally a single file within it.
 //
-// The primary link goes through the Explorer's own /ipfs proxy, which injects
-// the dedicated gateway's access token server-side so the token never reaches
-// the browser; the proxy serves both the directory and any nested file.
+// Primary links go through the Explorer's own /ipfs proxy, which injects the
+// dedicated gateway's access token server-side so the token never reaches the
+// browser; the proxy serves both the directory and any nested file.
 export const ipfsProxyUrl = (cid: string, file?: string): string =>
   file ? `/ipfs/${cid}/${file}` : `/ipfs/${cid}`
 
-// A public gateway offered as a secondary, credential-free link so anyone can
+// A public gateway offered as a credential-free fallback link so anyone can
 // confirm the same CID resolves on infrastructure the foundation does not run.
 // Public gateways retrieve over the IPFS network, so very recently pinned CIDs
 // can be slow to resolve there until they propagate.
 export const PUBLIC_IPFS_GATEWAY_HOST = 'dweb.link'
+
+// Directory browsing goes to Pinata's public gateway: its listing page is
+// self-styled and renders reliably, while the dedicated gateway behind the
+// /ipfs proxy serves a listing whose stylesheet loads from flaky third-party
+// hosts and often renders unstyled.
+export const PINATA_PUBLIC_GATEWAY_HOST = 'gateway.pinata.cloud'
 
 export const ipfsGatewayUrl = (
   host: string,
@@ -32,6 +35,22 @@ export const ipfsGatewayUrl = (
   file?: string,
 ): string =>
   file ? `https://${host}/ipfs/${cid}/${file}` : `https://${host}/ipfs/${cid}`
+
+// Every pinned bundle (final outputs and frozen input package alike) carries a
+// JSON manifest at this path listing the package's files with their SHA-256
+// hashes.
+export const BUNDLE_MANIFEST_FILE = 'bundle.json'
+
+export interface BundleManifest {
+  // Path -> SHA-256 for every content file. The manifest cannot contain its
+  // own hash, so bundle.json itself is never a key.
+  file_hashes?: Record<string, string>
+}
+
+export const fetchBundleManifest = (
+  cid: string,
+): Promise<BundleManifest | null> =>
+  fetchJsonOrNull<BundleManifest>(ipfsProxyUrl(cid, BUNDLE_MANIFEST_FILE))
 
 export type ScoringStatus = 'on_unl' | 'candidate' | 'ineligible' | 'no_data'
 

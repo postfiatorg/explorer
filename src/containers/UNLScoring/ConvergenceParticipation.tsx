@@ -1,9 +1,5 @@
 import { FC } from 'react'
-import {
-  PUBLIC_IPFS_GATEWAY_HOST,
-  ipfsProxyUrl,
-  ipfsGatewayUrl,
-} from '../Network/scoringUtils'
+import { ipfsProxyUrl } from '../Network/scoringUtils'
 import { ValidatorMeta } from './RankedTable'
 import {
   ConvergenceOutcome,
@@ -318,27 +314,16 @@ const SealedReport: FC<{
 }> = ({ cid, anchorTxHash }) => (
   <div className="cr-foot">
     <div className="cr-foot-field">
-      <span className="audit-card-key">Sealed report</span>
       <div className="audit-trail-links">
+        {/* `external` forces the new-tab glyph: the proxy href is relative,
+            so the global protocol-based rule cannot detect it. */}
         <a
-          className="audit-gateway-link"
+          className="audit-gateway-link external"
           href={ipfsProxyUrl(cid, CONVERGENCE_REPORT_FILE)}
           target="_blank"
           rel="noopener noreferrer"
         >
-          Open on IPFS
-        </a>
-        <a
-          className="audit-gateway-alt"
-          href={ipfsGatewayUrl(
-            PUBLIC_IPFS_GATEWAY_HOST,
-            cid,
-            CONVERGENCE_REPORT_FILE,
-          )}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Public gateway
+          Sealed report
         </a>
       </div>
     </div>
@@ -352,7 +337,8 @@ const SealedReport: FC<{
           rel="noopener noreferrer"
           title={anchorTxHash}
         >
-          {shortenHash(anchorTxHash)}
+          <span className="cr-anchor-full">{anchorTxHash}</span>
+          <span className="cr-anchor-short">{shortenHash(anchorTxHash)}</span>
         </a>
       </div>
     )}

@@ -2,6 +2,7 @@ import { mount } from 'enzyme'
 import { AuditTrailPanel } from './AuditTrailPanel'
 import { useAuditTrail } from './useAuditTrail'
 import { useConvergence } from './useConvergence'
+import { usePackageManifest } from './usePackageManifest'
 import type { ScoringRoundMeta } from '../Network/scoringUtils'
 
 jest.mock('./useAuditTrail', () => ({
@@ -14,10 +15,15 @@ jest.mock('./useConvergence', () => ({
   useConvergence: jest.fn(),
 }))
 
-// The suite runs with resetMocks, so the convergence hook's return must be
-// re-stubbed before each test. These panel tests cover the audit-trail
-// surfaces, so the participation section stays inert ('unavailable' renders
-// nothing).
+jest.mock('./usePackageManifest', () => ({
+  __esModule: true,
+  usePackageManifest: jest.fn(),
+}))
+
+// The suite runs with resetMocks, so the hooks' returns must be re-stubbed
+// before each test. These panel tests cover the audit-trail surfaces, so the
+// participation section stays inert ('unavailable' renders nothing) and the
+// package inventory renders its plain-links fallback unless a test opts in.
 beforeEach(() => {
   ;(useConvergence as jest.Mock).mockReturnValue({
     status: 'unavailable',
@@ -30,6 +36,7 @@ beforeEach(() => {
     anchorTxHash: null,
     sealedAt: null,
   })
+  ;(usePackageManifest as jest.Mock).mockReturnValue(null)
 })
 
 const round = (
@@ -184,6 +191,40 @@ describe('AuditTrailPanel frozen input package', () => {
 
     wrapper.unmount()
   })
+
+  it('renders a package inventory per card when the manifests resolve', () => {
+    ;(usePackageManifest as jest.Mock).mockReturnValue({
+      file_hashes: { 'inputs/model_request.json': 'a'.repeat(64) },
+    })
+
+    const wrapper = mount(
+      <AuditTrailPanel
+        round={round('COMPLETE', {
+          memo_tx_hash: 'ABC123',
+          input_package_cid: 'QmInputPackageCid',
+        })}
+      />,
+    )
+
+    // one inventory for the frozen inputs card, one for the outputs card
+    expect(wrapper.find('details.pkg-contents')).toHaveLength(2)
+    expect(wrapper.text()).toContain('Package contents')
+    expect(wrapper.text()).toContain('Download vl.json')
+
+    wrapper.unmount()
+  })
+
+  it('falls back to plain manifest links when the manifests are unavailable', () => {
+    const wrapper = mount(
+      <AuditTrailPanel round={round('COMPLETE', { memo_tx_hash: 'ABC123' })} />,
+    )
+
+    expect(wrapper.find('details.pkg-contents').exists()).toBe(false)
+    expect(wrapper.text()).toContain('View manifest')
+    expect(wrapper.text()).toContain('Open on public gateway')
+
+    wrapper.unmount()
+  })
 })
 
 describe('AuditTrailPanel held rounds', () => {
@@ -228,6 +269,19 @@ describe('AuditTrailPanel held rounds', () => {
     expect(wrapper.find('.audit-trail-card-withheld').exists()).toBe(true)
     expect(wrapper.text()).not.toContain('Final bundle CID')
     expect(wrapper.text()).not.toContain('On-chain memo')
+
+    wrapper.unmount()
+  })
+
+  it('renders the frozen-input inventory only while outputs are withheld', () => {
+    ;(usePackageManifest as jest.Mock).mockReturnValue({
+      file_hashes: { 'inputs/model_request.json': 'a'.repeat(64) },
+    })
+
+    const wrapper = mount(<AuditTrailPanel round={heldRound()} />)
+
+    expect(wrapper.find('details.pkg-contents')).toHaveLength(1)
+    expect(wrapper.text()).toContain('Withheld until the commit window closes')
 
     wrapper.unmount()
   })
