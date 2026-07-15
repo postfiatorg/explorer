@@ -134,7 +134,12 @@ const pad2 = (n: number): string => String(n).padStart(2, '0')
 
 const formatCountdown = (ms: number): string => {
   const s = Math.max(0, Math.round(ms / MS))
-  return `${Math.floor(s / 60)}m ${pad2(s % 60)}s`
+  const hours = Math.floor(s / 3600)
+  const minutes = Math.floor((s % 3600) / 60)
+  const seconds = s % 60
+  return hours > 0
+    ? `${hours}h ${pad2(minutes)}m ${pad2(seconds)}s`
+    : `${minutes}m ${pad2(seconds)}s`
 }
 
 // Times render in the viewer's local timezone with no explicit label — the

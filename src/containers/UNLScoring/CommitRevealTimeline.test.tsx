@@ -176,6 +176,50 @@ describe('CommitRevealTimeline', () => {
     // Both labels always render in full — never clipped by the fill.
     expect(wrapper.find('.crtl-lab')).toHaveLength(2)
     expect(wrapper.find('.crtl-now').exists()).toBe(true)
+    // Sub-hour remaining time stays in the minutes-and-seconds form.
+    expect(wrapper.find('.crtl-count').text()).toBe('closes in 7m 00s')
+    wrapper.unmount()
+  })
+
+  it('formats an hours-long commit countdown with an hours segment', () => {
+    mockedUseScoringConfig.mockReturnValue({
+      ...cfg(true),
+      announcement_commit_window_seconds: 7200, // 14:22 -> 16:22
+    })
+    nowSpy.mockReturnValue(AT('2026-07-01T14:42:30Z'))
+    const wrapper = mount(
+      <CommitRevealTimeline frozenAt={FROZEN} finalized={false} />,
+    )
+    expect(wrapper.find('.crtl-phase-name').text()).toBe('Commit window')
+    expect(wrapper.find('.crtl-count').text()).toContain('closes in 1h 39m 30s')
+    wrapper.unmount()
+  })
+
+  it('formats an hours-long gap countdown to the reveal opening', () => {
+    mockedUseScoringConfig.mockReturnValue({
+      ...cfg(true),
+      announcement_reveal_gap_seconds: 5400, // commit ends 14:37, reveal opens 16:07
+    })
+    nowSpy.mockReturnValue(AT('2026-07-01T14:37:30Z'))
+    const wrapper = mount(
+      <CommitRevealTimeline frozenAt={FROZEN} finalized={false} />,
+    )
+    expect(wrapper.find('.crtl-phase-name').text()).toBe('Reveal window')
+    expect(wrapper.find('.crtl-count').text()).toContain('opens in 1h 29m 30s')
+    wrapper.unmount()
+  })
+
+  it('formats an hours-long reveal countdown with zero-padded minutes', () => {
+    mockedUseScoringConfig.mockReturnValue({
+      ...cfg(true),
+      announcement_reveal_window_seconds: 7200, // 14:37 -> 16:37
+    })
+    nowSpy.mockReturnValue(AT('2026-07-01T15:31:57Z'))
+    const wrapper = mount(
+      <CommitRevealTimeline frozenAt={FROZEN} finalized={false} />,
+    )
+    expect(wrapper.find('.crtl-phase-name').text()).toBe('Reveal window')
+    expect(wrapper.find('.crtl-count').text()).toBe('closes in 1h 05m 03s')
     wrapper.unmount()
   })
 
