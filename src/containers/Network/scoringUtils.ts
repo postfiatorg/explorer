@@ -421,7 +421,7 @@ export const SCORING_DIMENSIONS: DimensionMeta[] = [
     label: 'Reliability',
     tooltip:
       'Operational care signaled by a verified domain and proper configuration. Current UNL membership is continuity context only, never a score driver.',
-    summary: 'Operator care shown by proper configuration.',
+    summary: 'Stable, accountable validator operation.',
   },
   {
     key: 'software',
