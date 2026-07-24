@@ -420,8 +420,8 @@ export const SCORING_DIMENSIONS: DimensionMeta[] = [
     key: 'reliability',
     label: 'Reliability',
     tooltip:
-      'Operational reliability signaled by verified domain (public accountability) and current UNL membership.',
-    summary: 'Verified domain and current UNL membership.',
+      'Operational care signaled by a verified domain and proper configuration. Current UNL membership is continuity context only, never a score driver.',
+    summary: 'Operator care shown by proper configuration.',
   },
   {
     key: 'software',
@@ -441,8 +441,8 @@ export const SCORING_DIMENSIONS: DimensionMeta[] = [
     key: 'identity',
     label: 'Identity',
     tooltip:
-      'Identity and reputation. Verified domain and organizational identity raise this score.',
-    summary: 'Verified domain and organizational identity.',
+      'Public accountability. A verified domain stands in while formal identity verification is not yet deployed on the network.',
+    summary: 'Public accountability via a verified domain.',
   },
 ]
 
