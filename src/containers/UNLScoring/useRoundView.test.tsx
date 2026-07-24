@@ -152,6 +152,105 @@ describe('useRoundView artifact compatibility', () => {
     },
   }
 
+  it('renders deterministic final scores when the round publishes them', async () => {
+    const formulaRoundScores = {
+      validator_scores: [
+        { ...scores.validator_scores[0] },
+        {
+          ...scores.validator_scores[0],
+          master_key: 'nHBvalidatorB',
+          score: 88,
+        },
+      ],
+    }
+    axiosGet.mockImplementation((url: string) => {
+      if (url === '/api/scoring/rounds/9') {
+        return Promise.resolve({
+          data: {
+            round_number: 9,
+            status: 'COMPLETE',
+            completed_at: '2026-07-23T19:40:00Z',
+            final_bundle_cid: 'QmFormulaBundle',
+          },
+        })
+      }
+      if (url === '/api/scoring/rounds/9/outputs/validator_scores.json') {
+        return Promise.resolve({ data: formulaRoundScores })
+      }
+      if (url === '/api/scoring/rounds/9/outputs/final_scores.json') {
+        return Promise.resolve({
+          data: {
+            formula: {
+              version: 1,
+              weights: {
+                consensus: 50,
+                reliability: 20,
+                software: 10,
+                diversity: 10,
+                identity: 10,
+              },
+              consensus_gate_margin: 25,
+            },
+            scores: [
+              {
+                master_key: 'nHBvalidatorA',
+                model_score: 91,
+                final_score: 87,
+              },
+            ],
+          },
+        })
+      }
+      if (url === '/api/scoring/rounds/9/outputs/selected_unl.json') {
+        return Promise.resolve({ data: unl })
+      }
+      if (url === '/api/scoring/rounds/9/inputs/validator_evidence.json') {
+        return Promise.resolve({ data: snapshot })
+      }
+      if (url === '/api/scoring/rounds/9/inputs/validator_map.json') {
+        return Promise.resolve({ data: validatorMap })
+      }
+      if (url === '/api/scoring/rounds/9/runtime/execution_manifest.json') {
+        return Promise.resolve({ data: { code: {} } })
+      }
+      if (url === '/api/scoring/rounds?limit=100') {
+        return Promise.resolve({
+          data: {
+            rounds: [{ round_number: 9, status: 'COMPLETE' }],
+          },
+        })
+      }
+      return Promise.reject(new Error(`Unexpected request: ${url}`))
+    })
+
+    const latestResult: { current: UseRoundViewResult | null } = {
+      current: null,
+    }
+    const wrapper = mountProbe(9, (result) => {
+      latestResult.current = result
+    })
+
+    await flushRoundView()
+    wrapper.update()
+
+    const formulaView = latestResult.current?.view
+    expect(formulaView?.kind).toBe('scored')
+    if (formulaView?.kind === 'scored') {
+      const merged = formulaView.scores?.validator_scores
+      // The overall score is the deterministic final score; the model's
+      // advisory 91 is preserved as model_score (for downloads) but stays
+      // out of the UI. Sub-scores pass through untouched.
+      expect(merged?.[0].score).toBe(87)
+      expect(merged?.[0].model_score).toBe(91)
+      expect(merged?.[0].consensus).toBe(92)
+      // An entry the finals artifact does not cover keeps its model score.
+      expect(merged?.[1].score).toBe(88)
+      expect(merged?.[1].model_score).toBeUndefined()
+    }
+
+    wrapper.unmount()
+  })
+
   it('loads staged score artifacts and execution-manifest policy', async () => {
     axiosGet.mockImplementation((url: string) => {
       if (url === '/api/scoring/rounds/7') {

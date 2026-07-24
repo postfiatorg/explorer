@@ -82,6 +82,42 @@ describe('ConvergenceParticipation', () => {
     wrapper.unmount()
   })
 
+  it('surfaces only the model-output levels in divergence detail', () => {
+    const wrapper = mount(
+      <ConvergenceParticipation
+        result={ready()}
+        validatorMetaByKey={metaByKey}
+      />,
+    )
+    const levelText = wrapper.find('.cr-diverge').text()
+    expect(levelText).toContain('Raw')
+    expect(levelText).toContain('Scores')
+    // the selection-level comparison is deliberately never surfaced, so
+    // sidecar operators on any version render as equal participants
+    expect(levelText).not.toContain('UNL selection')
+    wrapper.unmount()
+  })
+
+  it('hides divergence detail when only unsurfaced levels diverged', () => {
+    const historic = ready()
+    historic.participants = historic.participants.map((participant) =>
+      participant.outcome === 'divergent'
+        ? { ...participant, comparison_levels_matched: 'RAW,PARSED' }
+        : participant,
+    )
+    const wrapper = mount(
+      <ConvergenceParticipation
+        result={historic}
+        validatorMetaByKey={metaByKey}
+      />,
+    )
+    // The row still reads diverged, but no detail strip contradicts it by
+    // showing every surfaced level as a match.
+    expect(wrapper.text()).toContain('Diverged')
+    expect(wrapper.find('.cr-diverge').exists()).toBe(false)
+    wrapper.unmount()
+  })
+
   it('renders the linked domain without a domain-attestation badge', () => {
     const wrapper = mount(
       <ConvergenceParticipation

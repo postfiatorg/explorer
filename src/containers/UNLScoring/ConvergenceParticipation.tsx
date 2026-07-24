@@ -12,13 +12,15 @@ import { CommitRevealTimeline } from './CommitRevealTimeline'
 // opens readable data rather than the gateway's directory-index page.
 const CONVERGENCE_REPORT_FILE = 'convergence_report.json'
 
-// The reproducibility levels the convergence service compares, surfaced only on
-// a divergence to show exactly where a validator's result parted from the
-// foundation's.
+// The model-output levels validity is judged on, surfaced only on a
+// divergence to show where a validator's result parted from the foundation's.
+// The selection-level comparison is deliberately not surfaced on any round
+// generation: selection is deterministic and publicly recomputable, so it does
+// not affect validity, and sidecar operators on any version render as equal
+// participants (see dynamic-unl-scoring/docs/DeterministicFinalScore.md).
 const LEVELS = [
   { key: 'RAW', label: 'Raw' },
   { key: 'PARSED', label: 'Scores' },
-  { key: 'SELECTED_UNL', label: 'UNL selection' },
 ] as const
 
 // What a validator's row communicates, derived from the raw outcome plus whether
@@ -260,6 +262,10 @@ const DivergenceDetail: FC<{ levelsMatched: string | null | undefined }> = ({
   levelsMatched,
 }) => {
   const matched = parseMatchedLevels(levelsMatched)
+  // A historical divergence localized entirely to a level this panel no
+  // longer surfaces would render every shown level as "match" under a
+  // "Diverged" headline; show nothing rather than contradicting evidence.
+  if (LEVELS.every((level) => matched.has(level.key))) return null
   return (
     <div className="cr-diverge">
       {LEVELS.map((level) => {

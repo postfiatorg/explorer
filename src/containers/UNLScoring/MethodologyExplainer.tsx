@@ -20,6 +20,18 @@ export const MethodologyExplainer: FC<MethodologyExplainerProps> = ({
   const cadence =
     config?.cadence_hours != null ? formatCadence(config.cadence_hours) : DASH
 
+  const formula = config?.score_formula ?? null
+  const formulaWeights = formula
+    ? SCORING_DIMENSIONS.filter(
+        (dimension) => formula.weights[dimension.key] != null,
+      )
+        .map(
+          (dimension) =>
+            `${dimension.label} ${formula.weights[dimension.key]}%`,
+        )
+        .join(', ')
+    : ''
+
   const stats = [
     {
       label: 'Eligibility cutoff',
@@ -63,6 +75,15 @@ export const MethodologyExplainer: FC<MethodologyExplainerProps> = ({
               <span className="methodology-dim-desc">{dimension.summary}</span>
             </div>
           ))}
+          {formula && formulaWeights && (
+            <p className="methodology-formula">
+              The final score is deterministic: a published weighted sum of the
+              five sub-scores ({formulaWeights}), capped at the consensus
+              sub-score plus {formula.consensus_gate_margin}. The model&apos;s
+              judgment lives entirely in the sub-scores; anyone can recompute
+              every final score from the round&apos;s published artifacts.
+            </p>
+          )}
         </div>
       </details>
 

@@ -158,6 +158,10 @@ export const isFailedRound = (round: ScoringRoundMeta): boolean =>
 export interface ValidatorScoreEntry {
   master_key: string
   score: number
+  // Present only after a final-scores merge: preserves the model's advisory
+  // score so downloaded entries stay self-describing against the pinned
+  // artifacts. Never rendered.
+  model_score?: number
   consensus: number
   reliability: number
   software: number
@@ -204,6 +208,27 @@ export interface ScoresJson {
   validator_scores: ValidatorScoreEntry[]
 }
 
+export interface ScoreFormulaParams {
+  version: number
+  weights: Record<string, number>
+  consensus_gate_margin: number
+}
+
+export interface FinalScoreEntry {
+  master_key: string
+  model_score: number
+  final_score: number
+}
+
+// outputs/final_scores.json — published by rounds produced under the
+// deterministic final-score stage. final_score is the authoritative overall
+// score UNL selection consumed; model_score is the model's advisory judgment,
+// kept in the artifacts but deliberately not shown in the UI.
+export interface FinalScoresJson {
+  formula: ScoreFormulaParams
+  scores: FinalScoreEntry[]
+}
+
 export interface ScoringConfig {
   cadence_hours: number
   unl_score_cutoff: number
@@ -222,6 +247,9 @@ export interface ScoringConfig {
   announcement_commit_window_seconds?: number
   announcement_reveal_window_seconds?: number
   announcement_reveal_gap_seconds?: number
+  // Deterministic final-score formula parameters, served once the scoring
+  // service ships the final-score stage; absent on earlier deployments.
+  score_formula?: ScoreFormulaParams
 }
 
 export interface RoundScoringConfig {
@@ -509,6 +537,7 @@ export const ROUND_ARTIFACT_PATHS = {
     'outputs/verification_hashes.json',
     'verification_hashes.json',
   ],
+  finalScores: ['outputs/final_scores.json'],
   executionManifest: ['runtime/execution_manifest.json'],
   legacyScoringConfig: ['scoring_config.json'],
 } as const
@@ -527,10 +556,46 @@ export const fetchRoundArtifact = async <T>(
   return data ?? fetchRoundArtifact<T>(roundNumber, paths, index + 1)
 }
 
-export const fetchRoundScores = (
+export const fetchRoundFinalScores = (
   roundNumber: number,
-): Promise<ScoresJson | null> =>
-  fetchRoundArtifact<ScoresJson>(roundNumber, ROUND_ARTIFACT_PATHS.scores)
+): Promise<FinalScoresJson | null> =>
+  fetchRoundArtifact<FinalScoresJson>(
+    roundNumber,
+    ROUND_ARTIFACT_PATHS.finalScores,
+  )
+
+// Replace each entry's overall score with the deterministic final score when
+// the round published one. Keyed purely on artifact presence: pre-formula and
+// legacy rounds have no final_scores.json and pass through untouched.
+const applyFinalScores = (
+  scores: ScoresJson,
+  finals: FinalScoresJson | null,
+): ScoresJson => {
+  if (!finals || !Array.isArray(finals.scores)) return scores
+  const finalByKey = new Map(
+    finals.scores.map((entry) => [entry.master_key, entry.final_score]),
+  )
+  return {
+    ...scores,
+    validator_scores: scores.validator_scores.map((entry) => {
+      const finalScore = finalByKey.get(entry.master_key)
+      return finalScore === undefined
+        ? entry
+        : { ...entry, score: finalScore, model_score: entry.score }
+    }),
+  }
+}
+
+export const fetchRoundScores = async (
+  roundNumber: number,
+): Promise<ScoresJson | null> => {
+  const [scores, finals] = await Promise.all([
+    fetchRoundArtifact<ScoresJson>(roundNumber, ROUND_ARTIFACT_PATHS.scores),
+    fetchRoundFinalScores(roundNumber),
+  ])
+  if (!scores) return null
+  return applyFinalScores(scores, finals)
+}
 
 export const fetchRoundSelectedUnl = (
   roundNumber: number,

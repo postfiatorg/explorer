@@ -20,6 +20,38 @@ describe('MethodologyExplainer', () => {
     wrapper.unmount()
   })
 
+  it('renders the deterministic formula when the config publishes it', () => {
+    const formulaConfig: ScoringConfig = {
+      ...config,
+      score_formula: {
+        version: 1,
+        weights: {
+          consensus: 50,
+          reliability: 20,
+          software: 10,
+          diversity: 10,
+          identity: 10,
+        },
+        consensus_gate_margin: 25,
+      },
+    }
+    const wrapper = mount(<MethodologyExplainer config={formulaConfig} />)
+    const formula = wrapper.find('.methodology-formula')
+    expect(formula.exists()).toBe(true)
+    const text = formula.text()
+    expect(text).toContain('deterministic')
+    expect(text).toContain('Consensus 50%')
+    expect(text).toContain('Reliability 20%')
+    expect(text).toContain('plus 25')
+    wrapper.unmount()
+  })
+
+  it('omits the formula section when the config predates it', () => {
+    const wrapper = mount(<MethodologyExplainer config={config} />)
+    expect(wrapper.find('.methodology-formula').exists()).toBe(false)
+    wrapper.unmount()
+  })
+
   it('surfaces the live scoring configuration as stats', () => {
     const wrapper = mount(<MethodologyExplainer config={config} />)
     expect(wrapper.find('.methodology-stat')).toHaveLength(4)

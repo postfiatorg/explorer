@@ -54,6 +54,10 @@ interface RawConvergenceReport {
   round_number?: number
   participants?: ConvergenceParticipant[]
   summary?: ConvergenceSummary
+  // Sealed reports self-describe which comparison levels validity was judged
+  // on; absent on reports sealed before the deterministic final-score stage.
+  // Carried in the raw contract, deliberately not rendered.
+  acceptance_levels?: string[]
 }
 
 interface RawConvergenceView extends RawConvergenceReport {

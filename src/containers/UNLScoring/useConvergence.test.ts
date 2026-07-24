@@ -57,6 +57,27 @@ describe('normalizeConvergenceView', () => {
     expect(result.sealedAt).toBe('2026-05-25T01:30:00+00:00')
   })
 
+  it('normalizes a sealed report carrying the acceptance-levels self-description', () => {
+    const result = normalizeConvergenceView({
+      round_number: 319,
+      phase: 'sealed',
+      finalized: true,
+      convergence_bundle_cid: 'QmBundle319',
+      anchor_tx_hash: 'ANCHOR319',
+      sealed_at: '2026-07-23T19:45:00+00:00',
+      report: {
+        round_number: 319,
+        acceptance_levels: ['PARSED', 'RAW'],
+        participants: [{ validator_master_key: 'nHU1', outcome: 'valid' }],
+        summary: { committers: 1, outcomes: { valid: 1 } },
+      },
+    })
+    expect(result.status).toBe('ready')
+    expect(result.phase).toBe('sealed')
+    expect(result.participants[0].outcome).toBe('valid')
+    expect(result.summary?.committers).toBe(1)
+  })
+
   it('tolerates a sealed round whose report is missing', () => {
     const result = normalizeConvergenceView({
       round_number: 9,
