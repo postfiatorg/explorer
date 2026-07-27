@@ -28,12 +28,16 @@ const runningRound = (
   started_at: '2026-04-29T12:00:00Z',
 })
 
-const failedRound = (roundNumber: number): ScoringRoundMeta => ({
+const failedRound = (
+  roundNumber: number,
+  errorMessage = 'SCORED: modal-http: internal error',
+): ScoringRoundMeta => ({
   round_number: roundNumber,
   status: 'FAILED',
   completed_at: null,
   started_at: '2026-04-29T12:00:00Z',
   snapshot_hash: null,
+  error_message: errorMessage,
 })
 
 describe('RoundNavigation', () => {
@@ -135,9 +139,7 @@ describe('RoundNavigation', () => {
       />,
     )
 
-    expect(wrapper.find('.round-nav-meta').text()).toContain(
-      'FAILED at COLLECTING',
-    )
+    expect(wrapper.find('.round-nav-meta').text()).toContain('FAILED at SCORED')
     expect(
       wrapper
         .find('.round-nav-meta-state')
@@ -147,6 +149,51 @@ describe('RoundNavigation', () => {
     expect(
       wrapper.find('.round-nav-glyph').at(1).hasClass('round-nav-glyph-failed'),
     ).toBe(true)
+
+    wrapper.unmount()
+  })
+
+  it('keeps the override annotation on a failed override round', () => {
+    const wrapper = mount(
+      <RoundNavigation
+        viewingRoundNumber={15}
+        latestRoundNumber={15}
+        recentRounds={[
+          {
+            ...failedRound(15, 'VL_SIGNED: Missing manifest for validator nHB'),
+            override_type: 'custom',
+          },
+          completeRound(14),
+        ]}
+        onSelectRound={jest.fn()}
+      />,
+    )
+
+    const title = wrapper.find('.round-nav-glyph').at(1).prop('title') as string
+    expect(title).toContain('FAILED at VL_SIGNED')
+    expect(title).toContain('override: custom')
+    // The status segment is replaced, not duplicated alongside the stage.
+    expect(title.match(/FAILED/g)).toHaveLength(1)
+
+    wrapper.unmount()
+  })
+
+  it('names no stage when the failure recorded none', () => {
+    const wrapper = mount(
+      <RoundNavigation
+        viewingRoundNumber={15}
+        latestRoundNumber={15}
+        recentRounds={[
+          failedRound(15, 'Round abandoned — service restarted'),
+          completeRound(14),
+        ]}
+        onSelectRound={jest.fn()}
+      />,
+    )
+
+    const meta = wrapper.find('.round-nav-meta').text()
+    expect(meta).toContain('FAILED')
+    expect(meta).not.toContain('FAILED at')
 
     wrapper.unmount()
   })

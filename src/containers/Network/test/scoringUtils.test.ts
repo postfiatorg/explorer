@@ -184,24 +184,88 @@ describe('round state helpers', () => {
     ).toBe(false)
   })
 
-  it('derives failed stages from final bundle CID as well as legacy IPFS CID', () => {
+  it('reads the failed stage from the error message prefix', () => {
     expect(
       deriveFailedAtStage({
         ...round(16, 'FAILED'),
-        snapshot_hash: 'snapshot',
-        scores_hash: 'scores',
-        vl_sequence: 12,
+        error_message: 'IPFS_PUBLISHED: pinning returned no CID',
       }),
     ).toBe('IPFS_PUBLISHED')
+    // The body may carry further colons; only the leading token is the stage.
     expect(
       deriveFailedAtStage({
         ...round(17, 'FAILED'),
-        snapshot_hash: 'snapshot',
-        scores_hash: 'scores',
-        vl_sequence: 12,
-        final_bundle_cid: 'QmFinalBundle',
+        error_message: 'SCORED: modal-http: internal error: terminated',
       }),
-    ).toBe('VL_DISTRIBUTED')
+    ).toBe('SCORED')
+  })
+
+  it('reads the stage of rounds that skip stages or fail between them', () => {
+    // A manual override skips collecting, scoring and selection, so it never
+    // holds the artifacts the old inference read.
+    expect(
+      deriveFailedAtStage({
+        ...round(18, 'FAILED'),
+        override_type: 'custom',
+        snapshot_hash: null,
+        scores_hash: null,
+        error_message: 'VL_SIGNED: Missing manifest for validator nHB',
+      }),
+    ).toBe('VL_SIGNED')
+    // Freezing the input package happens after the snapshot is stored.
+    expect(
+      deriveFailedAtStage({
+        ...round(19, 'FAILED'),
+        snapshot_hash: 'snapshot',
+        scores_hash: null,
+        error_message:
+          'INPUT_FROZEN: Input package IPFS pinning returned no CID',
+      }),
+    ).toBe('INPUT_FROZEN')
+  })
+
+  it('reports no stage when the message does not identify one', () => {
+    // A restart-abandoned round never recorded a stage.
+    expect(
+      deriveFailedAtStage({
+        ...round(20, 'FAILED'),
+        snapshot_hash: 'snapshot',
+        error_message: 'Round abandoned — service restarted',
+      }),
+    ).toBeNull()
+    expect(
+      deriveFailedAtStage({ ...round(21, 'FAILED'), error_message: undefined }),
+    ).toBeNull()
+    // Upper-case leading text that is not a pipeline stage is not a stage.
+    expect(
+      deriveFailedAtStage({
+        ...round(22, 'FAILED'),
+        error_message: 'ERROR: something went wrong',
+      }),
+    ).toBeNull()
+    // A prefix must lead the message and be followed by whitespace.
+    expect(
+      deriveFailedAtStage({
+        ...round(23, 'FAILED'),
+        error_message: 'retry after SCORED: modal timeout',
+      }),
+    ).toBeNull()
+    expect(
+      deriveFailedAtStage({
+        ...round(24, 'FAILED'),
+        error_message: 'SCORED:no space after the colon',
+      }),
+    ).toBeNull()
+  })
+
+  it('reports no stage for rounds that did not fail', () => {
+    expect(
+      deriveFailedAtStage({
+        ...round(25, 'COMPLETE'),
+        error_message: 'SCORED: stale message from an earlier attempt',
+      }),
+    ).toBeNull()
+    expect(deriveFailedAtStage(round(26, 'AWAITING_COMMIT_CLOSE'))).toBeNull()
   })
 })
 

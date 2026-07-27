@@ -1,12 +1,12 @@
 import { FC, ReactNode, useEffect, useState } from 'react'
 import {
+  FailedAtStage,
   INDEPENDENT_VERIFICATION_ANCHOR_ID,
   ScoringRoundMeta,
   VL_PUBLISHED_MEMO_FAILED_STATUS,
   deriveFailedAtStage,
   formatLocalDateTime,
   formatRelativeTime,
-  getRoundBundleCid,
   getRoundInputPackageCid,
 } from '../Network/scoringUtils'
 import { buildTimelineModel, formatCountdown } from './CommitRevealTimeline'
@@ -82,16 +82,30 @@ const NOTE: Record<LifecycleStepKey, ReactNode> = {
   complete: 'Loading ranked scores…',
 }
 
-// Which step a failure stopped at. The scoring service does not report the
-// failed stage, so it is derived from which artifacts the round persisted
-// before it died — the same derivation the stage label has always used.
-const FAILED_STEP_BY_STAGE: Record<string, LifecycleStepKey> = {
+// Which step a failure stopped at, keyed by the stage the scoring service
+// reported. Deliberately not the same mapping as STEP_BY_STATUS above: a round
+// whose status is INPUT_FROZEN is on to scoring, but a round that failed while
+// freezing never finished collecting evidence, so it belongs to that step.
+const FAILED_STEP_BY_STAGE: Record<FailedAtStage, LifecycleStepKey> = {
   COLLECTING: 'evidence',
+  INPUT_FROZEN: 'evidence',
   SCORED: 'scoring',
-  SELECTED_OR_VL_SIGNED: 'scoring',
+  SELECTED: 'scoring',
+  VL_SIGNED: 'scoring',
+  AWAITING_COMMIT_CLOSE: 'verification',
   IPFS_PUBLISHED: 'publishing',
   VL_DISTRIBUTED: 'publishing',
   ONCHAIN_PUBLISHED: 'publishing',
+}
+
+// What a failure at each step cost. A round that reached verification or
+// publishing had already produced scores, so claiming none were produced there
+// would be false; a failure with no reported step claims nothing at all.
+const FAILED_STEP_LEAD: Partial<Record<LifecycleStepKey, string>> = {
+  evidence: 'No scores were produced.',
+  scoring: 'No scores were produced.',
+  verification: 'No results were published.',
+  publishing: 'No results were published.',
 }
 
 const FAILED_STEP_PHRASE: Record<LifecycleStepKey, string> = {
@@ -112,12 +126,13 @@ export const resolveLifecycleStep = (
   return getRoundInputPackageCid(round) ? 'scoring' : 'evidence'
 }
 
+// Null when the round reported no stage — a restart-abandoned round records
+// none — so the panel states the failure without claiming a step.
 export const resolveFailedStep = (
   round: ScoringRoundMeta,
-): LifecycleStepKey => {
+): LifecycleStepKey | null => {
   const stage = deriveFailedAtStage(round)
-  if (stage && FAILED_STEP_BY_STAGE[stage]) return FAILED_STEP_BY_STAGE[stage]
-  return getRoundBundleCid(round) ? 'publishing' : 'evidence'
+  return stage ? FAILED_STEP_BY_STAGE[stage] : null
 }
 
 const useTicker = (intervalMs: number): number => {
@@ -155,21 +170,32 @@ export const formatUnlockCountdown = (
   return remainingMs > 0 ? formatCountdown(remainingMs) : null
 }
 
-type StepState = 'done' | 'active' | 'pending' | 'failed'
+type StepState = 'done' | 'active' | 'pending' | 'failed' | 'unknown'
 
 const STEP_STATE_LABEL: Record<StepState, string> = {
   done: 'completed',
   active: 'in progress',
   pending: 'not started',
   failed: 'failed',
+  unknown: 'state unknown',
 }
 
 const stepStates = (
-  currentKey: LifecycleStepKey,
+  currentKey: LifecycleStepKey | null,
   failed: boolean,
 ): Record<LifecycleStepKey, StepState> => {
-  const currentIndex = LIFECYCLE_STEPS.findIndex((s) => s.key === currentKey)
   const states = {} as Record<LifecycleStepKey, StepState>
+
+  // A failure whose stage was never recorded leaves every step unresolved:
+  // marking one would assert a step the round never reported.
+  if (!currentKey) {
+    LIFECYCLE_STEPS.forEach((step) => {
+      states[step.key] = 'unknown'
+    })
+    return states
+  }
+
+  const currentIndex = LIFECYCLE_STEPS.findIndex((s) => s.key === currentKey)
 
   LIFECYCLE_STEPS.forEach((step, index) => {
     if (index < currentIndex) {
@@ -187,7 +213,7 @@ const stepStates = (
 }
 
 const StepMarkers: FC<{
-  currentKey: LifecycleStepKey
+  currentKey: LifecycleStepKey | null
   failed: boolean
 }> = ({ currentKey, failed }) => {
   const states = stepStates(currentKey, failed)
@@ -245,12 +271,14 @@ export const RoundLifecycle: FC<RoundLifecycleProps> = ({
   const now = useTicker(TICK_MS)
   const config = useScoringConfig()
 
-  const currentKey = failed
-    ? resolveFailedStep(round)
-    : resolveLifecycleStep(round)
+  // A failed round resolves to the step it reported failing at, which is null
+  // when it reported no stage; an in-flight round always resolves to a step.
+  const activeStep = resolveLifecycleStep(round)
+  const failedStep = failed ? resolveFailedStep(round) : null
+  const currentKey = failed ? failedStep : activeStep
 
   const countdown =
-    !failed && currentKey === 'verification'
+    !failed && activeStep === 'verification'
       ? formatUnlockCountdown(
           round.input_frozen_at,
           config?.announcement_commit_window_seconds,
@@ -265,15 +293,15 @@ export const RoundLifecycle: FC<RoundLifecycleProps> = ({
 
   let statusWord: string
   if (failed) statusWord = 'failed'
-  else if (currentKey === 'complete') statusWord = 'complete'
+  else if (activeStep === 'complete') statusWord = 'complete'
   else statusWord = 'in progress'
 
   let headline: string
   if (failed) {
-    const phrase = FAILED_STEP_PHRASE[currentKey]
+    const phrase = failedStep ? FAILED_STEP_PHRASE[failedStep] : ''
     headline = phrase ? `Round failed ${phrase}` : 'Round failed'
   } else {
-    headline = HEADLINE[currentKey]
+    headline = HEADLINE[activeStep]
   }
 
   let chip: JSX.Element | null = null
@@ -290,7 +318,7 @@ export const RoundLifecycle: FC<RoundLifecycleProps> = ({
         <strong className="rl-chip-value">{countdown}</strong>
       </span>
     )
-  } else if (currentKey === 'complete') {
+  } else if (activeStep === 'complete') {
     chip = round.completed_at ? (
       <span className="rl-chip">
         <span className="rl-chip-label">completed</span>
@@ -299,14 +327,14 @@ export const RoundLifecycle: FC<RoundLifecycleProps> = ({
         </strong>
       </span>
     ) : null
-  } else if (currentKey === 'publishing') {
+  } else if (activeStep === 'publishing') {
     chip = (
       <span className="rl-chip">
         <span className="rl-chip-dot" aria-hidden="true" />
         <span className="rl-chip-label">almost done</span>
       </span>
     )
-  } else if (currentKey === 'verification' && frozenAt) {
+  } else if (activeStep === 'verification' && frozenAt) {
     chip = (
       <span className="rl-chip">
         <span className="rl-chip-dot" aria-hidden="true" />
@@ -351,11 +379,13 @@ export const RoundLifecycle: FC<RoundLifecycleProps> = ({
 
       {failed ? (
         <div className="rl-note">
-          <span className="rl-fail-lead">
-            {currentKey === 'publishing'
-              ? 'No results were published.'
-              : 'No scores were produced.'}
-          </span>{' '}
+          {failedStep && FAILED_STEP_LEAD[failedStep] && (
+            <>
+              <span className="rl-fail-lead">
+                {FAILED_STEP_LEAD[failedStep]}
+              </span>{' '}
+            </>
+          )}
           The network is unaffected — the previously published validator list
           stays active until the next successful round.
           {round.error_message && (
@@ -366,7 +396,7 @@ export const RoundLifecycle: FC<RoundLifecycleProps> = ({
           )}
         </div>
       ) : (
-        <p className="rl-note">{NOTE[currentKey]}</p>
+        <p className="rl-note">{NOTE[activeStep]}</p>
       )}
     </div>
   )

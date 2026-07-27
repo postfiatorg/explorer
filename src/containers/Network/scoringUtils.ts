@@ -67,9 +67,9 @@ export interface ScoringRoundMeta {
   round_number: number
   status: string
   completed_at: string | null
-  error_message?: string
-  // Optional fields populated on completed rounds — used by the audit-trail
-  // panel and by client-side stage derivation.
+  error_message?: string | null
+  // Optional fields populated on completed rounds, mirroring the scoring
+  // service's round record; the audit-trail panel reads the publication ones.
   created_at?: string | null
   started_at?: string | null
   snapshot_hash?: string | null
@@ -102,25 +102,44 @@ export const getRoundInputPackageCid = (
   round: Pick<ScoringRoundMeta, 'input_package_cid'> | null | undefined,
 ): string | null => round?.input_package_cid || null
 
-export type FailedAtStage =
-  | 'COLLECTING'
-  | 'SCORED'
-  | 'SELECTED_OR_VL_SIGNED'
-  | 'IPFS_PUBLISHED'
-  | 'VL_DISTRIBUTED'
-  | 'ONCHAIN_PUBLISHED'
+// The pipeline stages a round can fail in, as the scoring service names them
+// (RoundState in dynamic-unl-scoring's orchestrator). Declared once so the
+// union and the runtime check can never drift apart.
+export const FAILED_STAGES = [
+  'COLLECTING',
+  'INPUT_FROZEN',
+  'SCORED',
+  'SELECTED',
+  'VL_SIGNED',
+  'AWAITING_COMMIT_CLOSE',
+  'IPFS_PUBLISHED',
+  'VL_DISTRIBUTED',
+  'ONCHAIN_PUBLISHED',
+] as const
 
+export type FailedAtStage = (typeof FAILED_STAGES)[number]
+
+const isFailedStage = (value: string): value is FailedAtStage =>
+  (FAILED_STAGES as readonly string[]).includes(value)
+
+// One UPPER_SNAKE word, then a colon and whitespace, at the very start of the
+// message. The body after it may contain anything, including further colons.
+const STAGE_PREFIX_PATTERN = /^([A-Z][A-Z_]*):\s/
+
+// The scoring service reports where a round broke by prefixing its error message
+// with the stage that was in progress. That prefix is the only authoritative
+// signal: artifact presence records what a round achieved, not where it failed,
+// so inferring the stage from it mislabels rounds that skip stages (manual
+// overrides) or fail between two of them. A round abandoned by a service restart
+// carries no prefix because no stage was recorded, and resolves to null so
+// callers can report the failure without naming a step.
 export const deriveFailedAtStage = (
   round: ScoringRoundMeta,
 ): FailedAtStage | null => {
   if (round.status !== 'FAILED') return null
-  if (round.snapshot_hash == null) return 'COLLECTING'
-  if (round.scores_hash == null) return 'SCORED'
-  if (round.vl_sequence == null) return 'SELECTED_OR_VL_SIGNED'
-  if (getRoundBundleCid(round) == null) return 'IPFS_PUBLISHED'
-  if (round.github_pages_commit_url == null) return 'VL_DISTRIBUTED'
-  if (round.memo_tx_hash == null) return 'ONCHAIN_PUBLISHED'
-  return null
+
+  const stage = STAGE_PREFIX_PATTERN.exec(round.error_message ?? '')?.[1]
+  return stage && isFailedStage(stage) ? stage : null
 }
 
 export const VL_PUBLISHED_MEMO_FAILED_STATUS = 'VL_PUBLISHED_MEMO_FAILED'

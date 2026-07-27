@@ -33,13 +33,10 @@ const tooltipFor = (round: ScoringRoundMeta): string => {
   const when = round.completed_at ?? round.started_at ?? round.created_at
   if (when) parts.push(formatRelativeTime(when))
   const state = classifyRoundState(round.status)
-  parts.push(statusLabel[state])
+  const stage = state === 'failed' ? deriveFailedAtStage(round) : null
+  parts.push(stage ? `FAILED at ${stage}` : statusLabel[state])
   if (round.override_type) {
     parts.push(`override: ${round.override_type}`)
-  }
-  if (state === 'failed') {
-    const stage = deriveFailedAtStage(round)
-    if (stage) parts[parts.length - 1] = `FAILED at ${stage}`
   }
   return parts.join(' · ')
 }

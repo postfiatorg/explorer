@@ -84,60 +84,50 @@ describe('resolveLifecycleStep', () => {
 })
 
 describe('resolveFailedStep', () => {
-  const failedAfter = (fields: Partial<ScoringRoundMeta>): ScoringRoundMeta =>
-    round({ status: 'FAILED', ...fields })
+  const failedWith = (errorMessage: string): ScoringRoundMeta =>
+    round({ status: 'FAILED', error_message: errorMessage })
 
-  it('stops at the step the round died on', () => {
-    expect(resolveFailedStep(failedAfter({ snapshot_hash: null }))).toBe(
-      'evidence',
-    )
-    expect(
-      resolveFailedStep(failedAfter({ snapshot_hash: 'h', scores_hash: null })),
-    ).toBe('scoring')
-    // Scored but never selected or signed.
+  it.each([
+    ['COLLECTING: collector timed out', 'evidence'],
+    // Freezing the input package closes evidence collection.
+    ['INPUT_FROZEN: Input package IPFS pinning returned no CID', 'evidence'],
+    ['SCORED: modal-http: internal error', 'scoring'],
+    ['SELECTED: churn gap computation failed', 'scoring'],
+    ['VL_SIGNED: Missing manifest for validator nHB', 'scoring'],
+    ['AWAITING_COMMIT_CLOSE: convergence ingestion failed', 'verification'],
+    ['IPFS_PUBLISHED: pinning returned no CID', 'publishing'],
+    ['VL_DISTRIBUTED: GitHub contents API rejected the commit', 'publishing'],
+    ['ONCHAIN_PUBLISHED: memo submission failed', 'publishing'],
+  ])('maps the reported stage in %s onto the %s step', (message, expected) => {
+    expect(resolveFailedStep(failedWith(message))).toBe(expected)
+  })
+
+  it('resolves a manual override failure from its reported stage', () => {
+    // Override rounds skip collecting, scoring and selection, so their
+    // artifact fields stay empty and cannot indicate where they failed.
     expect(
       resolveFailedStep(
-        failedAfter({
-          snapshot_hash: 'h',
-          scores_hash: 'h',
-          vl_sequence: null,
+        round({
+          status: 'FAILED',
+          override_type: 'custom',
+          snapshot_hash: null,
+          scores_hash: null,
+          error_message: 'VL_SIGNED: Missing manifest for validator nHB',
         }),
       ),
     ).toBe('scoring')
+  })
+
+  it('resolves no step when the round reported no stage', () => {
     expect(
       resolveFailedStep(
-        failedAfter({
-          snapshot_hash: 'h',
-          scores_hash: 'h',
-          vl_sequence: 4,
-          final_bundle_cid: null,
+        round({
+          status: 'FAILED',
+          snapshot_hash: 'snapshot',
+          error_message: 'Round abandoned — service restarted',
         }),
       ),
-    ).toBe('publishing')
-    // Distribution and on-chain anchoring both fail within publishing.
-    expect(
-      resolveFailedStep(
-        failedAfter({
-          snapshot_hash: 'h',
-          scores_hash: 'h',
-          vl_sequence: 4,
-          final_bundle_cid: 'Qm-bundle',
-          github_pages_commit_url: null,
-        }),
-      ),
-    ).toBe('publishing')
-    expect(
-      resolveFailedStep(
-        failedAfter({
-          snapshot_hash: 'h',
-          scores_hash: 'h',
-          vl_sequence: 4,
-          final_bundle_cid: 'Qm-bundle',
-          github_pages_commit_url: 'https://github.com/commit',
-          memo_tx_hash: null,
-        }),
-      ),
-    ).toBe('publishing')
+    ).toBeNull()
   })
 })
 
@@ -310,7 +300,7 @@ describe('RoundLifecycle', () => {
           snapshot_hash: 'snapshot-hash',
           scores_hash: null,
           completed_at: '2026-04-29T12:08:37Z',
-          error_message: 'modal-http: internal error',
+          error_message: 'SCORED: modal-http: internal error',
         })}
         failed
       />,
@@ -327,7 +317,7 @@ describe('RoundLifecycle', () => {
     expect(wrapper.text()).toContain('The network is unaffected')
     expect(wrapper.text()).toContain('Technical detail')
     expect(wrapper.find('details.rl-detail pre').text()).toBe(
-      'modal-http: internal error',
+      'SCORED: modal-http: internal error',
     )
     expect(wrapper.text()).not.toContain('results unlock in')
 
@@ -342,8 +332,100 @@ describe('RoundLifecycle', () => {
       />,
     )
 
-    expect(wrapper.text()).toContain('Round failed while gathering evidence')
+    expect(wrapper.text()).toContain('Round failed')
     expect(wrapper.find('details.rl-detail').exists()).toBe(false)
+
+    wrapper.unmount()
+  })
+
+  it('names no step when the failure reported no stage', () => {
+    const wrapper = mount(
+      <RoundLifecycle
+        round={round({
+          status: 'FAILED',
+          snapshot_hash: 'snapshot-hash',
+          completed_at: '2026-04-29T12:08:37Z',
+          error_message: 'Round abandoned — service restarted',
+        })}
+        failed
+      />,
+    )
+
+    // The headline states the failure without claiming a step, and no step is
+    // marked failed, completed or pending.
+    expect(wrapper.text()).toContain('Round failed')
+    expect(wrapper.text()).not.toContain('Round failed during')
+    expect(wrapper.text()).not.toContain('Round failed while')
+    expect(wrapper.find('li.rl-step-failed').exists()).toBe(false)
+    expect(wrapper.find('li.rl-step-done').exists()).toBe(false)
+    expect(wrapper.find('li.rl-step-unknown').length).toBe(5)
+    expect(wrapper.find('details.rl-detail pre').text()).toBe(
+      'Round abandoned — service restarted',
+    )
+
+    wrapper.unmount()
+  })
+
+  it('does not claim scores were lost once the round reached verification', () => {
+    const wrapper = mount(
+      <RoundLifecycle
+        round={round({
+          status: 'FAILED',
+          snapshot_hash: 'h',
+          scores_hash: 'h',
+          completed_at: '2026-04-29T12:08:37Z',
+          error_message: 'AWAITING_COMMIT_CLOSE: convergence ingestion failed',
+        })}
+        failed
+      />,
+    )
+
+    expect(stepState(wrapper, 'Verification')).toBe('rl-step-failed')
+    expect(wrapper.text()).toContain('No results were published.')
+    expect(wrapper.text()).not.toContain('No scores were produced.')
+
+    wrapper.unmount()
+  })
+
+  it('makes no claim about results when the failure reported no stage', () => {
+    const wrapper = mount(
+      <RoundLifecycle
+        round={round({
+          status: 'FAILED',
+          error_message: 'Round abandoned — service restarted',
+        })}
+        failed
+      />,
+    )
+
+    expect(wrapper.find('.rl-fail-lead').exists()).toBe(false)
+    expect(wrapper.text()).not.toContain('No scores were produced.')
+    expect(wrapper.text()).not.toContain('No results were published.')
+    expect(wrapper.text()).toContain('The network is unaffected')
+
+    wrapper.unmount()
+  })
+
+  it('places a publishing failure on the publishing step with published copy', () => {
+    const wrapper = mount(
+      <RoundLifecycle
+        round={round({
+          status: 'FAILED',
+          snapshot_hash: 'h',
+          scores_hash: 'h',
+          vl_sequence: 4,
+          final_bundle_cid: 'Qm-bundle',
+          completed_at: '2026-04-29T12:08:37Z',
+          error_message: 'VL_DISTRIBUTED: GitHub contents API rejected',
+        })}
+        failed
+      />,
+    )
+
+    expect(stepState(wrapper, 'Publishing')).toBe('rl-step-failed')
+    expect(stepState(wrapper, 'Verification')).toBe('rl-step-done')
+    expect(wrapper.text()).toContain('Round failed while publishing results')
+    expect(wrapper.text()).toContain('No results were published.')
 
     wrapper.unmount()
   })
