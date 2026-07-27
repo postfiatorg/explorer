@@ -807,6 +807,24 @@ export const formatCadence = (
   return `every ${weeks}w ${days}d`
 }
 
+// The scoring page's independent-verification section. Shared so the round
+// lifecycle can link to it without the id drifting out of sync.
+export const INDEPENDENT_VERIFICATION_ANCHOR_ID = 'independent-verification'
+
+const MONTHS = 'Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec'.split(' ')
+
+// Shown in the viewer's local timezone (no explicit label) so seal times and
+// round outcomes read against the same clock as the commit/reveal timeline.
+export const formatLocalDateTime = (iso: string | null | undefined): string => {
+  if (!iso) return ''
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return ''
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()} ${pad(
+    d.getHours(),
+  )}:${pad(d.getMinutes())}`
+}
+
 export const formatRelativeTime = (
   completedAt: string | null | undefined,
   now: number = Date.now(),

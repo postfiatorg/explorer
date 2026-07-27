@@ -30,14 +30,11 @@ import { useRecentRounds } from './useRecentRounds'
 import { useScoreHistory } from './useScoreHistory'
 import {
   ScoringErrorPanel,
-  ScoringFailedRoundPanel,
-  ScoringFinalizingRoundPanel,
   ScoringGenesisPanel,
-  ScoringHeldRoundPanel,
   ScoringPageSkeleton,
-  ScoringRunningRoundPanel,
   ScoringStaleBanner,
 } from './ScoringStatePanels'
+import { RoundLifecycle } from './RoundLifecycle'
 import './css/unlScoring.scss'
 
 interface VhsValidatorsResponse {
@@ -395,19 +392,19 @@ export const UNLScoring = () => {
 
   // A held round (inputs frozen, outputs withheld) keeps a public audit
   // surface — frozen inputs, commit/reveal timeline, live verification — so it
-  // renders the audit trail alongside its state panel. A pre-freeze round has
-  // nothing public yet and keeps the plain running panel.
+  // renders the audit trail alongside its lifecycle panel. A pre-freeze round
+  // has nothing public yet and shows the lifecycle alone.
   const renderInProgressRound = (round: ScoringRoundMeta) =>
     isHeldRound(round) ? (
       <>
-        <ScoringHeldRoundPanel round={round} />
+        <RoundLifecycle round={round} />
         <AuditTrailPanel
           round={round}
           validatorMetaByKey={validatorMetaByKey}
         />
       </>
     ) : (
-      <ScoringRunningRoundPanel round={round} />
+      <RoundLifecycle round={round} />
     )
 
   const renderViewingRoundContent = () => {
@@ -415,10 +412,10 @@ export const UNLScoring = () => {
       return renderInProgressRound(selectedRunningRound)
     }
     if (selectedFinalizingRound) {
-      return <ScoringFinalizingRoundPanel round={selectedFinalizingRound} />
+      return <RoundLifecycle round={selectedFinalizingRound} />
     }
     if (selectedFailedRound) {
-      return <ScoringFailedRoundPanel round={selectedFailedRound} />
+      return <RoundLifecycle round={selectedFailedRound} failed />
     }
 
     if (viewingRound?.kind === 'override') {
@@ -549,10 +546,10 @@ export const UNLScoring = () => {
           )}
         {selectedRunningRound && renderInProgressRound(selectedRunningRound)}
         {selectedFinalizingRound && (
-          <ScoringFinalizingRoundPanel round={selectedFinalizingRound} />
+          <RoundLifecycle round={selectedFinalizingRound} />
         )}
         {selectedFailedRound && (
-          <ScoringFailedRoundPanel round={selectedFailedRound} />
+          <RoundLifecycle round={selectedFailedRound} failed />
         )}
         <MethodologyExplainer config={null} />
       </>

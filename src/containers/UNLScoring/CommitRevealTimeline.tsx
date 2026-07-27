@@ -132,7 +132,7 @@ const activeFillFrac = (model: TimelineModel, nowMs: number): number => {
 
 const pad2 = (n: number): string => String(n).padStart(2, '0')
 
-const formatCountdown = (ms: number): string => {
+export const formatCountdown = (ms: number): string => {
   const s = Math.max(0, Math.round(ms / MS))
   const hours = Math.floor(s / 3600)
   const minutes = Math.floor((s % 3600) / 60)

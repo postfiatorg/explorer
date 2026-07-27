@@ -98,57 +98,6 @@
   --unl-scoring-accent-color: #{$black-40};
 }
 
-.unl-scoring-running-round-meta,
-.unl-scoring-finalizing-round-meta,
-.unl-scoring-failed-round-meta {
-  display: flex;
-  flex-wrap: wrap;
-  margin-top: 16px;
-  font-size: 12px;
-  gap: 12px;
-  letter-spacing: 0.4px;
-  text-transform: uppercase;
-  @include medium;
-}
-
-.unl-scoring-running-round-meta {
-  color: $yellow-50;
-}
-
-.unl-scoring-finalizing-round-meta {
-  color: $green-50;
-}
-
-.unl-scoring-failed-round-meta {
-  color: $red;
-}
-
-.unl-scoring-failed-round-detail {
-  padding: 12px 14px;
-  border: 1px solid $black-60;
-  border-radius: 6px;
-  margin-top: 20px;
-  background: $black-90;
-
-  span {
-    display: block;
-    margin-bottom: 6px;
-    color: $black-40;
-    font-size: 11px;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    @include medium;
-  }
-
-  p {
-    max-width: none;
-    color: $black-30;
-    font-family: monospace;
-    font-size: 12px;
-    overflow-wrap: anywhere;
-  }
-}
-
 .unl-scoring-genesis,
 .unl-scoring-error {
   padding: 40px 32px;
@@ -214,6 +163,252 @@
 
   100% {
     transform: rotate(360deg);
+  }
+}
+
+// Round lifecycle — the single in-flight/failed round surface. Renders the
+// round as a five-step progression instead of a per-status prose panel.
+.unl-scoring-round-lifecycle {
+  padding: 24px 28px;
+
+  &.rl-failed {
+    border-color: rgba(var(--red-rgb), 0.35);
+  }
+}
+
+.rl-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 22px;
+  gap: 16px;
+}
+
+.rl-round {
+  margin-bottom: 3px;
+  color: $black-40;
+  font-size: 12px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  @include medium;
+}
+
+// The panel's h2 carries a global divider rule; the lifecycle headline is
+// followed by the step progression, which is its own separator.
+.rl-headline {
+  padding-bottom: 0;
+  border-bottom: 0;
+  margin: 0;
+  color: $white;
+  font-size: 18px;
+}
+
+.rl-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border: 1px solid $black-60;
+  border-radius: 999px;
+  background: $black-90;
+  color: $black-40;
+  font-size: 13px;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.rl-chip-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  animation: cr-pulse 1.6s infinite;
+  background: $green;
+}
+
+.rl-chip-value {
+  color: $white;
+  font-family: monospace;
+  @include medium;
+}
+
+.rl-steps {
+  display: flex;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.rl-step {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: flex-start;
+
+  // The first step has no leading connector, so it must size to its column
+  // instead of stretching — otherwise its trailing slack detaches the next
+  // connector from the marker and widens the first gap.
+  &:first-child {
+    flex: 0 0 auto;
+  }
+}
+
+.rl-step-body {
+  display: flex;
+  width: 92px;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.rl-line {
+  height: 2px;
+  flex: 1;
+  border-radius: 2px;
+  margin-top: 13px;
+  background: $black-70;
+
+  &.rl-line-done {
+    background: rgba(var(--green-50-rgb), 0.55);
+  }
+}
+
+.rl-marker {
+  display: flex;
+  width: 26px;
+  height: 26px;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid $black-70;
+  border-radius: 50%;
+  background: $black-70;
+  color: $black-40;
+  font-size: 13px;
+  @include bold;
+}
+
+.rl-step-label {
+  margin-top: 8px;
+  color: $black-40;
+  font-size: 12px;
+  line-height: 1.25;
+  text-align: center;
+}
+
+// Screen-reader only: the step's state is carried visually by the marker
+// glyph and color, which are decorative.
+.rl-step-state {
+  position: absolute;
+  overflow: hidden;
+  width: 1px;
+  height: 1px;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+.rl-step-done {
+  .rl-marker {
+    border-color: $green;
+    background: rgba(var(--green-50-rgb), 0.16);
+    color: $green;
+  }
+
+  .rl-step-label {
+    color: $white;
+  }
+}
+
+.rl-step-active {
+  .rl-marker {
+    animation: rl-marker-glow 1.8s ease-in-out infinite;
+    border-color: $green;
+    background: $black-90;
+    color: $green;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rl-marker {
+      animation: none;
+      box-shadow: 0 0 0 5px rgba(var(--green-50-rgb), 0.14);
+    }
+  }
+
+  .rl-step-label {
+    color: $white;
+    @include medium;
+  }
+}
+
+.rl-step-failed {
+  .rl-marker {
+    border-color: $red;
+    background: rgba(var(--red-rgb), 0.12);
+    color: $red;
+  }
+
+  .rl-step-label {
+    color: $red;
+    @include medium;
+  }
+}
+
+.rl-note {
+  margin: 20px 0 0;
+  color: $black-40;
+  font-size: 14px;
+  line-height: 1.5;
+
+  a {
+    color: $green;
+  }
+}
+
+.rl-fail-lead {
+  color: $red;
+  @include medium;
+}
+
+.rl-detail {
+  margin-top: 10px;
+  font-size: 13px;
+
+  summary {
+    color: $black-40;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  pre {
+    padding: 10px 12px;
+    border: 1px solid $black-60;
+    border-radius: 6px;
+    margin: 8px 0 0;
+    background: $black-90;
+    color: $black-30;
+    font-family: monospace;
+    font-size: 12px;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+  }
+}
+
+@keyframes rl-marker-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 4px rgba(var(--green-50-rgb), 0.14);
+  }
+
+  50% {
+    box-shadow: 0 0 0 8px rgba(var(--green-50-rgb), 0.07);
+  }
+}
+
+@media (max-width: $tablet-landscape-upper-boundary) {
+  .rl-step-body {
+    width: 62px;
+  }
+
+  .rl-step-label {
+    font-size: 11px;
   }
 }
 

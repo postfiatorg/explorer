@@ -1,5 +1,9 @@
 import { FC } from 'react'
-import { ipfsProxyUrl } from '../Network/scoringUtils'
+import {
+  INDEPENDENT_VERIFICATION_ANCHOR_ID,
+  formatLocalDateTime,
+  ipfsProxyUrl,
+} from '../Network/scoringUtils'
 import { ValidatorMeta } from './RankedTable'
 import {
   ConvergenceOutcome,
@@ -86,20 +90,6 @@ const shortenKey = (key: string): string =>
 
 const shortenHash = (hash: string): string =>
   hash.length > 18 ? `${hash.slice(0, 10)}…${hash.slice(-6)}` : hash
-
-const MONTHS = 'Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec'.split(' ')
-
-// Shown in the viewer's local timezone (no explicit label) so the "Final" seal
-// time matches the local window times in the commit/reveal timeline below.
-const formatLocalDateTime = (iso: string | null): string => {
-  if (!iso) return ''
-  const d = new Date(iso)
-  if (Number.isNaN(d.getTime())) return ''
-  const pad = (n: number) => String(n).padStart(2, '0')
-  return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()} ${pad(
-    d.getHours(),
-  )}:${pad(d.getMinutes())}`
-}
 
 const parseMatchedLevels = (raw: string | null | undefined): Set<string> =>
   new Set(
@@ -374,7 +364,10 @@ export const ConvergenceParticipation: FC<ConvergenceParticipationProps> = ({
   const finalizedAt = finalized ? formatLocalDateTime(result.sealedAt) : ''
 
   return (
-    <section className="audit-trail-section">
+    <section
+      className="audit-trail-section"
+      id={INDEPENDENT_VERIFICATION_ANCHOR_ID}
+    >
       <div className="cr-head">
         <span className="audit-trail-label">Independent verification</span>
         {finalized ? (
