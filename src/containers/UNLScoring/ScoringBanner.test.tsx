@@ -1,6 +1,10 @@
 import { mount } from 'enzyme'
 import { ScoringBanner } from './ScoringBanner'
-import type { ScoringContext, ScoringRoundMeta } from '../Network/scoringUtils'
+import type {
+  ScoringContext,
+  ScoringHealth,
+  ScoringRoundMeta,
+} from '../Network/scoringUtils'
 
 const round = (
   roundNumber: number,
@@ -31,6 +35,106 @@ const contextFor = (scoringRound: ScoringRoundMeta): ScoringContext => ({
     unl_min_score_gap: 3,
   },
   roundConfig: null,
+})
+
+const healthWith = (nextDueAt?: string | null): ScoringHealth => ({
+  scheduler: { healthy: true, detail: 'ok', next_due_at: nextDueAt },
+  llm_endpoint: { healthy: true, detail: 'ok' },
+  publisher_wallet: { healthy: true, detail: 'ok' },
+})
+
+describe('ScoringBanner next-round countdown', () => {
+  beforeEach(() => {
+    jest.useFakeTimers()
+    // 12 hours after the fixture round's completed_at.
+    jest.setSystemTime(new Date('2026-04-30T00:00:00Z'))
+  })
+
+  afterEach(() => {
+    jest.useRealTimers()
+  })
+
+  const mountIdleBanner = (health: ScoringHealth | null) => {
+    const completedRound = round(240)
+    return mount(
+      <ScoringBanner
+        context={contextFor(completedRound)}
+        latestAttempt={completedRound}
+        health={health}
+      />,
+    )
+  }
+
+  const countdown = (wrapper: ReturnType<typeof mount>) =>
+    wrapper.find('.banner-countdown')
+
+  it('prefers the scheduler next_due_at over the completion-plus-cadence estimate', () => {
+    const wrapper = mountIdleBanner(healthWith('2026-04-30T06:30:00Z'))
+
+    expect(countdown(wrapper).text()).toBe('6h 30m')
+    expect(countdown(wrapper).hasClass('banner-countdown-neutral')).toBe(true)
+
+    wrapper.unmount()
+  })
+
+  it('falls back to completion plus cadence when the health payload lacks next_due_at', () => {
+    const wrapper = mountIdleBanner(healthWith())
+
+    expect(countdown(wrapper).text()).toBe('12h 0m')
+
+    wrapper.unmount()
+  })
+
+  it('falls back to completion plus cadence when next_due_at is null', () => {
+    const wrapper = mountIdleBanner(healthWith(null))
+
+    expect(countdown(wrapper).text()).toBe('12h 0m')
+
+    wrapper.unmount()
+  })
+
+  it('falls back to completion plus cadence when next_due_at is unparseable', () => {
+    const wrapper = mountIdleBanner(healthWith('not-a-date'))
+
+    expect(countdown(wrapper).text()).toBe('12h 0m')
+
+    wrapper.unmount()
+  })
+
+  it('falls back to completion plus cadence when health is unavailable', () => {
+    const wrapper = mountIdleBanner(null)
+
+    expect(countdown(wrapper).text()).toBe('12h 0m')
+
+    wrapper.unmount()
+  })
+
+  it('keeps a freshly overdue authoritative countdown neutral', () => {
+    const wrapper = mountIdleBanner(healthWith('2026-04-29T23:00:00Z'))
+
+    expect(countdown(wrapper).text()).toBe('due 1h ago')
+    expect(countdown(wrapper).hasClass('banner-countdown-neutral')).toBe(true)
+
+    wrapper.unmount()
+  })
+
+  it('shades the countdown amber once overdue passes the amber ratio of the cadence', () => {
+    const wrapper = mountIdleBanner(healthWith('2026-04-29T18:00:00Z'))
+
+    expect(countdown(wrapper).text()).toBe('due 6h ago')
+    expect(countdown(wrapper).hasClass('banner-countdown-amber')).toBe(true)
+
+    wrapper.unmount()
+  })
+
+  it('shades the countdown red once overdue passes the red ratio of the cadence', () => {
+    const wrapper = mountIdleBanner(healthWith('2026-04-29T10:00:00Z'))
+
+    expect(countdown(wrapper).text()).toBe('due 14h ago')
+    expect(countdown(wrapper).hasClass('banner-countdown-red')).toBe(true)
+
+    wrapper.unmount()
+  })
 })
 
 describe('ScoringBanner memo warning', () => {

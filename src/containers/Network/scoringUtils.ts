@@ -688,8 +688,12 @@ export interface HealthSignal {
   detail: string
 }
 
+export interface SchedulerHealthSignal extends HealthSignal {
+  next_due_at?: string | null
+}
+
 export interface ScoringHealth {
-  scheduler: HealthSignal
+  scheduler: SchedulerHealthSignal
   llm_endpoint: HealthSignal
   publisher_wallet: HealthSignal
 }

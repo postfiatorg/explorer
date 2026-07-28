@@ -56,20 +56,29 @@ const formatOverdue = (overdueMin: number): string => {
 }
 
 const formatCountdown = (
+  nextDueAt: string | null,
   completedAt: string | null,
   cadenceHours: number | null,
   now: number,
 ): CountdownDisplay => {
-  if (!completedAt || cadenceHours == null) {
-    return { text: '—', tone: 'neutral' }
-  }
-  const completedMs = Date.parse(completedAt)
-  if (Number.isNaN(completedMs)) {
-    return { text: '—', tone: 'neutral' }
+  const cadenceMs = cadenceHours != null ? cadenceHours * 60 * 60 * 1000 : null
+
+  // The scheduler's persisted next_due_at is authoritative; deriving the due
+  // time from completion plus cadence only covers scoring services that
+  // predate the persisted schedule.
+  let dueMs = nextDueAt ? Date.parse(nextDueAt) : NaN
+  if (Number.isNaN(dueMs)) {
+    if (!completedAt || cadenceMs == null) {
+      return { text: '—', tone: 'neutral' }
+    }
+    const completedMs = Date.parse(completedAt)
+    if (Number.isNaN(completedMs)) {
+      return { text: '—', tone: 'neutral' }
+    }
+    dueMs = completedMs + cadenceMs
   }
 
-  const cadenceMs = cadenceHours * 60 * 60 * 1000
-  const remainingMs = completedMs + cadenceMs - now
+  const remainingMs = dueMs - now
 
   if (remainingMs > 0) {
     // Ceil so the countdown and the floored "X ago" elapsed card always sum to the cadence without losing a sub-minute residual.
@@ -89,10 +98,12 @@ const formatCountdown = (
   const overdueMs = -remainingMs
   const text = formatOverdue(Math.floor(overdueMs / 60000))
 
-  let tone: CountdownTone
-  if (overdueMs < cadenceMs * OVERDUE_AMBER_RATIO) tone = 'neutral'
-  else if (overdueMs < cadenceMs * OVERDUE_RED_RATIO) tone = 'amber'
-  else tone = 'red'
+  let tone: CountdownTone = 'neutral'
+  if (cadenceMs != null) {
+    if (overdueMs < cadenceMs * OVERDUE_AMBER_RATIO) tone = 'neutral'
+    else if (overdueMs < cadenceMs * OVERDUE_RED_RATIO) tone = 'amber'
+    else tone = 'red'
+  }
 
   return { text, tone }
 }
@@ -236,7 +247,12 @@ const IdleBanner: FC<{
   health: ScoringHealth | null
   now: number
 }> = ({ label, roundNumber, completedAt, cadenceHours, health, now }) => {
-  const countdown = formatCountdown(completedAt, cadenceHours, now)
+  const countdown = formatCountdown(
+    health?.scheduler?.next_due_at ?? null,
+    completedAt,
+    cadenceHours,
+    now,
+  )
 
   return (
     <div className="network-stats">
