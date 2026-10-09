@@ -22,41 +22,20 @@ describe('MethodologyExplainer', () => {
     wrapper.unmount()
   })
 
-  it('renders the deterministic formula when the config publishes it', () => {
-    const formulaConfig: ScoringConfig = {
-      ...config,
-      score_formula: {
-        version: 1,
-        weights: {
-          consensus: 50,
-          reliability: 20,
-          software: 10,
-          diversity: 10,
-          identity: 10,
-        },
-        consensus_gate_margin: 25,
+  const formulaConfig: ScoringConfig = {
+    ...config,
+    score_formula: {
+      version: 1,
+      weights: {
+        consensus: 50,
+        reliability: 20,
+        software: 10,
+        diversity: 10,
+        identity: 10,
       },
-    }
-    const wrapper = mount(
-      <MethodologyExplainer config={formulaConfig} roundConfig={null} />,
-    )
-    const formula = wrapper.find('.methodology-formula')
-    expect(formula.exists()).toBe(true)
-    const text = formula.text()
-    expect(text).toContain('deterministic')
-    expect(text).toContain('Consensus 50%')
-    expect(text).toContain('Reliability 20%')
-    expect(text).toContain('plus 25')
-    wrapper.unmount()
-  })
-
-  it('omits the formula section when the config predates it', () => {
-    const wrapper = mount(
-      <MethodologyExplainer config={config} roundConfig={null} />,
-    )
-    expect(wrapper.find('.methodology-formula').exists()).toBe(false)
-    wrapper.unmount()
-  })
+      consensus_gate_margin: 25,
+    },
+  }
 
   const diversityRoundConfig: RoundScoringConfig = {
     diversity_formula: {
@@ -67,47 +46,72 @@ describe('MethodologyExplainer', () => {
     },
   }
 
-  it('explains the computed diversity sub-score when the manifest pins the formula', () => {
+  it('renders the deterministic formula when the config publishes it', () => {
     const wrapper = mount(
-      <MethodologyExplainer
-        config={config}
-        roundConfig={diversityRoundConfig}
-      />,
+      <MethodologyExplainer config={formulaConfig} roundConfig={null} />,
     )
-    const text = wrapper.find('.methodology-diversity').text()
-    expect(text).toContain('a published formula computes it from two counts')
-    expect(text).toContain("share the validator's country")
-    expect(text).toContain('share its hosting provider family')
-    expect(text).toContain('moves when that set changes')
-    expect(text).toContain('location is unknown gets a fixed value')
+    const formula = wrapper.find('.methodology-formula')
+    expect(formula.exists()).toBe(true)
+    const text = formula.text()
+    expect(text).toContain('deterministic and published')
+    expect(text).toContain('Consensus 50%')
+    expect(text).toContain('Reliability 20%')
+    expect(text).toContain(
+      'plus 25; and the selection applies the cutoff, size and churn gap above.',
+    )
+    expect(text).not.toContain('diversity sub-score')
     wrapper.unmount()
   })
 
-  it('renders the diversity formula parameters when the manifest pins them', () => {
+  it('folds the computed diversity clause into the formula when the manifest pins it', () => {
     const wrapper = mount(
       <MethodologyExplainer
-        config={config}
+        config={formulaConfig}
         roundConfig={diversityRoundConfig}
       />,
     )
-    const text = wrapper.find('.methodology-diversity-formula').text()
-    expect(text).toContain('Diversity formula v1')
-    expect(text).toContain('up to 50 points')
-    expect(text).toContain('shrinks in proportion')
-    expect(text).toContain('fixed 10 points')
+    expect(wrapper.find('.methodology-formula')).toHaveLength(1)
+    const text = wrapper.find('.methodology-formula').text()
+    expect(text).toContain(
+      'plus 25; the diversity sub-score comes from two counts, the validators in the round sharing its country and the validators sharing its hosting provider family, with a fixed value when the location is unknown; and the selection applies',
+    )
     expect(text).not.toContain('119')
     wrapper.unmount()
   })
 
-  it('omits the diversity explanation when the manifest predates the formula', () => {
+  it('omits the formula section when the config predates it', () => {
+    const wrapper = mount(
+      <MethodologyExplainer
+        config={config}
+        roundConfig={diversityRoundConfig}
+      />,
+    )
+    expect(wrapper.find('.methodology-formula').exists()).toBe(false)
+    wrapper.unmount()
+  })
+
+  it('tags only the Diversity dimension as computed when the manifest pins the formula', () => {
+    const wrapper = mount(
+      <MethodologyExplainer
+        config={config}
+        roundConfig={diversityRoundConfig}
+      />,
+    )
+    const tags = wrapper.find('.methodology-dim-tag')
+    expect(tags).toHaveLength(1)
+    expect(tags.text()).toBe('computed')
+    expect(tags.closest('.methodology-dim').text()).toContain('Diversity')
+    wrapper.unmount()
+  })
+
+  it('omits the computed tag when the manifest predates the formula', () => {
     const wrapper = mount(
       <MethodologyExplainer
         config={config}
         roundConfig={{ excluded_validator_server_versions: ['3.0.0'] }}
       />,
     )
-    expect(wrapper.find('.methodology-diversity').exists()).toBe(false)
-    expect(wrapper.find('.methodology-diversity-formula').exists()).toBe(false)
+    expect(wrapper.find('.methodology-dim-tag').exists()).toBe(false)
     wrapper.unmount()
   })
 
