@@ -243,9 +243,153 @@ describe('useRoundView artifact compatibility', () => {
       expect(merged?.[0].score).toBe(87)
       expect(merged?.[0].model_score).toBe(91)
       expect(merged?.[0].consensus).toBe(92)
+      // A finals artifact that predates the diversity formula leaves the
+      // model's diversity in place.
+      expect(merged?.[0].diversity).toBe(95)
+      expect(merged?.[0].model_diversity).toBeUndefined()
       // An entry the finals artifact does not cover keeps its model score.
       expect(merged?.[1].score).toBe(88)
       expect(merged?.[1].model_score).toBeUndefined()
+    }
+
+    wrapper.unmount()
+  })
+
+  it('renders the computed diversity sub-score when the round publishes it', async () => {
+    const diversityRoundScores = {
+      validator_scores: [
+        { ...scores.validator_scores[0] },
+        {
+          ...scores.validator_scores[0],
+          master_key: 'nHBvalidatorB',
+          score: 88,
+          diversity: 90,
+        },
+      ],
+    }
+    axiosGet.mockImplementation((url: string) => {
+      if (url === '/api/scoring/rounds/10') {
+        return Promise.resolve({
+          data: {
+            round_number: 10,
+            status: 'COMPLETE',
+            completed_at: '2026-10-01T19:40:00Z',
+            final_bundle_cid: 'QmDiversityBundle',
+          },
+        })
+      }
+      if (url === '/api/scoring/rounds/10/outputs/validator_scores.json') {
+        return Promise.resolve({ data: diversityRoundScores })
+      }
+      if (url === '/api/scoring/rounds/10/outputs/final_scores.json') {
+        return Promise.resolve({
+          data: {
+            formula: {
+              version: 1,
+              weights: {
+                consensus: 50,
+                reliability: 20,
+                software: 10,
+                diversity: 10,
+                identity: 10,
+              },
+              consensus_gate_margin: 25,
+            },
+            diversity_formula: {
+              version: 1,
+              axis_points: 50,
+              axis_penalty: 119,
+              unknown_axis_points: 10,
+            },
+            scores: [
+              {
+                master_key: 'nHBvalidatorA',
+                model_score: 91,
+                final_score: 84,
+                model_diversity: 95,
+                diversity: 62,
+              },
+              {
+                master_key: 'nHBvalidatorB',
+                model_score: 88,
+                final_score: 70,
+                model_diversity: 90,
+                diversity: 0,
+              },
+            ],
+          },
+        })
+      }
+      if (url === '/api/scoring/rounds/10/outputs/selected_unl.json') {
+        return Promise.resolve({ data: unl })
+      }
+      if (url === '/api/scoring/rounds/10/inputs/validator_evidence.json') {
+        return Promise.resolve({ data: snapshot })
+      }
+      if (url === '/api/scoring/rounds/10/inputs/validator_map.json') {
+        return Promise.resolve({ data: validatorMap })
+      }
+      if (url === '/api/scoring/rounds/10/runtime/execution_manifest.json') {
+        return Promise.resolve({
+          data: {
+            code: {
+              diversity_formula: {
+                module: 'scoring_service.services.diversity_formula',
+                content_sha256: 'abc123',
+                version: 1,
+                parameters: {
+                  axis_points: 50,
+                  axis_penalty: 119,
+                  unknown_axis_points: 10,
+                },
+                inputs: 'inputs/diversity_inputs.json',
+              },
+            },
+          },
+        })
+      }
+      if (url === '/api/scoring/rounds?limit=100') {
+        return Promise.resolve({
+          data: {
+            rounds: [{ round_number: 10, status: 'COMPLETE' }],
+          },
+        })
+      }
+      return Promise.reject(new Error(`Unexpected request: ${url}`))
+    })
+
+    const latestResult: { current: UseRoundViewResult | null } = {
+      current: null,
+    }
+    const wrapper = mountProbe(10, (result) => {
+      latestResult.current = result
+    })
+
+    await flushRoundView()
+    wrapper.update()
+
+    const diversityView = latestResult.current?.view
+    expect(diversityView?.kind).toBe('scored')
+    if (diversityView?.kind === 'scored') {
+      const merged = diversityView.scores?.validator_scores
+      // The diversity sub-score is the computed value; the model's advisory
+      // 95 is preserved as model_diversity (for downloads) but stays out of
+      // the UI, exactly like model_score. The other sub-scores pass through.
+      expect(merged?.[0].score).toBe(84)
+      expect(merged?.[0].diversity).toBe(62)
+      expect(merged?.[0].model_diversity).toBe(95)
+      expect(merged?.[0].consensus).toBe(92)
+      // A computed 0 is a real value, not a missing one.
+      expect(merged?.[1].diversity).toBe(0)
+      expect(merged?.[1].model_diversity).toBe(90)
+      expect(diversityView.roundConfig).toEqual({
+        diversity_formula: {
+          version: 1,
+          axis_points: 50,
+          axis_penalty: 119,
+          unknown_axis_points: 10,
+        },
+      })
     }
 
     wrapper.unmount()

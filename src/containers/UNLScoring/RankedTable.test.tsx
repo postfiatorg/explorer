@@ -1,10 +1,12 @@
 import { mount } from 'enzyme'
 import { OverrideRoundTable, RankedTable } from './RankedTable'
+import { SCORING_DIMENSIONS } from '../Network/scoringUtils'
 import type {
   ScoresJson,
   ScoringContext,
   ScoringRoundMeta,
   ValidatorIdMap,
+  ValidatorScoreEntry,
 } from '../Network/scoringUtils'
 
 const round = (
@@ -562,6 +564,43 @@ describe('RankedTable deltas', () => {
     expect(wrapper.find('.delta').exists()).toBe(false)
     expect(wrapper.text()).not.toContain('same')
     expect(wrapper.text()).not.toContain('unchanged')
+
+    wrapper.unmount()
+  })
+})
+
+describe('RankedTable diversity sub-score', () => {
+  const diversityIndex = SCORING_DIMENSIONS.findIndex(
+    (dimension) => dimension.key === 'diversity',
+  )
+
+  const contextWithEntry = (entry: ValidatorScoreEntry): ScoringContext => {
+    const base = rankedContextFor()
+    return { ...base, scores: { ...base.scores, validator_scores: [entry] } }
+  }
+
+  const diversityCellText = (
+    wrapper: ReturnType<typeof mountRankedTable>,
+  ): string =>
+    wrapper
+      .find('.ranked-row .ranked-col-dimension')
+      .at(diversityIndex)
+      .find('.ranked-dimension-value')
+      .text()
+
+  it('renders the computed diversity when the round published one', () => {
+    const wrapper = mountRankedTable(
+      contextWithEntry({
+        ...rankedScoreEntry(91),
+        diversity: 62,
+        model_diversity: 95,
+      }),
+    )
+
+    expect(diversityCellText(wrapper)).toBe('62')
+    expect(
+      wrapper.find('.ranked-dimension-value').map((node) => node.text()),
+    ).not.toContain('95')
 
     wrapper.unmount()
   })
