@@ -43,12 +43,12 @@ export const AccountNFTTable = ({ accountId }: AccountNFTTableProps) => {
         },
       ),
     {
-      getNextPageParam: (data) => data.marker,
+      getNextPageParam: (data) => data?.marker,
     },
   )
   const { t } = useTranslation()
 
-  const nfts = pages?.pages.flatMap((page: any) => page.account_nfts)
+  const nfts = pages?.pages.flatMap((page: any) => page?.account_nfts ?? [])
 
   if (loading) return <Loader />
 

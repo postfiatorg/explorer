@@ -36,12 +36,12 @@ const data = {
 describe('AccountNFTTable component', () => {
   const TEST_ACCOUNT_ID = 'rTEST_ACCOUNT'
 
-  const createWrapper = () =>
+  const createWrapper = (accountId = TEST_ACCOUNT_ID) =>
     mount(
       <QueryClientProvider client={testQueryClient}>
         <BrowserRouter future={V7_FUTURE_ROUTER_FLAGS}>
           <I18nextProvider i18n={i18n}>
-            <AccountNFTTable accountId={TEST_ACCOUNT_ID} />
+            <AccountNFTTable accountId={accountId} />
           </I18nextProvider>
         </BrowserRouter>
       </QueryClientProvider>,
@@ -103,6 +103,19 @@ describe('AccountNFTTable component', () => {
     wrapper.update()
 
     expect(wrapper.find(EmptyMessageTableRow)).toExist()
+    wrapper.unmount()
+  })
+
+  it('should handle a rejected account_nfts request without crashing', async () => {
+    mockedGetAccountNFTs.mockRejectedValue(
+      new Error('account_nfts unavailable'),
+    )
+
+    const wrapper = createWrapper('rREJECTED_ACCOUNT')
+    await flushPromises()
+    wrapper.update()
+
+    expect(wrapper.find('.account-asset-empty')).toExist()
     wrapper.unmount()
   })
 })
