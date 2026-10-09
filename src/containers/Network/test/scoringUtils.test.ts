@@ -292,6 +292,68 @@ describe('excluded scoring server versions', () => {
     expect(roundScoringConfigFromExecutionManifest(null)).toBeNull()
   })
 
+  it('reads the diversity formula parameters from staged execution manifests', () => {
+    expect(
+      roundScoringConfigFromExecutionManifest({
+        code: {
+          collector: {
+            parameters: { excluded_validator_server_versions: ['3.0.0'] },
+          },
+          diversity_formula: {
+            version: 1,
+            parameters: {
+              axis_points: 50,
+              axis_penalty: 119,
+              unknown_axis_points: 10,
+            },
+          },
+        },
+      }),
+    ).toEqual({
+      excluded_validator_server_versions: ['3.0.0'],
+      diversity_formula: {
+        version: 1,
+        axis_points: 50,
+        axis_penalty: 119,
+        unknown_axis_points: 10,
+      },
+    })
+    expect(
+      roundScoringConfigFromExecutionManifest({
+        code: {
+          diversity_formula: {
+            version: 1,
+            parameters: {
+              axis_points: 50,
+              axis_penalty: 119,
+              unknown_axis_points: 10,
+            },
+          },
+        },
+      }),
+    ).toEqual({
+      diversity_formula: {
+        version: 1,
+        axis_points: 50,
+        axis_penalty: 119,
+        unknown_axis_points: 10,
+      },
+    })
+  })
+
+  it('drops a diversity formula section missing any parameter', () => {
+    expect(
+      roundScoringConfigFromExecutionManifest({
+        code: {
+          diversity_formula: {
+            version: 1,
+            parameters: { axis_points: 50, axis_penalty: '119' },
+          },
+        },
+      }),
+    ).toBeNull()
+  })
+
   it('matches excluded validator server versions exactly after trimming', () => {
     expect(
       getExcludedScoringServerVersion(' 3.0.0 ', {
@@ -471,5 +533,15 @@ describe('scoring dimensions metadata', () => {
       expect(dimension.tooltip.length).toBeGreaterThan(0)
       expect(dimension.summary.length).toBeGreaterThan(0)
     })
+  })
+
+  it('describes diversity by the round concentration counts without naming a formula', () => {
+    const diversity = SCORING_DIMENSIONS.find((d) => d.key === 'diversity')
+    expect(diversity?.tooltip).toContain("share this validator's country")
+    expect(diversity?.tooltip).toContain('hosting provider family')
+    expect(diversity?.tooltip).toContain(
+      'Fewer peers on each count scores higher',
+    )
+    expect(diversity?.tooltip).not.toContain('formula')
   })
 })
