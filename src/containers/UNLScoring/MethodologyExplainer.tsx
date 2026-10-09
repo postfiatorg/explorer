@@ -1,5 +1,6 @@
 import { FC } from 'react'
 import {
+  RoundScoringConfig,
   SCORING_DIMENSIONS,
   ScoringConfig,
   formatCadence,
@@ -7,12 +8,17 @@ import {
 
 interface MethodologyExplainerProps {
   config: ScoringConfig | null
+  // The latest scored round's manifest-derived policy; the computed-diversity
+  // explanation renders only when it pins the formula, since earlier rounds
+  // show the model's diversity.
+  roundConfig: RoundScoringConfig | null
 }
 
 const DASH = '—'
 
 export const MethodologyExplainer: FC<MethodologyExplainerProps> = ({
   config,
+  roundConfig,
 }) => {
   const cutoff = config?.unl_score_cutoff ?? DASH
   const maxSize = config?.unl_max_size ?? DASH
@@ -31,6 +37,7 @@ export const MethodologyExplainer: FC<MethodologyExplainerProps> = ({
         )
         .join(', ')
     : ''
+  const diversityFormula = roundConfig?.diversity_formula ?? null
 
   const stats = [
     {
@@ -83,6 +90,25 @@ export const MethodologyExplainer: FC<MethodologyExplainerProps> = ({
               judgment lives entirely in the sub-scores; anyone can recompute
               every final score from the round&apos;s published artifacts.
             </p>
+          )}
+          {diversityFormula && (
+            <>
+              <p className="methodology-diversity">
+                Diversity is the exception: a published formula computes it from
+                two counts — how many validators in the round share the
+                validator&apos;s country, and how many share its hosting
+                provider family. Both counts are relative to the validators
+                present in the round, so the value moves when that set changes,
+                and a validator whose location is unknown gets a fixed value.
+              </p>
+              <p className="methodology-diversity-formula">
+                Diversity formula v{diversityFormula.version}: each of the two
+                counts is worth up to {diversityFormula.axis_points} points,
+                shrinks in proportion to how many other validators share it
+                (reaching 0 well before everyone does), and is worth a fixed{' '}
+                {diversityFormula.unknown_axis_points} points when unknown.
+              </p>
+            </>
           )}
         </div>
       </details>

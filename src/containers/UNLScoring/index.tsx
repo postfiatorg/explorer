@@ -526,7 +526,7 @@ export const UNLScoring = () => {
           supersedingRound={supersedingRound}
           validatorMetaByKey={validatorMetaByKey}
         />
-        <MethodologyExplainer config={null} />
+        <MethodologyExplainer config={null} roundConfig={null} />
       </>
     )
   } else if (
@@ -551,7 +551,7 @@ export const UNLScoring = () => {
         {selectedFailedRound && (
           <RoundLifecycle round={selectedFailedRound} failed />
         )}
-        <MethodologyExplainer config={null} />
+        <MethodologyExplainer config={null} roundConfig={null} />
       </>
     )
   } else if (!latestContext) {
@@ -577,7 +577,10 @@ export const UNLScoring = () => {
             />
           )}
         {renderViewingRoundContent()}
-        <MethodologyExplainer config={latestContext.config} />
+        <MethodologyExplainer
+          config={latestContext.config}
+          roundConfig={latestContext.roundConfig}
+        />
       </>
     )
   }
