@@ -185,6 +185,10 @@ export interface ValidatorScoreEntry {
   reliability: number
   software: number
   diversity: number
+  // Present only after a final-scores merge on rounds that compute diversity
+  // deterministically: preserves the model's advisory diversity for the same
+  // reason as model_score. Never rendered.
+  model_diversity?: number
   identity: number
   reasoning: string
 }
@@ -233,18 +237,36 @@ export interface ScoreFormulaParams {
   consensus_gate_margin: number
 }
 
+// Parameters of the deterministic diversity sub-score formula: each of the two
+// concentration axes (country, provider family) is worth axis_points, loses
+// axis_penalty as the other resolved validators crowd it, and is worth a fixed
+// unknown_axis_points when the validator's value for it is unknown.
+export interface DiversityFormulaParams {
+  version: number
+  axis_points: number
+  axis_penalty: number
+  unknown_axis_points: number
+}
+
 export interface FinalScoreEntry {
   master_key: string
   model_score: number
   final_score: number
+  // Present once the round computes diversity deterministically: diversity
+  // is the computed sub-score the score formula consumed, model_diversity the
+  // model's advisory value it replaced.
+  model_diversity?: number
+  diversity?: number
 }
 
 // outputs/final_scores.json — published by rounds produced under the
 // deterministic final-score stage. final_score is the authoritative overall
 // score UNL selection consumed; model_score is the model's advisory judgment,
-// kept in the artifacts but deliberately not shown in the UI.
+// kept in the artifacts but deliberately not shown in the UI. diversity_formula
+// is present once the diversity sub-score is computed rather than modelled.
 export interface FinalScoresJson {
   formula: ScoreFormulaParams
+  diversity_formula?: DiversityFormulaParams
   scores: FinalScoreEntry[]
 }
 
@@ -273,6 +295,18 @@ export interface ScoringConfig {
 
 export interface RoundScoringConfig {
   excluded_validator_server_versions?: string[]
+  // Present only on rounds whose execution manifest pins the diversity
+  // formula; absent on rounds that predate it.
+  diversity_formula?: DiversityFormulaParams
+}
+
+export interface ExecutionManifestDiversityFormula {
+  version?: unknown
+  parameters?: {
+    axis_points?: unknown
+    axis_penalty?: unknown
+    unknown_axis_points?: unknown
+  }
 }
 
 export interface ExecutionManifest {
@@ -282,6 +316,7 @@ export interface ExecutionManifest {
         excluded_validator_server_versions?: unknown
       }
     }
+    diversity_formula?: ExecutionManifestDiversityFormula
   }
 }
 
@@ -382,15 +417,52 @@ const normalizeExcludedServerVersions = (
     .filter((version) => version.length > 0)
 }
 
+const isFiniteNumber = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isFinite(value)
+
+// The manifest is fetched data: a section missing any parameter is treated as
+// absent rather than rendered half-filled.
+const normalizeDiversityFormula = (
+  section: ExecutionManifestDiversityFormula | undefined,
+): DiversityFormulaParams | undefined => {
+  const version = section?.version
+  const axisPoints = section?.parameters?.axis_points
+  const axisPenalty = section?.parameters?.axis_penalty
+  const unknownAxisPoints = section?.parameters?.unknown_axis_points
+  if (
+    !isFiniteNumber(version) ||
+    !isFiniteNumber(axisPoints) ||
+    !isFiniteNumber(axisPenalty) ||
+    !isFiniteNumber(unknownAxisPoints)
+  ) {
+    return undefined
+  }
+  return {
+    version,
+    axis_points: axisPoints,
+    axis_penalty: axisPenalty,
+    unknown_axis_points: unknownAxisPoints,
+  }
+}
+
 export const roundScoringConfigFromExecutionManifest = (
   manifest: ExecutionManifest | null | undefined,
 ): RoundScoringConfig | null => {
   const versions = normalizeExcludedServerVersions(
     manifest?.code?.collector?.parameters?.excluded_validator_server_versions,
   )
-  return versions === undefined
-    ? null
-    : { excluded_validator_server_versions: versions }
+  const diversityFormula = normalizeDiversityFormula(
+    manifest?.code?.diversity_formula,
+  )
+  if (versions === undefined && diversityFormula === undefined) return null
+  return {
+    ...(versions === undefined
+      ? {}
+      : { excluded_validator_server_versions: versions }),
+    ...(diversityFormula === undefined
+      ? {}
+      : { diversity_formula: diversityFormula }),
+  }
 }
 
 export const getExcludedScoringServerVersion = (
@@ -453,7 +525,7 @@ export const SCORING_DIMENSIONS: DimensionMeta[] = [
     key: 'diversity',
     label: 'Diversity',
     tooltip:
-      'Geographic and infrastructure spread. Validators in underrepresented countries or on less common cloud providers score higher.',
+      "Geographic and infrastructure spread: how many validators in the round share this validator's country and hosting provider family. Fewer peers on each count scores higher.",
     summary: 'Geographic and infrastructure spread.',
   },
   {
@@ -584,23 +656,36 @@ export const fetchRoundFinalScores = (
   )
 
 // Replace each entry's overall score with the deterministic final score when
-// the round published one. Keyed purely on artifact presence: pre-formula and
-// legacy rounds have no final_scores.json and pass through untouched.
+// the round published one, and its diversity sub-score with the computed value
+// when the round published that as well. Keyed purely on artifact presence:
+// pre-formula and legacy rounds have no final_scores.json and pass through
+// untouched, and rounds that predate the diversity formula carry no per-entry
+// diversity so they keep the model's value.
 const applyFinalScores = (
   scores: ScoresJson,
   finals: FinalScoresJson | null,
 ): ScoresJson => {
   if (!finals || !Array.isArray(finals.scores)) return scores
   const finalByKey = new Map(
-    finals.scores.map((entry) => [entry.master_key, entry.final_score]),
+    finals.scores.map((entry) => [entry.master_key, entry]),
   )
   return {
     ...scores,
     validator_scores: scores.validator_scores.map((entry) => {
-      const finalScore = finalByKey.get(entry.master_key)
-      return finalScore === undefined
-        ? entry
-        : { ...entry, score: finalScore, model_score: entry.score }
+      const finalEntry = finalByKey.get(entry.master_key)
+      if (finalEntry?.final_score === undefined) return entry
+      const scored = {
+        ...entry,
+        score: finalEntry.final_score,
+        model_score: entry.score,
+      }
+      return finalEntry.diversity === undefined
+        ? scored
+        : {
+            ...scored,
+            diversity: finalEntry.diversity,
+            model_diversity: entry.diversity,
+          }
     }),
   }
 }
