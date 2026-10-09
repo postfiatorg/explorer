@@ -2569,6 +2569,14 @@ $convergence-diverged: #f34;
   @include bold;
 }
 
+.methodology-dim-tag {
+  align-self: center;
+  color: $black-60;
+  font-size: 9px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
 .methodology-dim-desc {
   color: $black-40;
 }

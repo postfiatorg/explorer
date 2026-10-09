@@ -8,9 +8,9 @@ import {
 
 interface MethodologyExplainerProps {
   config: ScoringConfig | null
-  // The latest scored round's manifest-derived policy; the computed-diversity
-  // explanation renders only when it pins the formula, since earlier rounds
-  // show the model's diversity.
+  // The latest scored round's manifest-derived policy; diversity is described
+  // as computed only when it pins the formula, since earlier rounds show the
+  // model's diversity.
   roundConfig: RoundScoringConfig | null
 }
 
@@ -37,7 +37,7 @@ export const MethodologyExplainer: FC<MethodologyExplainerProps> = ({
         )
         .join(', ')
     : ''
-  const diversityFormula = roundConfig?.diversity_formula ?? null
+  const diversityComputed = roundConfig?.diversity_formula != null
 
   const stats = [
     {
@@ -80,35 +80,29 @@ export const MethodologyExplainer: FC<MethodologyExplainerProps> = ({
             <div className="methodology-dim" key={dimension.key}>
               <span className="methodology-dim-name">{dimension.label}</span>
               <span className="methodology-dim-desc">{dimension.summary}</span>
+              {diversityComputed && dimension.key === 'diversity' && (
+                <span className="methodology-dim-tag">computed</span>
+              )}
             </div>
           ))}
           {formula && formulaWeights && (
             <p className="methodology-formula">
-              The final score is deterministic: a published weighted sum of the
-              five sub-scores ({formulaWeights}), capped at the consensus
-              sub-score plus {formula.consensus_gate_margin}. The model&apos;s
-              judgment lives entirely in the sub-scores; anyone can recompute
-              every final score from the round&apos;s published artifacts.
+              Everything after the model&apos;s judgment is deterministic and
+              published: the final score is a weighted sum of the sub-scores (
+              {formulaWeights}), capped at the consensus sub-score plus{' '}
+              {formula.consensus_gate_margin};{' '}
+              {diversityComputed && (
+                <>
+                  the diversity sub-score comes from two counts, the validators
+                  in the round sharing its country and the validators sharing
+                  its hosting provider family, with a fixed value when the
+                  location is unknown;{' '}
+                </>
+              )}
+              and the selection applies the cutoff, size and churn gap above.
+              Anyone can recompute every number from the round&apos;s published
+              artifacts.
             </p>
-          )}
-          {diversityFormula && (
-            <>
-              <p className="methodology-diversity">
-                Diversity is the exception: a published formula computes it from
-                two counts — how many validators in the round share the
-                validator&apos;s country, and how many share its hosting
-                provider family. Both counts are relative to the validators
-                present in the round, so the value moves when that set changes,
-                and a validator whose location is unknown gets a fixed value.
-              </p>
-              <p className="methodology-diversity-formula">
-                Diversity formula v{diversityFormula.version}: each of the two
-                counts is worth up to {diversityFormula.axis_points} points,
-                shrinks in proportion to how many other validators share it
-                (reaching 0 well before everyone does), and is worth a fixed{' '}
-                {diversityFormula.unknown_axis_points} points when unknown.
-              </p>
-            </>
           )}
         </div>
       </details>
